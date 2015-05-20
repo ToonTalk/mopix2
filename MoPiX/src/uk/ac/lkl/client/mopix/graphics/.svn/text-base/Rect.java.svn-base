@@ -1,0 +1,28 @@
+/**
+ * 
+ */
+package uk.ac.lkl.client.mopix.graphics;
+
+/**
+ * @author Ken
+ *
+ */
+public class Rect {
+    
+    private int width;
+    private int height;
+
+    public Rect(int width, int height) {
+	this.width = width;
+	this.height = height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+}

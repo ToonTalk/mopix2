@@ -1,0 +1,2 @@
+serviceClass: uk.ac.lkl.client.rpc.MoPiXResourcePageService
+path: E28CBC057530E392A2529698281B21CC.gwt.rpc

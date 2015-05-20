@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2970/trunk/MoPiX/war/WEB-INF
+END
+appengine-web.xml
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/3040/trunk/MoPiX/war/WEB-INF/appengine-web.xml
+END
+logging.properties
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2942/trunk/MoPiX/war/WEB-INF/logging.properties
+END
+web.xml
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2970/trunk/MoPiX/war/WEB-INF/web.xml
+END

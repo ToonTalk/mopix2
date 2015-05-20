@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app>
+
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>m/index.html</welcome-file>
+	</welcome-file-list>
+
+	<!-- Servlets -->
+
+	<servlet>
+		<servlet-name>resourcePageServiceImpl
+		</servlet-name>
+		<servlet-class>uk.ac.lkl.server.MoPiXResourcePageServiceImpl
+		</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>resourcePageServiceImpl
+		</servlet-name>
+		<url-pattern>/Model/ResourcePage</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>HistoryServiceImpl</servlet-name>
+		<servlet-class>uk.ac.lkl.server.MoPiXHistoryServiceImpl
+		</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>HistoryServiceImpl</servlet-name>
+		<url-pattern>/Model/History</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>StaticPage</servlet-name>
+		<servlet-class>uk.ac.lkl.server.MoPiXStaticPageServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>StaticPage</servlet-name>
+		<url-pattern>/p/*</url-pattern>
+	</servlet-mapping>
+
+</web-app>

@@ -1,0 +1,5 @@
+# Module Model
+# RPC service class, partial path of RPC policy file
+uk.ac.lkl.client.rpc.MoPiXResourcePageService, E28CBC057530E392A2529698281B21CC.gwt.rpc
+uk.ac.lkl.client.rpc.ResourcePageService, E2789966B7EEDE978E3DE973EEF6FCF0.gwt.rpc
+uk.ac.lkl.client.rpc.HistoryService, 2D528A205E911B4D87FC5CABC1EB8741.gwt.rpc

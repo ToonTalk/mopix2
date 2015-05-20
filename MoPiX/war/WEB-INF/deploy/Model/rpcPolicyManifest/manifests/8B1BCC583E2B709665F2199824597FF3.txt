@@ -1,0 +1,2 @@
+serviceClass: uk.ac.lkl.client.rpc.ResourcePageService
+path: E2789966B7EEDE978E3DE973EEF6FCF0.gwt.rpc

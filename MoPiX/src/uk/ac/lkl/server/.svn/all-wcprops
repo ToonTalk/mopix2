@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/2990/trunk/MoPiX/src/uk/ac/lkl/server
+END
+MoPiXHistoryServiceImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/2942/trunk/MoPiX/src/uk/ac/lkl/server/MoPiXHistoryServiceImpl.java
+END
+MoPiXResourcePageServiceImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/2982/trunk/MoPiX/src/uk/ac/lkl/server/MoPiXResourcePageServiceImpl.java
+END
+mopix_static_resources_v2.zip
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/2990/trunk/MoPiX/src/uk/ac/lkl/server/mopix_static_resources_v2.zip
+END
+MoPiXStaticPageServlet.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/2987/trunk/MoPiX/src/uk/ac/lkl/server/MoPiXStaticPageServlet.java
+END

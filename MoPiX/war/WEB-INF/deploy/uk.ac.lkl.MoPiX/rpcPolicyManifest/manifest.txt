@@ -1,0 +1,2 @@
+# Module uk.ac.lkl.MoPiX
+# RPC service class, partial path of RPC policy file

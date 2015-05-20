@@ -1,0 +1,354 @@
+/* Following used by both Behaviour Composer and MoPiX widgets
+*/
+
+body, table td, select {
+ font-family: Verdana, Geneva, sans-serif;
+}
+
+/* keyword cloud styling -- "borrowed" from OUCS WWI web site */
+ul#keyword-cloud {
+  margin-top: 2pt;
+  margin-bottom: 2pt;
+  display: block;
+  padding: 2pt;
+}
+
+ul#keyword-cloud li.keyword-atom {
+  display: inline;
+  list-style: none;
+  padding: 0px;
+  margin: 0px;
+  line-height: 2.5em;
+  padding: 0.1em;
+}
+
+li.keyword-atom a {
+  padding: 0.3em;
+  text-decoration: none;
+  font-weight: bold;
+  color: #fff;
+  background-color: #D65C93;
+}
+
+li.keyword-atom a:hover,li.keyword-atom a:focus {
+  color: #D65C93;
+  background-color: #fff;
+}
+
+.modeller-model-loader {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+ 
+.modeller-tagging-buttons-panel {
+   border: 1px solid #aaa;
+   border-top: 1px solid #ddd;
+   border-left: 1px solid #ddd;
+}
+ 
+.modeller-LocalHyperLink {
+   text-decoration: underline;
+   color: darkblue;
+   cursor: pointer;
+}
+ 
+.modeller-LocalHyperLink-visited {
+   text-decoration: underline;
+   color: purple;
+   cursor: pointer;
+}
+ 
+.modeller-InternalHyperLink {
+  text-decoration: underline;
+  color: darkblue;
+  cursor: pointer;	
+}
+ 
+.modeller-InternalHyperLink-visited {
+  text-decoration: underline;
+  color: purple;
+  cursor: pointer;	
+}
+
+.modeller_models_grid td {
+  border: 1px solid #BBBBBB;
+  padding: 3px;
+}
+ 
+/* Following specific to Behaviour Composer widgets:
+*/
+ 
+.modeller-MicroBehaviour {
+   color: DarkBlue;
+   text-align: left;
+   font-size: 11pt;
+}
+ 
+.modeller-MicroBehaviour-inactive {
+   color: #888888;
+   text-decoration: line-through;
+}
+ 
+.modeller-MacroBehaviour {
+   display: inline-block;
+   border: 1px solid #aaa;
+   background-color: whitesmoke;
+   vertical-align: top;
+   margin: 2px;
+}
+
+.modeller-MacroBehaviour-inactive {
+   background-color: #888;
+}
+
+.modeller-EpidemicGameButtonColumn {
+   display: inline-block;
+   border: 1px solid blue;
+   background-color: LavenderBlush;
+}
+
+.modeller-EpidemicGameButton {
+  color: DarkSlateBlue;
+  background-color: PowderBlue;
+}
+
+.modeller-EpidemicGameButton:hover {
+  color: PowderBlue ;
+  background-color: DarkSlateBlue;
+}
+
+.modeller-holding-micro-behaviour {
+   cursor: url(images/micro-behaviour-cursor.png), 
+           url(images/micro-behaviour-cursor.ico), 
+           auto;
+}
+
+.modeller-holding-micro-behaviour-wrong {
+   cursor: url(images/micro-behaviour-wrong-cursor.png), 
+           url(images/micro-behaviour-wrong-cursor.ico), 
+           auto;
+}
+
+.modeller-holding-micro-behaviour:hover {
+   background-color: mistyRose;
+}
+
+.modeller-prototype-name {
+	border: 1px solid BlueViolet;
+	background-color: Beige;
+	color: rgb(72,0,0); /* very dark red */
+	margin: 0;
+    padding: 3px 5px;
+    text-decoration: none;
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: left;
+}
+
+.modeller-prototype-name-inactive {
+  text-decoration: none;
+  color: #888888;
+}
+
+.modeller-code-text-area {
+  overflow: visible;
+  background-color: aliceblue;
+  border: 2px solid lightblue;
+}
+
+.modeller-command-bar {
+ background-color: lemonChiffon;
+}
+
+.modeller-command-bar-panel {
+ background-color: lemonChiffon;
+}
+
+.modeller-browse-panel {
+ background-color: floralwhite;
+}
+
+.modeller-tab-panel {
+ background-color: whitesmoke;
+}
+
+.modeller-CommandAnchor {
+  text-decoration: underline;
+  color: darkblue;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.modelling-m4a-icon {
+  cursor: pointer;
+}
+
+.modeller-alerts {
+  background-color: honeydew;
+  top-margin: 8px;
+  bottom-margin: 8px;
+}
+
+.modeller-CommandAnchor-inactive {
+  text-decoration: none;
+  color: gray;
+}
+
+.modeller-run-applet-dialog {
+ border: 2px solid green;
+ background-color: lightyellow;
+}
+
+.modeller-run-applet-dialog-ok-button {
+ text-align: center;
+}
+
+.modeller-make-your-game-button {
+ border: 2px solid blue;
+ background-color: lightyellow;
+ font-size: large;
+ color: darkblue;
+}
+
+.modeller-how-many-instances-panel {
+ border: 1px;
+ border-style: solid;
+ border-color: lightblue;
+ background-color: rgb(255, 255, 240); /* very light yellow */
+ padding: 6px;
+}
+
+.modeller-title-bar {
+ border: 1px;
+ border-style: solid;
+ border-color: blue;
+ background-color: darkblue;
+ color: lightblue;
+}
+
+.modeller-code-primitive {
+	text-decoration: none;
+	color: blue;
+	font-weight: bold;
+}
+
+.modeller-code-primitive:hover, modeller-code-primitive:focus {
+	color: Purple;
+}
+
+.modeller-tab-label-disabled {
+	background-color: Grey;
+	color: LightGrey;
+}
+
+/* Following are from Google's RichText Showcase:
+*/
+.gwt-RichTextArea {
+}
+.hasRichTextToolbar {
+  border: 0px;
+}
+.gwt-RichTextToolbar {
+  background: #e3e8f3 url(images/hborder.png) repeat-x 0px -2003px;
+  border-bottom: 1px solid #BBBBBB;
+  padding: 3px;
+  margin: 0px;
+}
+.gwt-RichTextToolbar .gwt-PushButton-up {
+  padding: 0px 1px 0px 0px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border-width: 1px; 
+}
+.gwt-RichTextToolbar .gwt-PushButton-up-hovering {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 1px 0px 0px;
+  border-width: 1px; 
+}
+.gwt-RichTextToolbar .gwt-PushButton-down {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 0px 0px 1px;
+  border-width: 1px; 
+}
+.gwt-RichTextToolbar .gwt-PushButton-down-hovering {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 0px 0px 1px;
+  border-width: 1px; 
+}
+.gwt-RichTextToolbar .gwt-ToggleButton-up {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 1px 0px 0px;
+  border-width: 1px;
+}
+.gwt-RichTextToolbar .gwt-ToggleButton-up-hovering {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 1px 0px 0px;
+  border-width: 1px;
+}
+.gwt-RichTextToolbar .gwt-ToggleButton-down {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 0px 0px 1px;
+  border-width: 1px;
+}
+.gwt-RichTextToolbar .gwt-ToggleButton-down-hovering {
+  margin-right: 4px;
+  margin-bottom: 4px;
+  padding: 0px 0px 0px 1px;
+  border-width: 1px;
+}
+.cw-RichText {
+  border: 1px solid #BBBBBB;
+  border-spacing: 0px;
+  background-color: white;
+}
+
+ /* Following are MoPiX only:
+ */
+ 
+.modeller-FlipSide {
+  padding: 6px;
+  background-color: lightcyan;
+  border: 6px solid transparent;
+  border-color: #9DAECD rgb(232, 241, 255) rgb(232, 241, 255) rgb(157, 174, 205);
+}
+ 
+.modeller-Shape {
+ cursor: pointer;
+}
+ 
+.modeller-Equation {
+ cursor: pointer;
+}
+
+/* Following is for the MoPiX equation editor
+*/
+
+.hor-input-panel {
+ color: dodgerblue;
+ margin: 2px;
+ padding: 1px;
+ border: 2px solid #3366CC;
+ font-weight: bold;
+ background-color: lightskyblue;
+}
+
+.panel { 
+  padding: 5px; 
+  width: 100%; 
+  background-color: white; 
+  border: 2px solid #000; 
+}
+
+/* following to work around a problem with table of contents from Google Sites
+   perhaps need a more principled solution */
+.goog-toc {
+text-align: left;
+line-height: 1.5em;
+list-style: none;
+}
