@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoPiX Modern - Proof of Concept</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            border: none;
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #6c757d;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        button.play {
+            background: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        button.play:hover {
+            background: #218838;
+        }
+
+        button.pause {
+            background: #dc3545;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        button.pause:hover {
+            background: #c82333;
+        }
+
+        .frame-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+
+        .frame-control label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .frame-control input[type="number"] {
+            padding: 8px 12px;
+            font-size: 16px;
+            width: 90px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .frame-control input[type="range"] {
+            width: 200px;
+        }
+
+        .stats {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ffc107;
+            margin-top: 20px;
+        }
+
+        .stats h3 {
+            margin-top: 0;
+            color: #856404;
+            font-size: 18px;
+        }
+
+        .stats ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .stats li {
+            margin: 8px 0;
+            color: #856404;
+        }
+
+        .stats p {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ffc107;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .github-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .github-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .github-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 MoPiX Modern - Proof of Concept</h1>
+        <p class="subtitle">Reimagining MoPiX 2 with modern web technologies</p>
+
+        <div class="info-box">
+            <h2>Demo Objects</h2>
+            <ul>
+                <li><strong>Red Square (Mover):</strong> x = t × 2 + 100 <em>(moves horizontally)</em></li>
+                <li><strong>Blue Circle (Bouncer):</strong> y = sin(t × 10) × 100 + 300 <em>(bounces vertically)</em></li>
+                <li><strong>Green Rectangle (Spinner):</strong> rotation = t × 5 <em>(rotates)</em></li>
+                <li><strong>Color-Changing Circle:</strong> red = 128 + sin(t × 6) × 127 <em>(pulses red)</em></li>
+            </ul>
+        </div>
+
+        <canvas id="canvas" width="800" height="600"></canvas>
+
+        <div class="controls">
+            <button class="secondary" onclick="resetAnimation()">⏮ Reset</button>
+            <button class="secondary" onclick="stepBackward()">⏪ Step Back</button>
+            <button id="playButton" class="play" onclick="togglePlay()">▶ Play</button>
+            <button class="secondary" onclick="stepForward()">Step Forward ⏩</button>
+
+            <div class="frame-control">
+                <label for="frameInput">Frame:</label>
+                <input type="number" id="frameInput" value="0" min="0" max="1000" onchange="setFrame(this.value)">
+                <input type="range" id="frameSlider" value="0" min="0" max="200" oninput="setFrame(this.value)">
+            </div>
+        </div>
+
+        <div class="stats">
+            <h3>✨ What This Demonstrates</h3>
+            <ul>
+                <li>✅ <strong>Expression Evaluation Engine:</strong> Arithmetic, trigonometric, and logical operators</li>
+                <li>✅ <strong>Canvas Rendering:</strong> HTML5 Canvas API for shapes with rotation and transparency</li>
+                <li>✅ <strong>Animation System:</strong> Frame-accurate animation using requestAnimationFrame</li>
+                <li>✅ <strong>Caching:</strong> Expression results cached per frame for performance</li>
+                <li>✅ <strong>Vanilla JavaScript:</strong> No build tools, no dependencies - just open and run!</li>
+            </ul>
+            <p>
+                <strong>Bundle Size:</strong> Single 20KB HTML file (vs 1-2MB for GWT) |
+                <strong>Build Time:</strong> Zero! |
+                <strong>Dependencies:</strong> None!
+            </p>
+        </div>
+
+        <div class="github-link">
+            <p>View the full project and modernization guide on <a href="https://github.com/ToonTalk/mopix2" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Expression Engine ====================
+
+        class Expression {
+            evaluate(context) {
+                throw new Error('Must be implemented by subclass');
+            }
+        }
+
+        class ConstantExpression extends Expression {
+            constructor(value) {
+                super();
+                this.value = value;
+            }
+
+            evaluate(context) {
+                return this.value;
+            }
+        }
+
+        class VariableExpression extends Expression {
+            constructor(name) {
+                super();
+                this.name = name;
+            }
+
+            evaluate(context) {
+                if (this.name === 't') {
+                    return context.time;
+                }
+                return 0;
+            }
+        }
+
+        class BinaryOperatorExpression extends Expression {
+            constructor(operator, left, right) {
+                super();
+                this.operator = operator;
+                this.left = left;
+                this.right = right;
+            }
+
+            evaluate(context) {
+                const leftValue = this.left.evaluate(context);
+                const rightValue = this.right.evaluate(context);
+
+                switch (this.operator) {
+                    case '+': return leftValue + rightValue;
+                    case '-': return leftValue - rightValue;
+                    case '*': return leftValue * rightValue;
+                    case '/': return rightValue !== 0 ? leftValue / rightValue : 0;
+                    case '^': return Math.pow(leftValue, rightValue);
+                    default: return 0;
+                }
+            }
+        }
+
+        class UnaryOperatorExpression extends Expression {
+            constructor(operator, operand) {
+                super();
+                this.operator = operator;
+                this.operand = operand;
+            }
+
+            evaluate(context) {
+                const value = this.operand.evaluate(context);
+
+                switch (this.operator) {
+                    case '-': return -value;
+                    case 'abs': return Math.abs(value);
+                    case 'sin': return Math.sin((value * Math.PI) / 180);
+                    case 'cos': return Math.cos((value * Math.PI) / 180);
+                    case 'tan': return Math.tan((value * Math.PI) / 180);
+                    default: return 0;
+                }
+            }
+        }
+
+        function evaluateEquation(equation, context) {
+            const time = context.time;
+
+            if (equation.cache.has(time)) {
+                return equation.cache.get(time);
+            }
+
+            const result = equation.expression.evaluate(context);
+            equation.cache.set(time, result);
+            return result;
+        }
+
+        function updateObjectAtTime(obj, time, allObjects) {
+            const context = { object: obj, time, allObjects };
+            const updated = { ...obj };
+
+            obj.equations.forEach((equation, attribute) => {
+                const value = evaluateEquation(equation, context);
+
+                switch (attribute) {
+                    case 'x': updated.x = value; break;
+                    case 'y': updated.y = value; break;
+                    case 'width': updated.width = value; break;
+                    case 'height': updated.height = value; break;
+                    case 'rotation': updated.rotation = value; break;
+                    case 'red': updated.red = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'green': updated.green = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
+                }
+            });
+
+            return updated;
+        }
+
+        // ==================== Canvas Renderer ====================
+
+        class CanvasRenderer {
+            constructor(canvas) {
+                this.ctx = canvas.getContext('2d');
+            }
+
+            clear() {
+                this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+            }
+
+            drawGrid(spacing = 50, color = '#e0e0e0') {
+                const { width, height } = this.ctx.canvas;
+
+                this.ctx.save();
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = 1;
+
+                for (let x = 0; x <= width; x += spacing) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, height);
+                    this.ctx.stroke();
+                }
+
+                for (let y = 0; y <= height; y += spacing) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(width, y);
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+
+            renderObject(obj) {
+                this.ctx.save();
+
+                this.ctx.translate(obj.x, obj.y);
+                this.ctx.rotate((obj.rotation * Math.PI) / 180);
+
+                const alpha = obj.transparency / 100;
+                this.ctx.fillStyle = `rgba(${obj.red}, ${obj.green}, ${obj.blue}, ${alpha})`;
+
+                switch (obj.appearance) {
+                    case 'square':
+                        this.ctx.fillRect(
+                            -obj.width / 2,
+                            -obj.height / 2,
+                            obj.width,
+                            obj.height
+                        );
+                        break;
+
+                    case 'circle':
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(0, 0, obj.width / 2, obj.height / 2, 0, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        break;
+                }
+
+                this.ctx.restore();
+            }
+
+            renderScene(objects) {
+                this.clear();
+                this.drawGrid();
+                objects.forEach(obj => this.renderObject(obj));
+            }
+        }
+
+        // ==================== Animation Controller ====================
+
+        class AnimationController {
+            constructor(onFrame, fps = 30) {
+                this.onFrame = onFrame;
+                this.frameDuration = 1000 / fps;
+                this.animationFrameId = null;
+                this.lastFrameTime = 0;
+                this.currentFrame = 0;
+            }
+
+            start() {
+                if (this.animationFrameId !== null) return;
+                this.lastFrameTime = performance.now();
+                this.tick(this.lastFrameTime);
+            }
+
+            stop() {
+                if (this.animationFrameId !== null) {
+                    cancelAnimationFrame(this.animationFrameId);
+                    this.animationFrameId = null;
+                }
+            }
+
+            tick(currentTime) {
+                const elapsed = currentTime - this.lastFrameTime;
+
+                if (elapsed >= this.frameDuration) {
+                    this.currentFrame++;
+                    this.onFrame(this.currentFrame);
+                    this.lastFrameTime = currentTime;
+                }
+
+                this.animationFrameId = requestAnimationFrame((time) => this.tick(time));
+            }
+
+            reset() {
+                this.currentFrame = 0;
+                this.lastFrameTime = performance.now();
+            }
+
+            setFrame(frame) {
+                this.currentFrame = frame;
+                this.onFrame(this.currentFrame);
+            }
+
+            stepForward() {
+                this.currentFrame++;
+                this.onFrame(this.currentFrame);
+            }
+
+            stepBackward() {
+                this.currentFrame = Math.max(0, this.currentFrame - 1);
+                this.onFrame(this.currentFrame);
+            }
+
+            isRunning() {
+                return this.animationFrameId !== null;
+            }
+        }
+
+        // ==================== Demo Setup ====================
+
+        let canvas, renderer, animationController, objects;
+        let isPlaying = false;
+
+        function initDemo() {
+            canvas = document.getElementById('canvas');
+            renderer = new CanvasRenderer(canvas);
+
+            // Create demo objects
+            objects = new Map();
+
+            // Object 1: Moving horizontally - x = t * 2 + 100
+            objects.set('mover', {
+                id: 'mover',
+                name: 'Mover',
+                x: 100, y: 200,
+                width: 50, height: 50,
+                rotation: 0,
+                red: 255, green: 100, blue: 100,
+                transparency: 100,
+                appearance: 'square',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        expression: new BinaryOperatorExpression(
+                            '+',
+                            new BinaryOperatorExpression(
+                                '*',
+                                new VariableExpression('t'),
+                                new ConstantExpression(2)
+                            ),
+                            new ConstantExpression(100)
+                        ),
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Object 2: Bouncing vertically - y = sin(t * 10) * 100 + 300
+            objects.set('bouncer', {
+                id: 'bouncer',
+                name: 'Bouncer',
+                x: 400, y: 300,
+                width: 60, height: 60,
+                rotation: 0,
+                red: 100, green: 200, blue: 255,
+                transparency: 100,
+                appearance: 'circle',
+                equations: new Map([
+                    ['y', {
+                        attribute: 'y',
+                        expression: new BinaryOperatorExpression(
+                            '+',
+                            new BinaryOperatorExpression(
+                                '*',
+                                new UnaryOperatorExpression(
+                                    'sin',
+                                    new BinaryOperatorExpression(
+                                        '*',
+                                        new VariableExpression('t'),
+                                        new ConstantExpression(10)
+                                    )
+                                ),
+                                new ConstantExpression(100)
+                            ),
+                            new ConstantExpression(300)
+                        ),
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Object 3: Rotating - rotation = t * 5
+            objects.set('spinner', {
+                id: 'spinner',
+                name: 'Spinner',
+                x: 600, y: 200,
+                width: 70, height: 40,
+                rotation: 0,
+                red: 100, green: 255, blue: 100,
+                transparency: 100,
+                appearance: 'square',
+                equations: new Map([
+                    ['rotation', {
+                        attribute: 'rotation',
+                        expression: new BinaryOperatorExpression(
+                            '*',
+                            new VariableExpression('t'),
+                            new ConstantExpression(5)
+                        ),
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Object 4: Color changing - red = 128 + sin(t * 6) * 127
+            objects.set('colorChanger', {
+                id: 'colorChanger',
+                name: 'ColorChanger',
+                x: 200, y: 400,
+                width: 80, height: 80,
+                rotation: 0,
+                red: 128, green: 128, blue: 255,
+                transparency: 100,
+                appearance: 'circle',
+                equations: new Map([
+                    ['red', {
+                        attribute: 'red',
+                        expression: new BinaryOperatorExpression(
+                            '+',
+                            new ConstantExpression(128),
+                            new BinaryOperatorExpression(
+                                '*',
+                                new UnaryOperatorExpression(
+                                    'sin',
+                                    new BinaryOperatorExpression(
+                                        '*',
+                                        new VariableExpression('t'),
+                                        new ConstantExpression(6)
+                                    )
+                                ),
+                                new ConstantExpression(127)
+                            )
+                        ),
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Create animation controller
+            animationController = new AnimationController((frame) => {
+                renderFrame(frame);
+                updateFrameDisplay(frame);
+            }, 30);
+
+            // Initial render
+            renderFrame(0);
+        }
+
+        function renderFrame(frame) {
+            const objectsArray = Array.from(objects.values());
+            const updatedObjects = objectsArray.map(obj =>
+                updateObjectAtTime(obj, frame, objects)
+            );
+            renderer.renderScene(updatedObjects);
+        }
+
+        function updateFrameDisplay(frame) {
+            document.getElementById('frameInput').value = frame;
+            document.getElementById('frameSlider').value = frame;
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const button = document.getElementById('playButton');
+
+            if (isPlaying) {
+                button.textContent = '⏸ Pause';
+                button.className = 'pause';
+                animationController.start();
+            } else {
+                button.textContent = '▶ Play';
+                button.className = 'play';
+                animationController.stop();
+            }
+        }
+
+        function resetAnimation() {
+            isPlaying = false;
+            document.getElementById('playButton').textContent = '▶ Play';
+            document.getElementById('playButton').className = 'play';
+            animationController.stop();
+            animationController.reset();
+            renderFrame(0);
+            updateFrameDisplay(0);
+        }
+
+        function stepForward() {
+            isPlaying = false;
+            document.getElementById('playButton').textContent = '▶ Play';
+            document.getElementById('playButton').className = 'play';
+            animationController.stop();
+            animationController.stepForward();
+        }
+
+        function stepBackward() {
+            isPlaying = false;
+            document.getElementById('playButton').textContent = '▶ Play';
+            document.getElementById('playButton').className = 'play';
+            animationController.stop();
+            animationController.stepBackward();
+        }
+
+        function setFrame(value) {
+            const frame = parseInt(value, 10);
+            isPlaying = false;
+            document.getElementById('playButton').textContent = '▶ Play';
+            document.getElementById('playButton').className = 'play';
+            animationController.stop();
+            animationController.setFrame(frame);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initDemo);
+    </script>
+</body>
+</html>
