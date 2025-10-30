@@ -559,6 +559,21 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('centerX + cos(t * 5) * radius')">
                     <strong>Orbit:</strong> centerX + cos(t * 5) * radius
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('random(50, 750)')">
+                    <strong>Random position:</strong> random(50, 750)
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('200 + sin(t * pi / 30) * 100')">
+                    <strong>Use pi constant:</strong> 200 + sin(t * pi / 30) * 100
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('pow(2, t / 10) + 100')">
+                    <strong>Exponential growth:</strong> pow(2, t / 10) + 100
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('mod(t * 10, 400) + 100')">
+                    <strong>Repeating pattern:</strong> mod(t * 10, 400) + 100
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('atan2(bouncer.y - mover.y, bouncer.x - mover.x)')">
+                    <strong>Point from A to B:</strong> atan2(bouncer.y - mover.y, bouncer.x - mover.x)
+                </div>
             </div>
         </div>
 
@@ -566,11 +581,12 @@
             <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
+                <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
-                <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round<br>
+                <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
                 <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
                 <strong>Collision:</strong> overlaps(obj1, obj2) - returns 1 if colliding<br>
-                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp
+                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2
             </div>
         </div>
 
@@ -610,6 +626,10 @@
                 if (this.name === 't') {
                     return context.time;
                 }
+
+                // Built-in constants
+                if (this.name === 'pi') return Math.PI;
+                if (this.name === 'e') return Math.E;
 
                 // Check user-defined variables
                 if (userVariables.has(this.name)) {
@@ -690,6 +710,48 @@
                         const values = this.args.map(arg => arg.evaluate(context));
                         if (values.length === 3) {
                             return values[0] + (values[1] - values[0]) * values[2];
+                        }
+                        return 0;
+                    }
+                    case 'random': {
+                        // random() or random(max) or random(min, max)
+                        const values = this.args.map(arg => arg.evaluate(context));
+
+                        // Seeded random using context.time for determinism
+                        const seed = randomSeed + context.time;
+                        const x = Math.sin(seed) * 10000;
+                        const rand = x - Math.floor(x);
+
+                        if (values.length === 0) {
+                            return rand;  // 0 to 1
+                        } else if (values.length === 1) {
+                            return rand * values[0];  // 0 to max
+                        } else if (values.length === 2) {
+                            return values[0] + rand * (values[1] - values[0]);  // min to max
+                        }
+                        return 0;
+                    }
+                    case 'mod': {
+                        // mod(value, divisor) - modulo operation
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 2) {
+                            return ((values[0] % values[1]) + values[1]) % values[1];  // Always positive
+                        }
+                        return 0;
+                    }
+                    case 'pow': {
+                        // pow(base, exponent)
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 2) {
+                            return Math.pow(values[0], values[1]);
+                        }
+                        return 0;
+                    }
+                    case 'atan2': {
+                        // atan2(y, x) - angle in degrees
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 2) {
+                            return Math.atan2(values[0], values[1]) * 180 / Math.PI;
                         }
                         return 0;
                     }
@@ -780,9 +842,13 @@
                     case 'not': return value === 0 ? 1 : 0;
                     case 'sqrt': return Math.sqrt(Math.abs(value));
                     case 'ln': return Math.log(value);
+                    case 'log': return Math.log10(value);
+                    case 'exp': return Math.exp(value);
                     case 'floor': return Math.floor(value);
                     case 'ceil': return Math.ceil(value);
                     case 'round': return Math.round(value);
+                    case 'sign': return Math.sign(value);
+                    case 'fract': return value - Math.floor(value);  // Fractional part
                     default: return 0;
                 }
             }
@@ -1000,7 +1066,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'overlaps'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'overlaps'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -1719,6 +1785,134 @@
                         attribute: 'rotation',
                         text: 't * 10',
                         expression: starRot.success ? starRot.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Pentagon with random jitter - demonstrates random() function
+            const pentX = parseEquation('300 + random(-5, 5)');
+            const pentY = parseEquation('150 + random(-5, 5)');
+            const pentRot = parseEquation('t * 2');
+            const pentGreen = parseEquation('150 + random(0, 105)');
+
+            objects.set('pentagon1', {
+                id: 'pentagon1',
+                name: 'Jittery Pentagon',
+                x: 300, y: 150,
+                width: 55, height: 55,
+                rotation: 0,
+                red: 255, green: 200, blue: 100,
+                transparency: 100,
+                appearance: 'pentagon',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: '300 + random(-5, 5)',
+                        expression: pentX.success ? pentX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '150 + random(-5, 5)',
+                        expression: pentY.success ? pentY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * 2',
+                        expression: pentRot.success ? pentRot.expression : null,
+                        cache: new Map()
+                    }],
+                    ['green', {
+                        attribute: 'green',
+                        text: '150 + random(0, 105)',
+                        expression: pentGreen.success ? pentGreen.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Hexagon with modulo looping - demonstrates mod() function
+            const hexX = parseEquation('mod(t * 5, 700) + 50');
+            const hexY = parseEquation('100');
+            const hexBlue = parseEquation('mod(t * 10, 255)');
+
+            objects.set('hexagon1', {
+                id: 'hexagon1',
+                name: 'Looping Hexagon',
+                x: 50, y: 100,
+                width: 50, height: 50,
+                rotation: 0,
+                red: 255, green: 100, blue: 150,
+                transparency: 100,
+                appearance: 'hexagon',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'mod(t * 5, 700) + 50',
+                        expression: hexX.success ? hexX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '100',
+                        expression: hexY.success ? hexY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['blue', {
+                        attribute: 'blue',
+                        text: 'mod(t * 10, 255)',
+                        expression: hexBlue.success ? hexBlue.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Circle with exponential scaling - demonstrates pow() and pi constant
+            const expX = parseEquation('650');
+            const expY = parseEquation('450');
+            const expWidth = parseEquation('20 + pow(1.05, t / 5)');
+            const expRot = parseEquation('t * pi');
+
+            objects.set('expCircle', {
+                id: 'expCircle',
+                name: 'Growing Circle',
+                x: 650, y: 450,
+                width: 40, height: 40,
+                rotation: 0,
+                red: 100, green: 200, blue: 255,
+                transparency: 100,
+                appearance: 'circle',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: '650',
+                        expression: expX.success ? expX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '450',
+                        expression: expY.success ? expY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['width', {
+                        attribute: 'width',
+                        text: '20 + pow(1.05, t / 5)',
+                        expression: expWidth.success ? expWidth.expression : null,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * pi',
+                        expression: expRot.success ? expRot.expression : null,
                         cache: new Map()
                     }]
                 ])
