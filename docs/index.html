@@ -74,6 +74,7 @@
             border-radius: 8px;
             background: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
         }
 
         .controls {
@@ -134,11 +135,28 @@
             background: #c82333;
         }
 
+        button.danger {
+            background: #dc3545;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        button.danger:hover {
+            background: #c82333;
+        }
+
+        button.success {
+            background: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        button.success:hover {
+            background: #218838;
+        }
+
         .frame-control {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-left: auto;
             background: #f8f9fa;
             padding: 10px 15px;
             border-radius: 6px;
@@ -159,6 +177,60 @@
 
         .frame-control input[type="range"] {
             width: 200px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff3cd;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+
+        .speed-control label {
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .speed-control input[type="range"] {
+            width: 120px;
+        }
+
+        .speed-control span {
+            font-weight: 600;
+            color: #856404;
+            min-width: 40px;
+        }
+
+        .object-management {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .object-management h3 {
+            margin: 0 0 10px 0;
+            color: #155724;
+            font-size: 16px;
+        }
+
+        .object-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        #selectedObjectInfo {
+            color: #155724;
+            font-weight: 600;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
         }
 
         .stats {
@@ -193,6 +265,39 @@
             font-weight: 600;
         }
 
+        .shortcuts {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bee5eb;
+            margin-top: 15px;
+        }
+
+        .shortcuts h4 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+            font-size: 16px;
+        }
+
+        .shortcuts ul {
+            margin-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .shortcuts li {
+            margin: 5px 0;
+            color: #0c5460;
+        }
+
+        .shortcuts kbd {
+            background: #0c5460;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
         .github-link {
             text-align: center;
             margin-top: 20px;
@@ -209,15 +314,52 @@
         .github-link a:hover {
             text-decoration: underline;
         }
+
+        .create-object-form {
+            display: none;
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .create-object-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: inline-block;
+            width: 100px;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 150px;
+        }
+
+        .form-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 MoPiX Modern - Proof of Concept</h1>
+        <h1>🎨 MoPiX Modern - Enhanced PoC</h1>
         <p class="subtitle">Reimagining MoPiX 2 with modern web technologies</p>
 
         <div class="info-box">
-            <h2>Demo Objects</h2>
+            <h2>Demo Objects (Click to Select)</h2>
             <ul>
                 <li><strong>Red Square (Mover):</strong> x = t × 2 + 100 <em>(moves horizontally)</em></li>
                 <li><strong>Blue Circle (Bouncer):</strong> y = sin(t × 10) × 100 + 300 <em>(bounces vertically)</em></li>
@@ -241,17 +383,78 @@
             </div>
         </div>
 
+        <div class="controls">
+            <div class="speed-control">
+                <label for="speedSlider">Speed:</label>
+                <input type="range" id="speedSlider" min="1" max="60" value="30" oninput="updateSpeed(this.value)">
+                <span id="speedDisplay">30 fps</span>
+            </div>
+        </div>
+
+        <div class="object-management">
+            <h3>🎯 Object Management</h3>
+            <div class="object-controls">
+                <span id="selectedObjectInfo">No object selected (click an object)</span>
+                <button class="danger" onclick="deleteSelectedObject()" id="deleteButton" disabled>🗑️ Delete Selected</button>
+                <button class="success" onclick="toggleCreateForm()">➕ Create Object</button>
+            </div>
+
+            <div id="createObjectForm" class="create-object-form">
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="newObjectName" value="MyObject" />
+                </div>
+                <div class="form-group">
+                    <label>Shape:</label>
+                    <select id="newObjectShape">
+                        <option value="square">Square</option>
+                        <option value="circle">Circle</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>X:</label>
+                    <input type="number" id="newObjectX" value="300" />
+                </div>
+                <div class="form-group">
+                    <label>Y:</label>
+                    <input type="number" id="newObjectY" value="300" />
+                </div>
+                <div class="form-group">
+                    <label>Size:</label>
+                    <input type="number" id="newObjectSize" value="60" />
+                </div>
+                <div class="form-buttons">
+                    <button class="success" onclick="createObject()">Create</button>
+                    <button class="secondary" onclick="toggleCreateForm()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <div class="stats">
             <h3>✨ What This Demonstrates</h3>
             <ul>
-                <li>✅ <strong>Expression Evaluation Engine:</strong> Arithmetic, trigonometric, and logical operators</li>
-                <li>✅ <strong>Canvas Rendering:</strong> HTML5 Canvas API for shapes with rotation and transparency</li>
-                <li>✅ <strong>Animation System:</strong> Frame-accurate animation using requestAnimationFrame</li>
-                <li>✅ <strong>Caching:</strong> Expression results cached per frame for performance</li>
-                <li>✅ <strong>Vanilla JavaScript:</strong> No build tools, no dependencies - just open and run!</li>
+                <li>✅ <strong>20+ Operators:</strong> Arithmetic, trigonometric, logical, comparison</li>
+                <li>✅ <strong>Interactive Selection:</strong> Click objects to select them</li>
+                <li>✅ <strong>Object Management:</strong> Create and delete objects dynamically</li>
+                <li>✅ <strong>Variable Speed:</strong> Adjust animation speed (1-60 fps)</li>
+                <li>✅ <strong>Keyboard Shortcuts:</strong> Space, arrows, Delete key</li>
+                <li>✅ <strong>Canvas Rendering:</strong> HTML5 Canvas with rotation and transparency</li>
+                <li>✅ <strong>Vanilla JavaScript:</strong> No build tools, no dependencies!</li>
             </ul>
+
+            <div class="shortcuts">
+                <h4>⌨️ Keyboard Shortcuts</h4>
+                <ul>
+                    <li><kbd>Space</kbd> - Play/Pause</li>
+                    <li><kbd>→</kbd> - Step Forward</li>
+                    <li><kbd>←</kbd> - Step Backward</li>
+                    <li><kbd>Home</kbd> - Reset to frame 0</li>
+                    <li><kbd>Delete</kbd> - Delete selected object</li>
+                </ul>
+            </div>
+
             <p>
-                <strong>Bundle Size:</strong> Single 20KB HTML file (vs 1-2MB for GWT) |
+                <strong>Bundle Size:</strong> Single 30KB HTML file (vs 1-2MB for GWT) |
                 <strong>Build Time:</strong> Zero! |
                 <strong>Dependencies:</strong> None!
             </p>
@@ -309,11 +512,26 @@
                 const rightValue = this.right.evaluate(context);
 
                 switch (this.operator) {
+                    // Arithmetic
                     case '+': return leftValue + rightValue;
                     case '-': return leftValue - rightValue;
                     case '*': return leftValue * rightValue;
                     case '/': return rightValue !== 0 ? leftValue / rightValue : 0;
                     case '^': return Math.pow(leftValue, rightValue);
+                    case 'rem': return leftValue % rightValue;
+
+                    // Logical (return 1 for true, 0 for false)
+                    case 'and': return (leftValue !== 0 && rightValue !== 0) ? 1 : 0;
+                    case 'or': return (leftValue !== 0 || rightValue !== 0) ? 1 : 0;
+
+                    // Comparison
+                    case '==': return leftValue === rightValue ? 1 : 0;
+                    case '!=': return leftValue !== rightValue ? 1 : 0;
+                    case '<': return leftValue < rightValue ? 1 : 0;
+                    case '>': return leftValue > rightValue ? 1 : 0;
+                    case '<=': return leftValue <= rightValue ? 1 : 0;
+                    case '>=': return leftValue >= rightValue ? 1 : 0;
+
                     default: return 0;
                 }
             }
@@ -332,9 +550,27 @@
                 switch (this.operator) {
                     case '-': return -value;
                     case 'abs': return Math.abs(value);
+
+                    // Trigonometric (degrees)
                     case 'sin': return Math.sin((value * Math.PI) / 180);
                     case 'cos': return Math.cos((value * Math.PI) / 180);
                     case 'tan': return Math.tan((value * Math.PI) / 180);
+
+                    // Inverse trig (returns degrees)
+                    case 'asin': return (Math.asin(value) * 180) / Math.PI;
+                    case 'acos': return (Math.acos(value) * 180) / Math.PI;
+                    case 'atan': return (Math.atan(value) * 180) / Math.PI;
+
+                    // Logical
+                    case 'not': return value === 0 ? 1 : 0;
+
+                    // Math functions
+                    case 'sqrt': return Math.sqrt(Math.abs(value));
+                    case 'ln': return Math.log(value);
+                    case 'floor': return Math.floor(value);
+                    case 'ceil': return Math.ceil(value);
+                    case 'round': return Math.round(value);
+
                     default: return 0;
                 }
             }
@@ -409,7 +645,7 @@
                 this.ctx.restore();
             }
 
-            renderObject(obj) {
+            renderObject(obj, isSelected = false) {
                 this.ctx.save();
 
                 this.ctx.translate(obj.x, obj.y);
@@ -418,6 +654,31 @@
                 const alpha = obj.transparency / 100;
                 this.ctx.fillStyle = `rgba(${obj.red}, ${obj.green}, ${obj.blue}, ${alpha})`;
 
+                // Draw selection highlight
+                if (isSelected) {
+                    this.ctx.strokeStyle = '#FFD700';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.setLineDash([5, 5]);
+
+                    switch (obj.appearance) {
+                        case 'square':
+                            this.ctx.strokeRect(
+                                -obj.width / 2 - 5,
+                                -obj.height / 2 - 5,
+                                obj.width + 10,
+                                obj.height + 10
+                            );
+                            break;
+                        case 'circle':
+                            this.ctx.beginPath();
+                            this.ctx.ellipse(0, 0, obj.width / 2 + 5, obj.height / 2 + 5, 0, 0, 2 * Math.PI);
+                            this.ctx.stroke();
+                            break;
+                    }
+                    this.ctx.setLineDash([]);
+                }
+
+                // Draw shape
                 switch (obj.appearance) {
                     case 'square':
                         this.ctx.fillRect(
@@ -438,10 +699,10 @@
                 this.ctx.restore();
             }
 
-            renderScene(objects) {
+            renderScene(objects, selectedId = null) {
                 this.clear();
                 this.drawGrid();
-                objects.forEach(obj => this.renderObject(obj));
+                objects.forEach(obj => this.renderObject(obj, obj.id === selectedId));
             }
         }
 
@@ -450,10 +711,16 @@
         class AnimationController {
             constructor(onFrame, fps = 30) {
                 this.onFrame = onFrame;
+                this.fps = fps;
                 this.frameDuration = 1000 / fps;
                 this.animationFrameId = null;
                 this.lastFrameTime = 0;
                 this.currentFrame = 0;
+            }
+
+            setFPS(fps) {
+                this.fps = fps;
+                this.frameDuration = 1000 / fps;
             }
 
             start() {
@@ -510,6 +777,8 @@
 
         let canvas, renderer, animationController, objects;
         let isPlaying = false;
+        let selectedObjectId = null;
+        let nextObjectId = 1;
 
         function initDemo() {
             canvas = document.getElementById('canvas');
@@ -518,7 +787,7 @@
             // Create demo objects
             objects = new Map();
 
-            // Object 1: Moving horizontally - x = t * 2 + 100
+            // Object 1: Moving horizontally
             objects.set('mover', {
                 id: 'mover',
                 name: 'Mover',
@@ -545,7 +814,7 @@
                 ])
             });
 
-            // Object 2: Bouncing vertically - y = sin(t * 10) * 100 + 300
+            // Object 2: Bouncing vertically
             objects.set('bouncer', {
                 id: 'bouncer',
                 name: 'Bouncer',
@@ -579,7 +848,7 @@
                 ])
             });
 
-            // Object 3: Rotating - rotation = t * 5
+            // Object 3: Rotating
             objects.set('spinner', {
                 id: 'spinner',
                 name: 'Spinner',
@@ -602,7 +871,7 @@
                 ])
             });
 
-            // Object 4: Color changing - red = 128 + sin(t * 6) * 127
+            // Object 4: Color changing
             objects.set('colorChanger', {
                 id: 'colorChanger',
                 name: 'ColorChanger',
@@ -642,8 +911,101 @@
                 updateFrameDisplay(frame);
             }, 30);
 
+            // Add canvas click handler
+            canvas.addEventListener('click', handleCanvasClick);
+
+            // Add keyboard handlers
+            document.addEventListener('keydown', handleKeyDown);
+
             // Initial render
             renderFrame(0);
+        }
+
+        function handleCanvasClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Check which object was clicked (in reverse order for proper z-index)
+            const objectsArray = Array.from(objects.values()).reverse();
+
+            for (const obj of objectsArray) {
+                const currentFrame = animationController.currentFrame;
+                const updated = updateObjectAtTime(obj, currentFrame, objects);
+
+                // Simple bounding box check
+                const dx = x - updated.x;
+                const dy = y - updated.y;
+
+                // Rotate point back for hit testing
+                const angle = -updated.rotation * Math.PI / 180;
+                const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
+                const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+                let hit = false;
+                if (updated.appearance === 'square') {
+                    hit = Math.abs(rotatedX) <= updated.width / 2 &&
+                          Math.abs(rotatedY) <= updated.height / 2;
+                } else if (updated.appearance === 'circle') {
+                    const normalizedX = rotatedX / (updated.width / 2);
+                    const normalizedY = rotatedY / (updated.height / 2);
+                    hit = (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
+                }
+
+                if (hit) {
+                    selectedObjectId = obj.id;
+                    updateSelectedObjectDisplay();
+                    renderFrame(currentFrame);
+                    return;
+                }
+            }
+
+            // No object clicked
+            selectedObjectId = null;
+            updateSelectedObjectDisplay();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function handleKeyDown(event) {
+            // Ignore if typing in input field
+            if (event.target.tagName === 'INPUT') return;
+
+            switch(event.key) {
+                case ' ':
+                    event.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    stepForward();
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    stepBackward();
+                    break;
+                case 'Home':
+                    event.preventDefault();
+                    resetAnimation();
+                    break;
+                case 'Delete':
+                    event.preventDefault();
+                    deleteSelectedObject();
+                    break;
+            }
+        }
+
+        function updateSelectedObjectDisplay() {
+            const info = document.getElementById('selectedObjectInfo');
+            const deleteBtn = document.getElementById('deleteButton');
+
+            if (selectedObjectId) {
+                const obj = objects.get(selectedObjectId);
+                info.textContent = `Selected: ${obj.name} (${obj.appearance})`;
+                deleteBtn.disabled = false;
+            } else {
+                info.textContent = 'No object selected (click an object)';
+                deleteBtn.disabled = true;
+            }
         }
 
         function renderFrame(frame) {
@@ -651,12 +1013,18 @@
             const updatedObjects = objectsArray.map(obj =>
                 updateObjectAtTime(obj, frame, objects)
             );
-            renderer.renderScene(updatedObjects);
+            renderer.renderScene(updatedObjects, selectedObjectId);
         }
 
         function updateFrameDisplay(frame) {
             document.getElementById('frameInput').value = frame;
             document.getElementById('frameSlider').value = frame;
+        }
+
+        function updateSpeed(value) {
+            const fps = parseInt(value);
+            animationController.setFPS(fps);
+            document.getElementById('speedDisplay').textContent = `${fps} fps`;
         }
 
         function togglePlay() {
@@ -707,6 +1075,65 @@
             document.getElementById('playButton').className = 'play';
             animationController.stop();
             animationController.setFrame(frame);
+        }
+
+        function deleteSelectedObject() {
+            if (!selectedObjectId) return;
+
+            if (objects.size <= 1) {
+                alert('Cannot delete the last object!');
+                return;
+            }
+
+            if (confirm(`Delete object "${objects.get(selectedObjectId).name}"?`)) {
+                objects.delete(selectedObjectId);
+                selectedObjectId = null;
+                updateSelectedObjectDisplay();
+                renderFrame(animationController.currentFrame);
+            }
+        }
+
+        function toggleCreateForm() {
+            const form = document.getElementById('createObjectForm');
+            form.classList.toggle('active');
+        }
+
+        function createObject() {
+            const name = document.getElementById('newObjectName').value || 'Object';
+            const shape = document.getElementById('newObjectShape').value;
+            const x = parseInt(document.getElementById('newObjectX').value) || 300;
+            const y = parseInt(document.getElementById('newObjectY').value) || 300;
+            const size = parseInt(document.getElementById('newObjectSize').value) || 60;
+
+            const id = 'obj' + nextObjectId++;
+
+            const newObj = {
+                id: id,
+                name: name,
+                x: x,
+                y: y,
+                width: size,
+                height: size,
+                rotation: 0,
+                red: Math.floor(Math.random() * 256),
+                green: Math.floor(Math.random() * 256),
+                blue: Math.floor(Math.random() * 256),
+                transparency: 100,
+                appearance: shape,
+                equations: new Map()
+            };
+
+            objects.set(id, newObj);
+            selectedObjectId = id;
+            updateSelectedObjectDisplay();
+            renderFrame(animationController.currentFrame);
+            toggleCreateForm();
+
+            // Reset form
+            document.getElementById('newObjectName').value = 'MyObject';
+            document.getElementById('newObjectX').value = '300';
+            document.getElementById('newObjectY').value = '300';
+            document.getElementById('newObjectSize').value = '60';
         }
 
         // Initialize on page load
