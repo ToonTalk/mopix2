@@ -513,14 +513,17 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('sin(t * 10) * 100 + 300')">
                     <strong>Sine wave:</strong> sin(t * 10) * 100 + 300
                 </div>
-                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('cos(t * 5) * 150 + 400')">
-                    <strong>Cosine wave:</strong> cos(t * 5) * 150 + 400
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('bouncer.x + 50')">
+                    <strong>Follow object:</strong> bouncer.x + 50
                 </div>
-                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('t * 5')">
-                    <strong>Rotation:</strong> t * 5
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('dist(bouncer.x, bouncer.y, mover.x, mover.y)')">
+                    <strong>Distance:</strong> dist(bouncer.x, bouncer.y, mover.x, mover.y)
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('angle(bouncer.x, bouncer.y, mover.x, mover.y)')">
+                    <strong>Point at object:</strong> angle(bouncer.x, bouncer.y, mover.x, mover.y)
                 </div>
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('128 + sin(t * 6) * 127')">
-                    <strong>Color oscillation:</strong> 128 + sin(t * 6) * 127
+                    <strong>Color pulse:</strong> 128 + sin(t * 6) * 127
                 </div>
             </div>
         </div>
@@ -528,9 +531,10 @@
         <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #b3d7ff;">
             <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
-                <strong>Variable:</strong> t (time/frame)<br>
+                <strong>Variables:</strong> t (time), <em>objectId.property</em> (e.g., mover.x)<br>
                 <strong>Operators:</strong> + - * / ^ (power)<br>
-                <strong>Functions:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round
+                <strong>Functions:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round<br>
+                <strong>Multi-arg:</strong> dist(x1,y1,x2,y2), angle(x1,y1,x2,y2), min(...), max(...)
             </div>
         </div>
 
@@ -570,7 +574,61 @@
                 if (this.name === 't') {
                     return context.time;
                 }
+
+                // Handle object property references (e.g., "bouncer.x")
+                if (this.name.includes('.')) {
+                    const [objectId, property] = this.name.split('.');
+                    const targetObj = context.allObjects.get(objectId);
+
+                    if (targetObj) {
+                        // Evaluate the target object at the same time
+                        const updated = updateObjectAtTime(targetObj, context.time, context.allObjects);
+                        return updated[property] || 0;
+                    }
+                }
+
                 return 0;
+            }
+        }
+
+        class MultiFunctionExpression extends Expression {
+            constructor(functionName, args) {
+                super();
+                this.functionName = functionName;
+                this.args = args;
+            }
+
+            evaluate(context) {
+                const values = this.args.map(arg => arg.evaluate(context));
+
+                switch (this.functionName) {
+                    case 'dist': {
+                        // dist(x1, y1, x2, y2)
+                        if (values.length === 4) {
+                            const dx = values[2] - values[0];
+                            const dy = values[3] - values[1];
+                            return Math.sqrt(dx * dx + dy * dy);
+                        }
+                        return 0;
+                    }
+                    case 'angle': {
+                        // angle(x1, y1, x2, y2) - angle in degrees from point 1 to point 2
+                        if (values.length === 4) {
+                            const dx = values[2] - values[0];
+                            const dy = values[3] - values[1];
+                            return Math.atan2(dy, dx) * 180 / Math.PI;
+                        }
+                        return 0;
+                    }
+                    case 'min': {
+                        return Math.min(...values);
+                    }
+                    case 'max': {
+                        return Math.max(...values);
+                    }
+                    default:
+                        return 0;
+                }
             }
         }
 
@@ -683,7 +741,10 @@
                 while (this.position < this.input.length) {
                     const ch = this.peek();
 
-                    if (this.isDigit(ch) || ch === '.') {
+                    if (this.isDigit(ch)) {
+                        tokens.push(this.readNumber());
+                    } else if (ch === '.' && this.position + 1 < this.input.length && this.isDigit(this.input[this.position + 1])) {
+                        // Decimal number starting with .
                         tokens.push(this.readNumber());
                     } else if (this.isLetter(ch)) {
                         tokens.push(this.readIdentifier());
@@ -731,7 +792,8 @@
 
             readIdentifier() {
                 let id = '';
-                while (this.position < this.input.length && this.isLetter(this.peek())) {
+                while (this.position < this.input.length &&
+                       (this.isLetter(this.peek()) || this.peek() === '.')) {
                     id += this.advance();
                 }
                 return new Token('IDENTIFIER', id.toLowerCase());
@@ -835,12 +897,29 @@
                     // Check if it's a function call
                     if (this.peek().type === 'LPAREN') {
                         this.advance(); // consume (
-                        const arg = this.parseExpression();
-                        this.expect('RPAREN');
-                        return new UnaryOperatorExpression(id.value, arg);
+
+                        // Check for multi-argument functions
+                        const multiFuncs = ['dist', 'angle', 'min', 'max'];
+                        if (multiFuncs.includes(id.value)) {
+                            const args = [];
+                            if (this.peek().type !== 'RPAREN') {
+                                args.push(this.parseExpression());
+                                while (this.peek().type === 'COMMA') {
+                                    this.advance(); // consume comma
+                                    args.push(this.parseExpression());
+                                }
+                            }
+                            this.expect('RPAREN');
+                            return new MultiFunctionExpression(id.value, args);
+                        } else {
+                            // Single argument function
+                            const arg = this.parseExpression();
+                            this.expect('RPAREN');
+                            return new UnaryOperatorExpression(id.value, arg);
+                        }
                     }
 
-                    // It's a variable (like 't')
+                    // It's a variable (like 't' or 'bouncer.x')
                     return new VariableExpression(id.value);
                 }
 
@@ -1303,6 +1382,44 @@
                                 new ConstantExpression(127)
                             )
                         ),
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Follower object - demonstrates object interactions
+            const followerX = parseEquation('bouncer.x + 80');
+            const followerY = parseEquation('bouncer.y + 0');
+            const followerRot = parseEquation('angle(bouncer.x, bouncer.y, mover.x, mover.y)');
+
+            objects.set('follower', {
+                id: 'follower',
+                name: 'Follower',
+                x: 480, y: 300,
+                width: 40, height: 40,
+                rotation: 0,
+                red: 255, green: 200, blue: 50,
+                transparency: 100,
+                appearance: 'square',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'bouncer.x + 80',
+                        expression: followerX.expression,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'bouncer.y + 0',
+                        expression: followerY.expression,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 'angle(bouncer.x, bouncer.y, mover.x, mover.y)',
+                        expression: followerRot.expression,
                         cache: new Map()
                     }]
                 ])
