@@ -793,6 +793,13 @@
             if (equation.cache.has(time)) {
                 return equation.cache.get(time);
             }
+
+            // Safety check for null expression
+            if (!equation.expression) {
+                console.error('Null expression in equation:', equation);
+                return 0;
+            }
+
             const result = equation.expression.evaluate(context);
             equation.cache.set(time, result);
             return result;
@@ -1471,6 +1478,11 @@
         let dragOffsetY = 0;
         let isShiftPressed = false;
         let userVariables = new Map(); // User-defined variables
+        let randomSeed = 12345; // For deterministic random
+        let camera = { x: 0, y: 0, zoom: 1 }; // Camera transform
+        let isPanning = false;
+        let lastPanX = 0;
+        let lastPanY = 0;
         const GRID_SIZE = 25;
 
         function initDemo() {
@@ -1667,6 +1679,12 @@
             const starRed = parseEquation('if(overlaps(star, bouncer), 255, 50)');
             const starRot = parseEquation('t * 10');
 
+            // Debug: Log parsing results
+            if (!starX.success) console.error('Failed to parse starX:', starX.error);
+            if (!starY.success) console.error('Failed to parse starY:', starY.error);
+            if (!starRed.success) console.error('Failed to parse starRed:', starRed.error);
+            if (!starRot.success) console.error('Failed to parse starRot:', starRot.error);
+
             objects.set('star', {
                 id: 'star',
                 name: 'Collision Star',
@@ -1682,25 +1700,25 @@
                     ['x', {
                         attribute: 'x',
                         text: 'centerX + cos(t * speed) * radius',
-                        expression: starX.expression,
+                        expression: starX.success ? starX.expression : null,
                         cache: new Map()
                     }],
                     ['y', {
                         attribute: 'y',
                         text: 'centerY + sin(t * speed) * radius',
-                        expression: starY.expression,
+                        expression: starY.success ? starY.expression : null,
                         cache: new Map()
                     }],
                     ['red', {
                         attribute: 'red',
                         text: 'if(overlaps(star, bouncer), 255, 50)',
-                        expression: starRed.expression,
+                        expression: starRed.success ? starRed.expression : null,
                         cache: new Map()
                     }],
                     ['rotation', {
                         attribute: 'rotation',
                         text: 't * 10',
-                        expression: starRot.expression,
+                        expression: starRot.success ? starRot.expression : null,
                         cache: new Map()
                     }]
                 ])
