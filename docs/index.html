@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoPiX Modern - Proof of Concept</title>
+    <title>MoPiX Modern - Enhanced Demo</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -74,7 +74,11 @@
             border-radius: 8px;
             background: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            cursor: pointer;
+            cursor: crosshair;
+        }
+
+        canvas.dragging {
+            cursor: move;
         }
 
         .controls {
@@ -108,12 +112,18 @@
             transform: translateY(0);
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         button.secondary {
             background: #6c757d;
             box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
         }
 
-        button.secondary:hover {
+        button.secondary:hover:not(:disabled) {
             background: #5a6268;
         }
 
@@ -140,7 +150,7 @@
             box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
 
-        button.danger:hover {
+        button.danger:hover:not(:disabled) {
             background: #c82333;
         }
 
@@ -151,6 +161,16 @@
 
         button.success:hover {
             background: #218838;
+        }
+
+        button.warning {
+            background: #ffc107;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        button.warning:hover {
+            background: #e0a800;
         }
 
         .frame-control {
@@ -231,6 +251,21 @@
             background: white;
             border-radius: 4px;
             border: 1px solid #c3e6cb;
+            flex-grow: 1;
+        }
+
+        .persistence-controls {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #bee5eb;
+        }
+
+        .persistence-controls h3 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+            font-size: 16px;
         }
 
         .stats {
@@ -266,16 +301,16 @@
         }
 
         .shortcuts {
-            background: #d1ecf1;
+            background: #e7f3ff;
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid #bee5eb;
+            border: 1px solid #b3d7ff;
             margin-top: 15px;
         }
 
         .shortcuts h4 {
             margin: 0 0 10px 0;
-            color: #0c5460;
+            color: #004085;
             font-size: 16px;
         }
 
@@ -286,11 +321,11 @@
 
         .shortcuts li {
             margin: 5px 0;
-            color: #0c5460;
+            color: #004085;
         }
 
         .shortcuts kbd {
-            background: #0c5460;
+            background: #004085;
             color: white;
             padding: 2px 6px;
             border-radius: 3px;
@@ -351,20 +386,39 @@
             display: flex;
             gap: 10px;
         }
+
+        .pen-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .pen-indicator.pen-down {
+            background: #28a745;
+            color: white;
+        }
+
+        .pen-indicator.pen-up {
+            background: #6c757d;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 MoPiX Modern - Enhanced PoC</h1>
-        <p class="subtitle">Reimagining MoPiX 2 with modern web technologies</p>
+        <h1>🎨 MoPiX Modern - Enhanced Demo</h1>
+        <p class="subtitle">Full-featured visual programming with trails, dragging, and persistence</p>
 
         <div class="info-box">
-            <h2>Demo Objects (Click to Select)</h2>
+            <h2>Interactive Demo (Click, Drag, Draw Trails)</h2>
             <ul>
-                <li><strong>Red Square (Mover):</strong> x = t × 2 + 100 <em>(moves horizontally)</em></li>
-                <li><strong>Blue Circle (Bouncer):</strong> y = sin(t × 10) × 100 + 300 <em>(bounces vertically)</em></li>
-                <li><strong>Green Rectangle (Spinner):</strong> rotation = t × 5 <em>(rotates)</em></li>
-                <li><strong>Color-Changing Circle:</strong> red = 128 + sin(t × 6) × 127 <em>(pulses red)</em></li>
+                <li><strong>Click</strong> objects to select them</li>
+                <li><strong>Drag</strong> selected objects to reposition</li>
+                <li><strong>Toggle Pen</strong> to enable trail drawing</li>
+                <li><strong>Create</strong> new objects with equations or static placement</li>
             </ul>
         </div>
 
@@ -389,13 +443,15 @@
                 <input type="range" id="speedSlider" min="1" max="60" value="30" oninput="updateSpeed(this.value)">
                 <span id="speedDisplay">30 fps</span>
             </div>
+            <button class="warning" onclick="clearAllTrails()">🧹 Clear Trails</button>
         </div>
 
         <div class="object-management">
             <h3>🎯 Object Management</h3>
             <div class="object-controls">
-                <span id="selectedObjectInfo">No object selected (click an object)</span>
-                <button class="danger" onclick="deleteSelectedObject()" id="deleteButton" disabled>🗑️ Delete Selected</button>
+                <span id="selectedObjectInfo">No object selected</span>
+                <button class="secondary" onclick="togglePen()" id="penButton" disabled>✏️ Toggle Pen</button>
+                <button class="danger" onclick="deleteSelectedObject()" id="deleteButton" disabled>🗑️ Delete</button>
                 <button class="success" onclick="toggleCreateForm()">➕ Create Object</button>
             </div>
 
@@ -409,6 +465,7 @@
                     <select id="newObjectShape">
                         <option value="square">Square</option>
                         <option value="circle">Circle</option>
+                        <option value="text">Text/Label</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -423,6 +480,10 @@
                     <label>Size:</label>
                     <input type="number" id="newObjectSize" value="60" />
                 </div>
+                <div class="form-group">
+                    <label>Text:</label>
+                    <input type="text" id="newObjectText" value="Hello" placeholder="For text shape" />
+                </div>
                 <div class="form-buttons">
                     <button class="success" onclick="createObject()">Create</button>
                     <button class="secondary" onclick="toggleCreateForm()">Cancel</button>
@@ -430,16 +491,28 @@
             </div>
         </div>
 
+        <div class="persistence-controls">
+            <h3>💾 Save & Load</h3>
+            <div class="object-controls">
+                <button class="success" onclick="saveToLocalStorage()">💾 Save to Browser</button>
+                <button class="secondary" onclick="loadFromLocalStorage()">📂 Load from Browser</button>
+                <button class="secondary" onclick="exportToFile()">📥 Export JSON</button>
+                <button class="secondary" onclick="importFromFile()">📤 Import JSON</button>
+                <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+            </div>
+        </div>
+
         <div class="stats">
-            <h3>✨ What This Demonstrates</h3>
+            <h3>✨ New Features Added</h3>
             <ul>
-                <li>✅ <strong>20+ Operators:</strong> Arithmetic, trigonometric, logical, comparison</li>
-                <li>✅ <strong>Interactive Selection:</strong> Click objects to select them</li>
-                <li>✅ <strong>Object Management:</strong> Create and delete objects dynamically</li>
-                <li>✅ <strong>Variable Speed:</strong> Adjust animation speed (1-60 fps)</li>
-                <li>✅ <strong>Keyboard Shortcuts:</strong> Space, arrows, Delete key</li>
-                <li>✅ <strong>Canvas Rendering:</strong> HTML5 Canvas with rotation and transparency</li>
-                <li>✅ <strong>Vanilla JavaScript:</strong> No build tools, no dependencies!</li>
+                <li>✅ <strong>Trail Drawing:</strong> Toggle pen to draw paths as objects move</li>
+                <li>✅ <strong>Direct Manipulation:</strong> Drag selected objects to reposition them</li>
+                <li>✅ <strong>Text/Labels:</strong> Add text objects with custom messages</li>
+                <li>✅ <strong>Save/Load:</strong> Persist projects to browser localStorage</li>
+                <li>✅ <strong>Export/Import:</strong> Share projects as JSON files</li>
+                <li>✅ <strong>Clear Trails:</strong> Remove all drawn trails with one click</li>
+                <li>✅ <strong>20+ Operators:</strong> Full expression evaluation engine</li>
+                <li>✅ <strong>Keyboard Shortcuts:</strong> Space, arrows, Delete, Drag (D key)</li>
             </ul>
 
             <div class="shortcuts">
@@ -450,11 +523,13 @@
                     <li><kbd>←</kbd> - Step Backward</li>
                     <li><kbd>Home</kbd> - Reset to frame 0</li>
                     <li><kbd>Delete</kbd> - Delete selected object</li>
+                    <li><kbd>P</kbd> - Toggle pen for selected object</li>
+                    <li><kbd>Drag</kbd> - Click and drag to move selected object</li>
                 </ul>
             </div>
 
             <p>
-                <strong>Bundle Size:</strong> Single 30KB HTML file (vs 1-2MB for GWT) |
+                <strong>Bundle Size:</strong> Single 50KB HTML file (vs 1-2MB for GWT) |
                 <strong>Build Time:</strong> Zero! |
                 <strong>Dependencies:</strong> None!
             </p>
@@ -512,26 +587,20 @@
                 const rightValue = this.right.evaluate(context);
 
                 switch (this.operator) {
-                    // Arithmetic
                     case '+': return leftValue + rightValue;
                     case '-': return leftValue - rightValue;
                     case '*': return leftValue * rightValue;
                     case '/': return rightValue !== 0 ? leftValue / rightValue : 0;
                     case '^': return Math.pow(leftValue, rightValue);
                     case 'rem': return leftValue % rightValue;
-
-                    // Logical (return 1 for true, 0 for false)
                     case 'and': return (leftValue !== 0 && rightValue !== 0) ? 1 : 0;
                     case 'or': return (leftValue !== 0 || rightValue !== 0) ? 1 : 0;
-
-                    // Comparison
                     case '==': return leftValue === rightValue ? 1 : 0;
                     case '!=': return leftValue !== rightValue ? 1 : 0;
                     case '<': return leftValue < rightValue ? 1 : 0;
                     case '>': return leftValue > rightValue ? 1 : 0;
                     case '<=': return leftValue <= rightValue ? 1 : 0;
                     case '>=': return leftValue >= rightValue ? 1 : 0;
-
                     default: return 0;
                 }
             }
@@ -550,27 +619,18 @@
                 switch (this.operator) {
                     case '-': return -value;
                     case 'abs': return Math.abs(value);
-
-                    // Trigonometric (degrees)
                     case 'sin': return Math.sin((value * Math.PI) / 180);
                     case 'cos': return Math.cos((value * Math.PI) / 180);
                     case 'tan': return Math.tan((value * Math.PI) / 180);
-
-                    // Inverse trig (returns degrees)
                     case 'asin': return (Math.asin(value) * 180) / Math.PI;
                     case 'acos': return (Math.acos(value) * 180) / Math.PI;
                     case 'atan': return (Math.atan(value) * 180) / Math.PI;
-
-                    // Logical
                     case 'not': return value === 0 ? 1 : 0;
-
-                    // Math functions
                     case 'sqrt': return Math.sqrt(Math.abs(value));
                     case 'ln': return Math.log(value);
                     case 'floor': return Math.floor(value);
                     case 'ceil': return Math.ceil(value);
                     case 'round': return Math.round(value);
-
                     default: return 0;
                 }
             }
@@ -578,11 +638,9 @@
 
         function evaluateEquation(equation, context) {
             const time = context.time;
-
             if (equation.cache.has(time)) {
                 return equation.cache.get(time);
             }
-
             const result = equation.expression.evaluate(context);
             equation.cache.set(time, result);
             return result;
@@ -594,7 +652,6 @@
 
             obj.equations.forEach((equation, attribute) => {
                 const value = evaluateEquation(equation, context);
-
                 switch (attribute) {
                     case 'x': updated.x = value; break;
                     case 'y': updated.y = value; break;
@@ -623,7 +680,6 @@
 
             drawGrid(spacing = 50, color = '#e0e0e0') {
                 const { width, height } = this.ctx.canvas;
-
                 this.ctx.save();
                 this.ctx.strokeStyle = color;
                 this.ctx.lineWidth = 1;
@@ -645,16 +701,33 @@
                 this.ctx.restore();
             }
 
+            renderTrails(trails) {
+                trails.forEach(trail => {
+                    if (trail.points.length < 2) return;
+                    this.ctx.save();
+                    this.ctx.strokeStyle = `rgb(${trail.color.r}, ${trail.color.g}, ${trail.color.b})`;
+                    this.ctx.lineWidth = trail.thickness;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(trail.points[0].x, trail.points[0].y);
+                    for (let i = 1; i < trail.points.length; i++) {
+                        this.ctx.lineTo(trail.points[i].x, trail.points[i].y);
+                    }
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                });
+            }
+
             renderObject(obj, isSelected = false) {
                 this.ctx.save();
-
                 this.ctx.translate(obj.x, obj.y);
                 this.ctx.rotate((obj.rotation * Math.PI) / 180);
 
                 const alpha = obj.transparency / 100;
                 this.ctx.fillStyle = `rgba(${obj.red}, ${obj.green}, ${obj.blue}, ${alpha})`;
 
-                // Draw selection highlight
                 if (isSelected) {
                     this.ctx.strokeStyle = '#FFD700';
                     this.ctx.lineWidth = 4;
@@ -662,46 +735,47 @@
 
                     switch (obj.appearance) {
                         case 'square':
-                            this.ctx.strokeRect(
-                                -obj.width / 2 - 5,
-                                -obj.height / 2 - 5,
-                                obj.width + 10,
-                                obj.height + 10
-                            );
+                            this.ctx.strokeRect(-obj.width/2 - 5, -obj.height/2 - 5, obj.width + 10, obj.height + 10);
                             break;
                         case 'circle':
                             this.ctx.beginPath();
-                            this.ctx.ellipse(0, 0, obj.width / 2 + 5, obj.height / 2 + 5, 0, 0, 2 * Math.PI);
+                            this.ctx.ellipse(0, 0, obj.width/2 + 5, obj.height/2 + 5, 0, 0, 2 * Math.PI);
                             this.ctx.stroke();
+                            break;
+                        case 'text':
+                            const metrics = this.ctx.measureText(obj.text || obj.name);
+                            const textWidth = metrics.width;
+                            const textHeight = obj.height;
+                            this.ctx.strokeRect(-textWidth/2 - 5, -textHeight/2 - 5, textWidth + 10, textHeight + 10);
                             break;
                     }
                     this.ctx.setLineDash([]);
                 }
 
-                // Draw shape
                 switch (obj.appearance) {
                     case 'square':
-                        this.ctx.fillRect(
-                            -obj.width / 2,
-                            -obj.height / 2,
-                            obj.width,
-                            obj.height
-                        );
+                        this.ctx.fillRect(-obj.width/2, -obj.height/2, obj.width, obj.height);
                         break;
-
                     case 'circle':
                         this.ctx.beginPath();
-                        this.ctx.ellipse(0, 0, obj.width / 2, obj.height / 2, 0, 0, 2 * Math.PI);
+                        this.ctx.ellipse(0, 0, obj.width/2, obj.height/2, 0, 0, 2 * Math.PI);
                         this.ctx.fill();
+                        break;
+                    case 'text':
+                        this.ctx.font = `${obj.height}px Arial`;
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText(obj.text || obj.name, 0, 0);
                         break;
                 }
 
                 this.ctx.restore();
             }
 
-            renderScene(objects, selectedId = null) {
+            renderScene(objects, trails, selectedId = null) {
                 this.clear();
                 this.drawGrid();
+                this.renderTrails(trails);
                 objects.forEach(obj => this.renderObject(obj, obj.id === selectedId));
             }
         }
@@ -738,13 +812,11 @@
 
             tick(currentTime) {
                 const elapsed = currentTime - this.lastFrameTime;
-
                 if (elapsed >= this.frameDuration) {
                     this.currentFrame++;
                     this.onFrame(this.currentFrame);
                     this.lastFrameTime = currentTime;
                 }
-
                 this.animationFrameId = requestAnimationFrame((time) => this.tick(time));
             }
 
@@ -773,21 +845,79 @@
             }
         }
 
+        // ==================== Trail Manager ====================
+
+        class TrailManager {
+            constructor() {
+                this.trails = new Map(); // objectId -> trail
+                this.lastPositions = new Map(); // objectId -> {x, y, frame}
+            }
+
+            recordPosition(obj, frame) {
+                if (!obj.penDown) {
+                    this.lastPositions.delete(obj.id);
+                    return;
+                }
+
+                const last = this.lastPositions.get(obj.id);
+
+                if (!this.trails.has(obj.id)) {
+                    this.trails.set(obj.id, {
+                        points: [],
+                        color: { r: obj.red, g: obj.green, b: obj.blue },
+                        thickness: 2
+                    });
+                }
+
+                const trail = this.trails.get(obj.id);
+
+                // Only add point if frame is consecutive or first point
+                if (!last || last.frame + 1 === frame) {
+                    trail.points.push({ x: obj.x, y: obj.y });
+                    trail.color = { r: obj.red, g: obj.green, b: obj.blue };
+                } else if (last.frame !== frame) {
+                    // Non-consecutive frame, start new trail segment
+                    trail.points = [{ x: obj.x, y: obj.y }];
+                }
+
+                this.lastPositions.set(obj.id, { x: obj.x, y: obj.y, frame });
+            }
+
+            clearAll() {
+                this.trails.clear();
+                this.lastPositions.clear();
+            }
+
+            clearObject(objectId) {
+                this.trails.delete(objectId);
+                this.lastPositions.delete(objectId);
+            }
+
+            getAllTrails() {
+                return Array.from(this.trails.values());
+            }
+        }
+
         // ==================== Demo Setup ====================
 
-        let canvas, renderer, animationController, objects;
+        let canvas, renderer, animationController, trailManager, objects;
         let isPlaying = false;
         let selectedObjectId = null;
         let nextObjectId = 1;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
 
         function initDemo() {
             canvas = document.getElementById('canvas');
             renderer = new CanvasRenderer(canvas);
+            trailManager = new TrailManager();
 
-            // Create demo objects
             objects = new Map();
 
-            // Object 1: Moving horizontally
+            // Demo objects with pen enabled
             objects.set('mover', {
                 id: 'mover',
                 name: 'Mover',
@@ -797,16 +927,13 @@
                 red: 255, green: 100, blue: 100,
                 transparency: 100,
                 appearance: 'square',
+                penDown: true,
+                text: '',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
-                        expression: new BinaryOperatorExpression(
-                            '+',
-                            new BinaryOperatorExpression(
-                                '*',
-                                new VariableExpression('t'),
-                                new ConstantExpression(2)
-                            ),
+                        expression: new BinaryOperatorExpression('+',
+                            new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(2)),
                             new ConstantExpression(100)
                         ),
                         cache: new Map()
@@ -814,7 +941,6 @@
                 ])
             });
 
-            // Object 2: Bouncing vertically
             objects.set('bouncer', {
                 id: 'bouncer',
                 name: 'Bouncer',
@@ -824,20 +950,15 @@
                 red: 100, green: 200, blue: 255,
                 transparency: 100,
                 appearance: 'circle',
+                penDown: true,
+                text: '',
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        expression: new BinaryOperatorExpression(
-                            '+',
-                            new BinaryOperatorExpression(
-                                '*',
-                                new UnaryOperatorExpression(
-                                    'sin',
-                                    new BinaryOperatorExpression(
-                                        '*',
-                                        new VariableExpression('t'),
-                                        new ConstantExpression(10)
-                                    )
+                        expression: new BinaryOperatorExpression('+',
+                            new BinaryOperatorExpression('*',
+                                new UnaryOperatorExpression('sin',
+                                    new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(10))
                                 ),
                                 new ConstantExpression(100)
                             ),
@@ -848,7 +969,6 @@
                 ])
             });
 
-            // Object 3: Rotating
             objects.set('spinner', {
                 id: 'spinner',
                 name: 'Spinner',
@@ -858,20 +978,17 @@
                 red: 100, green: 255, blue: 100,
                 transparency: 100,
                 appearance: 'square',
+                penDown: false,
+                text: '',
                 equations: new Map([
                     ['rotation', {
                         attribute: 'rotation',
-                        expression: new BinaryOperatorExpression(
-                            '*',
-                            new VariableExpression('t'),
-                            new ConstantExpression(5)
-                        ),
+                        expression: new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(5)),
                         cache: new Map()
                     }]
                 ])
             });
 
-            // Object 4: Color changing
             objects.set('colorChanger', {
                 id: 'colorChanger',
                 name: 'ColorChanger',
@@ -881,21 +998,16 @@
                 red: 128, green: 128, blue: 255,
                 transparency: 100,
                 appearance: 'circle',
+                penDown: false,
+                text: '',
                 equations: new Map([
                     ['red', {
                         attribute: 'red',
-                        expression: new BinaryOperatorExpression(
-                            '+',
+                        expression: new BinaryOperatorExpression('+',
                             new ConstantExpression(128),
-                            new BinaryOperatorExpression(
-                                '*',
-                                new UnaryOperatorExpression(
-                                    'sin',
-                                    new BinaryOperatorExpression(
-                                        '*',
-                                        new VariableExpression('t'),
-                                        new ConstantExpression(6)
-                                    )
+                            new BinaryOperatorExpression('*',
+                                new UnaryOperatorExpression('sin',
+                                    new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(6))
                                 ),
                                 new ConstantExpression(127)
                             )
@@ -905,69 +1017,90 @@
                 ])
             });
 
-            // Create animation controller
             animationController = new AnimationController((frame) => {
                 renderFrame(frame);
                 updateFrameDisplay(frame);
             }, 30);
 
-            // Add canvas click handler
-            canvas.addEventListener('click', handleCanvasClick);
-
-            // Add keyboard handlers
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
             document.addEventListener('keydown', handleKeyDown);
 
-            // Initial render
             renderFrame(0);
         }
 
-        function handleCanvasClick(event) {
+        function handleMouseDown(event) {
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            // Check which object was clicked (in reverse order for proper z-index)
             const objectsArray = Array.from(objects.values()).reverse();
+            const currentFrame = animationController.currentFrame;
 
             for (const obj of objectsArray) {
-                const currentFrame = animationController.currentFrame;
                 const updated = updateObjectAtTime(obj, currentFrame, objects);
-
-                // Simple bounding box check
-                const dx = x - updated.x;
-                const dy = y - updated.y;
-
-                // Rotate point back for hit testing
-                const angle = -updated.rotation * Math.PI / 180;
-                const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
-                const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
-
-                let hit = false;
-                if (updated.appearance === 'square') {
-                    hit = Math.abs(rotatedX) <= updated.width / 2 &&
-                          Math.abs(rotatedY) <= updated.height / 2;
-                } else if (updated.appearance === 'circle') {
-                    const normalizedX = rotatedX / (updated.width / 2);
-                    const normalizedY = rotatedY / (updated.height / 2);
-                    hit = (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
-                }
-
-                if (hit) {
+                if (hitTest(x, y, updated)) {
                     selectedObjectId = obj.id;
                     updateSelectedObjectDisplay();
+                    isDragging = true;
+                    dragStartX = x;
+                    dragStartY = y;
+                    dragOffsetX = updated.x - x;
+                    dragOffsetY = updated.y - y;
+                    canvas.classList.add('dragging');
                     renderFrame(currentFrame);
                     return;
                 }
             }
 
-            // No object clicked
             selectedObjectId = null;
             updateSelectedObjectDisplay();
+            renderFrame(currentFrame);
+        }
+
+        function handleMouseMove(event) {
+            if (!isDragging || !selectedObjectId) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const obj = objects.get(selectedObjectId);
+            obj.x = x + dragOffsetX;
+            obj.y = y + dragOffsetY;
+
+            // Clear equations for repositioned object (make it static)
+            obj.equations.forEach(eq => eq.cache.clear());
+
             renderFrame(animationController.currentFrame);
         }
 
+        function handleMouseUp(event) {
+            isDragging = false;
+            canvas.classList.remove('dragging');
+        }
+
+        function hitTest(x, y, obj) {
+            const dx = x - obj.x;
+            const dy = y - obj.y;
+            const angle = -obj.rotation * Math.PI / 180;
+            const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
+            const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+            if (obj.appearance === 'square') {
+                return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
+            } else if (obj.appearance === 'circle') {
+                const normalizedX = rotatedX / (obj.width/2);
+                const normalizedY = rotatedY / (obj.height/2);
+                return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
+            } else if (obj.appearance === 'text') {
+                return Math.abs(dx) <= 100 && Math.abs(dy) <= obj.height/2;
+            }
+            return false;
+        }
+
         function handleKeyDown(event) {
-            // Ignore if typing in input field
             if (event.target.tagName === 'INPUT') return;
 
             switch(event.key) {
@@ -991,29 +1124,46 @@
                     event.preventDefault();
                     deleteSelectedObject();
                     break;
+                case 'p':
+                case 'P':
+                    event.preventDefault();
+                    togglePen();
+                    break;
             }
         }
 
         function updateSelectedObjectDisplay() {
             const info = document.getElementById('selectedObjectInfo');
             const deleteBtn = document.getElementById('deleteButton');
+            const penBtn = document.getElementById('penButton');
 
             if (selectedObjectId) {
                 const obj = objects.get(selectedObjectId);
-                info.textContent = `Selected: ${obj.name} (${obj.appearance})`;
+                const penStatus = obj.penDown ?
+                    '<span class="pen-indicator pen-down">PEN DOWN</span>' :
+                    '<span class="pen-indicator pen-up">PEN UP</span>';
+                info.innerHTML = `Selected: <strong>${obj.name}</strong> (${obj.appearance}) ${penStatus}`;
                 deleteBtn.disabled = false;
+                penBtn.disabled = false;
             } else {
-                info.textContent = 'No object selected (click an object)';
+                info.innerHTML = 'No object selected (click an object)';
                 deleteBtn.disabled = true;
+                penBtn.disabled = true;
             }
         }
 
         function renderFrame(frame) {
             const objectsArray = Array.from(objects.values());
-            const updatedObjects = objectsArray.map(obj =>
-                updateObjectAtTime(obj, frame, objects)
-            );
-            renderer.renderScene(updatedObjects, selectedObjectId);
+            const updatedObjects = objectsArray.map(obj => {
+                const updated = updateObjectAtTime(obj, frame, objects);
+                if (updated.penDown) {
+                    trailManager.recordPosition(updated, frame);
+                }
+                return updated;
+            });
+
+            const trails = trailManager.getAllTrails();
+            renderer.renderScene(updatedObjects, trails, selectedObjectId);
         }
 
         function updateFrameDisplay(frame) {
@@ -1048,6 +1198,7 @@
             document.getElementById('playButton').className = 'play';
             animationController.stop();
             animationController.reset();
+            trailManager.clearAll();
             renderFrame(0);
             updateFrameDisplay(0);
         }
@@ -1077,15 +1228,30 @@
             animationController.setFrame(frame);
         }
 
+        function togglePen() {
+            if (!selectedObjectId) return;
+            const obj = objects.get(selectedObjectId);
+            obj.penDown = !obj.penDown;
+            if (!obj.penDown) {
+                trailManager.clearObject(obj.id);
+            }
+            updateSelectedObjectDisplay();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function clearAllTrails() {
+            trailManager.clearAll();
+            renderFrame(animationController.currentFrame);
+        }
+
         function deleteSelectedObject() {
             if (!selectedObjectId) return;
-
             if (objects.size <= 1) {
                 alert('Cannot delete the last object!');
                 return;
             }
-
             if (confirm(`Delete object "${objects.get(selectedObjectId).name}"?`)) {
+                trailManager.clearObject(selectedObjectId);
                 objects.delete(selectedObjectId);
                 selectedObjectId = null;
                 updateSelectedObjectDisplay();
@@ -1104,6 +1270,7 @@
             const x = parseInt(document.getElementById('newObjectX').value) || 300;
             const y = parseInt(document.getElementById('newObjectY').value) || 300;
             const size = parseInt(document.getElementById('newObjectSize').value) || 60;
+            const text = document.getElementById('newObjectText').value || 'Hello';
 
             const id = 'obj' + nextObjectId++;
 
@@ -1120,6 +1287,8 @@
                 blue: Math.floor(Math.random() * 256),
                 transparency: 100,
                 appearance: shape,
+                penDown: false,
+                text: shape === 'text' ? text : '',
                 equations: new Map()
             };
 
@@ -1129,14 +1298,117 @@
             renderFrame(animationController.currentFrame);
             toggleCreateForm();
 
-            // Reset form
             document.getElementById('newObjectName').value = 'MyObject';
             document.getElementById('newObjectX').value = '300';
             document.getElementById('newObjectY').value = '300';
             document.getElementById('newObjectSize').value = '60';
+            document.getElementById('newObjectText').value = 'Hello';
         }
 
-        // Initialize on page load
+        // ==================== Persistence ====================
+
+        function saveToLocalStorage() {
+            try {
+                const data = serializeProject();
+                localStorage.setItem('mopix_project', data);
+                alert('Project saved to browser!');
+            } catch (e) {
+                alert('Error saving: ' + e.message);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const data = localStorage.getItem('mopix_project');
+                if (!data) {
+                    alert('No saved project found!');
+                    return;
+                }
+                deserializeProject(data);
+                alert('Project loaded!');
+                renderFrame(animationController.currentFrame);
+            } catch (e) {
+                alert('Error loading: ' + e.message);
+            }
+        }
+
+        function exportToFile() {
+            const data = serializeProject();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mopix_project.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFromFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    deserializeProject(e.target.result);
+                    alert('Project imported!');
+                    renderFrame(animationController.currentFrame);
+                } catch (err) {
+                    alert('Error importing: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function serializeProject() {
+            const data = {
+                version: '1.0',
+                currentFrame: animationController.currentFrame,
+                objects: Array.from(objects.values()).map(obj => ({
+                    id: obj.id,
+                    name: obj.name,
+                    x: obj.x,
+                    y: obj.y,
+                    width: obj.width,
+                    height: obj.height,
+                    rotation: obj.rotation,
+                    red: obj.red,
+                    green: obj.green,
+                    blue: obj.blue,
+                    transparency: obj.transparency,
+                    appearance: obj.appearance,
+                    penDown: obj.penDown,
+                    text: obj.text || '',
+                    equations: [] // Simplified - equations not serialized in this demo
+                }))
+            };
+            return JSON.stringify(data, null, 2);
+        }
+
+        function deserializeProject(jsonString) {
+            const data = JSON.parse(jsonString);
+            objects.clear();
+            trailManager.clearAll();
+
+            data.objects.forEach(objData => {
+                objects.set(objData.id, {
+                    ...objData,
+                    equations: new Map()
+                });
+            });
+
+            if (data.currentFrame !== undefined) {
+                animationController.setFrame(data.currentFrame);
+            }
+
+            selectedObjectId = null;
+            updateSelectedObjectDisplay();
+        }
+
         window.addEventListener('load', initDemo);
     </script>
 </body>
