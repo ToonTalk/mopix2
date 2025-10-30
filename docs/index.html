@@ -418,10 +418,11 @@
             <div class="stats-compact">
                 <h4>⌨️ Keyboard Shortcuts & Features</h4>
                 <ul>
-                    <li><kbd>Space</kbd> Play/Pause | <kbd>←/→</kbd> Step | <kbd>Home</kbd> Reset</li>
+                    <li><kbd>Space</kbd> Play/Pause | <kbd>←/→</kbd> Step (or nudge object) | <kbd>Home</kbd> Reset</li>
+                    <li><kbd>↑↓←→</kbd> Nudge object 1px (<kbd>Shift</kbd> for 10px) | <kbd>[</kbd> Send back | <kbd>]</kbd> Bring front</li>
                     <li><kbd>Delete</kbd> Delete object | <kbd>P</kbd> Toggle pen | <kbd>C</kbd> Copy object</li>
                     <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid</li>
-                    <li><strong>📐 Equations:</strong> Click 📐 button on any property to create dynamic animations!</li>
+                    <li><strong>📐 Equations:</strong> Click 📐 button - supports conditionals, object refs, and 20+ functions!</li>
                 </ul>
             </div>
         </div>
@@ -452,6 +453,9 @@
             <select id="newObjectShape" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 <option value="square">Square</option>
                 <option value="circle">Circle</option>
+                <option value="triangle">Triangle</option>
+                <option value="line">Line</option>
+                <option value="arrow">Arrow</option>
                 <option value="text">Text/Label</option>
             </select>
         </div>
@@ -525,6 +529,15 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('128 + sin(t * 6) * 127')">
                     <strong>Color pulse:</strong> 128 + sin(t * 6) * 127
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(t > 50, bouncer.x, mover.x)')">
+                    <strong>Conditional:</strong> if(t > 50, bouncer.x, mover.x)
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('clamp(bouncer.x, 100, 700)')">
+                    <strong>Clamp value:</strong> clamp(bouncer.x, 100, 700)
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('lerp(100, 700, sin(t * 5) / 2 + 0.5)')">
+                    <strong>Interpolate:</strong> lerp(100, 700, sin(t * 5) / 2 + 0.5)
+                </div>
             </div>
         </div>
 
@@ -532,9 +545,10 @@
             <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>objectId.property</em> (e.g., mover.x)<br>
-                <strong>Operators:</strong> + - * / ^ (power)<br>
-                <strong>Functions:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round<br>
-                <strong>Multi-arg:</strong> dist(x1,y1,x2,y2), angle(x1,y1,x2,y2), min(...), max(...)
+                <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
+                <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round<br>
+                <strong>Logic:</strong> if(condition, true, false), and, or, not<br>
+                <strong>Multi-arg:</strong> dist(x1,y1,x2,y2), angle(x1,y1,x2,y2), min(...), max(...), clamp(val,min,max), lerp(start,end,t)
             </div>
         </div>
 
@@ -599,11 +613,18 @@
             }
 
             evaluate(context) {
-                const values = this.args.map(arg => arg.evaluate(context));
-
                 switch (this.functionName) {
+                    case 'if': {
+                        // if(condition, trueValue, falseValue) - conditional expression
+                        if (this.args.length === 3) {
+                            const condition = this.args[0].evaluate(context);
+                            return condition !== 0 ? this.args[1].evaluate(context) : this.args[2].evaluate(context);
+                        }
+                        return 0;
+                    }
                     case 'dist': {
                         // dist(x1, y1, x2, y2)
+                        const values = this.args.map(arg => arg.evaluate(context));
                         if (values.length === 4) {
                             const dx = values[2] - values[0];
                             const dy = values[3] - values[1];
@@ -613,6 +634,7 @@
                     }
                     case 'angle': {
                         // angle(x1, y1, x2, y2) - angle in degrees from point 1 to point 2
+                        const values = this.args.map(arg => arg.evaluate(context));
                         if (values.length === 4) {
                             const dx = values[2] - values[0];
                             const dy = values[3] - values[1];
@@ -621,10 +643,28 @@
                         return 0;
                     }
                     case 'min': {
+                        const values = this.args.map(arg => arg.evaluate(context));
                         return Math.min(...values);
                     }
                     case 'max': {
+                        const values = this.args.map(arg => arg.evaluate(context));
                         return Math.max(...values);
+                    }
+                    case 'clamp': {
+                        // clamp(value, min, max)
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 3) {
+                            return Math.max(values[1], Math.min(values[2], values[0]));
+                        }
+                        return 0;
+                    }
+                    case 'lerp': {
+                        // lerp(start, end, t) - linear interpolation
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 3) {
+                            return values[0] + (values[1] - values[0]) * values[2];
+                        }
+                        return 0;
                     }
                     default:
                         return 0;
@@ -899,7 +939,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['dist', 'angle', 'min', 'max'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -1042,6 +1082,21 @@
                             this.ctx.ellipse(0, 0, obj.width/2 + 5, obj.height/2 + 5, 0, 0, 2 * Math.PI);
                             this.ctx.stroke();
                             break;
+                        case 'triangle':
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(0, -obj.height/2 - 8);
+                            this.ctx.lineTo(obj.width/2 + 8, obj.height/2 + 8);
+                            this.ctx.lineTo(-obj.width/2 - 8, obj.height/2 + 8);
+                            this.ctx.closePath();
+                            this.ctx.stroke();
+                            break;
+                        case 'line':
+                        case 'arrow':
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(-obj.width/2 - 5, 0);
+                            this.ctx.lineTo(obj.width/2 + 5, 0);
+                            this.ctx.stroke();
+                            break;
                         case 'text':
                             const metrics = this.ctx.measureText(obj.text || obj.name);
                             const textWidth = metrics.width;
@@ -1059,6 +1114,38 @@
                     case 'circle':
                         this.ctx.beginPath();
                         this.ctx.ellipse(0, 0, obj.width/2, obj.height/2, 0, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                        break;
+                    case 'triangle':
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, -obj.height/2);
+                        this.ctx.lineTo(obj.width/2, obj.height/2);
+                        this.ctx.lineTo(-obj.width/2, obj.height/2);
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        break;
+                    case 'line':
+                        this.ctx.strokeStyle = this.ctx.fillStyle;
+                        this.ctx.lineWidth = obj.height || 3;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(-obj.width/2, 0);
+                        this.ctx.lineTo(obj.width/2, 0);
+                        this.ctx.stroke();
+                        break;
+                    case 'arrow':
+                        this.ctx.strokeStyle = this.ctx.fillStyle;
+                        this.ctx.lineWidth = obj.height || 3;
+                        // Arrow shaft
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(-obj.width/2, 0);
+                        this.ctx.lineTo(obj.width/2 - 15, 0);
+                        this.ctx.stroke();
+                        // Arrow head
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(obj.width/2, 0);
+                        this.ctx.lineTo(obj.width/2 - 15, -10);
+                        this.ctx.lineTo(obj.width/2 - 15, 10);
+                        this.ctx.closePath();
                         this.ctx.fill();
                         break;
                     case 'text':
@@ -1425,6 +1512,44 @@
                 ])
             });
 
+            // Conditional triangle - demonstrates conditionals and new shapes
+            const triangleX = parseEquation('if(t < 100, 100 + t * 2, 300)');
+            const triangleY = parseEquation('if(dist(bouncer.x, bouncer.y, 400, 500) < 150, bouncer.y - 100, 500)');
+            const triangleRot = parseEquation('t * 3');
+
+            objects.set('triangle1', {
+                id: 'triangle1',
+                name: 'Smart Triangle',
+                x: 100, y: 500,
+                width: 50, height: 50,
+                rotation: 0,
+                red: 150, green: 50, blue: 200,
+                transparency: 100,
+                appearance: 'triangle',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'if(t < 100, 100 + t * 2, 300)',
+                        expression: triangleX.expression,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'if(dist(bouncer.x, bouncer.y, 400, 500) < 150, bouncer.y - 100, 500)',
+                        expression: triangleY.expression,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * 3',
+                        expression: triangleRot.expression,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
             animationController = new AnimationController((frame) => {
                 renderFrame(frame);
                 updateFrameDisplay(frame);
@@ -1531,6 +1656,13 @@
                 return;
             }
 
+            // Arrow keys - if object selected, nudge it; otherwise control animation
+            if (event.key.startsWith('Arrow') && selectedObjectId) {
+                event.preventDefault();
+                nudgeSelectedObject(event.key, event.shiftKey);
+                return;
+            }
+
             switch(event.key) {
                 case ' ':
                     event.preventDefault();
@@ -1543,6 +1675,10 @@
                 case 'ArrowLeft':
                     event.preventDefault();
                     stepBackward();
+                    break;
+                case 'ArrowUp':
+                case 'ArrowDown':
+                    // Allow default if no object selected (handled above)
                     break;
                 case 'Home':
                     event.preventDefault();
@@ -1561,6 +1697,14 @@
                 case 'C':
                     event.preventDefault();
                     copySelectedObject();
+                    break;
+                case '[':
+                    event.preventDefault();
+                    sendToBack();
+                    break;
+                case ']':
+                    event.preventDefault();
+                    bringToFront();
                     break;
             }
         }
@@ -1585,10 +1729,73 @@
                 const normalizedX = rotatedX / (obj.width/2);
                 const normalizedY = rotatedY / (obj.height/2);
                 return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
+            } else if (obj.appearance === 'triangle') {
+                // Simple bounding box for triangle
+                return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
+            } else if (obj.appearance === 'line' || obj.appearance === 'arrow') {
+                // Hit test for line - check if within width and height tolerance
+                return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= 10;
             } else if (obj.appearance === 'text') {
                 return Math.abs(dx) <= 100 && Math.abs(dy) <= obj.height/2;
             }
             return false;
+        }
+
+        function nudgeSelectedObject(key, shiftKey) {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            const amount = shiftKey ? 10 : 1;
+
+            switch (key) {
+                case 'ArrowUp':
+                    obj.y -= amount;
+                    break;
+                case 'ArrowDown':
+                    obj.y += amount;
+                    break;
+                case 'ArrowLeft':
+                    obj.x -= amount;
+                    break;
+                case 'ArrowRight':
+                    obj.x += amount;
+                    break;
+            }
+
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function bringToFront() {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            objects.delete(selectedObjectId);
+            objects.set(selectedObjectId, obj);
+
+            saveHistoryState();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function sendToBack() {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            const allEntries = Array.from(objects.entries());
+            objects.clear();
+
+            // Add selected object first (back)
+            objects.set(selectedObjectId, obj);
+
+            // Add all others
+            allEntries.forEach(([id, o]) => {
+                if (id !== selectedObjectId) {
+                    objects.set(id, o);
+                }
+            });
+
+            saveHistoryState();
+            renderFrame(animationController.currentFrame);
         }
 
         // ==================== Object List ====================
@@ -1689,6 +1896,14 @@
                     <button class="secondary" onclick="togglePen()" title="Toggle pen (P)">${obj.penDown ? '✏️ Pen ON' : '✏️ Pen OFF'}</button>
                     <button class="success" onclick="copySelectedObject()" title="Copy object (C)">📋 Copy</button>
                     <button class="danger" onclick="deleteSelectedObject()" title="Delete (Del)">🗑️ Delete</button>
+                </div>
+
+                <div class="property-group">
+                    <h4>Layer Order</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button class="secondary" onclick="bringToFront()" title="Bring to front (])" style="font-size: 12px; padding: 8px;">⬆️ Front</button>
+                        <button class="secondary" onclick="sendToBack()" title="Send to back ([)" style="font-size: 12px; padding: 8px;">⬇️ Back</button>
+                    </div>
                 </div>
             `;
         }
