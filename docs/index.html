@@ -416,11 +416,12 @@
             </div>
 
             <div class="stats-compact">
-                <h4>⌨️ Keyboard Shortcuts</h4>
+                <h4>⌨️ Keyboard Shortcuts & Features</h4>
                 <ul>
                     <li><kbd>Space</kbd> Play/Pause | <kbd>←/→</kbd> Step | <kbd>Home</kbd> Reset</li>
                     <li><kbd>Delete</kbd> Delete object | <kbd>P</kbd> Toggle pen | <kbd>C</kbd> Copy object</li>
                     <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid</li>
+                    <li><strong>📐 Equations:</strong> Click 📐 button on any property to create dynamic animations!</li>
                 </ul>
             </div>
         </div>
@@ -475,6 +476,67 @@
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button class="success" onclick="createObject()" style="flex: 1;">Create</button>
             <button class="secondary" onclick="toggleCreateForm()" style="flex: 1;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Equation Editor Modal -->
+    <div id="equationEditorModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <h3 style="margin-top: 0; color: #667eea;">📐 Equation Editor</h3>
+
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Property:</label>
+            <select id="equationProperty" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+                <option value="x">X Position</option>
+                <option value="y">Y Position</option>
+                <option value="width">Width</option>
+                <option value="height">Height</option>
+                <option value="rotation">Rotation</option>
+                <option value="red">Red (0-255)</option>
+                <option value="green">Green (0-255)</option>
+                <option value="blue">Blue (0-255)</option>
+            </select>
+        </div>
+
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Equation:</label>
+            <input type="text" id="equationInput" placeholder="e.g., sin(t * 10) * 100 + 300" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px;" oninput="validateEquation()" />
+            <div id="equationError" style="color: #dc3545; margin-top: 5px; font-size: 12px; display: none;"></div>
+            <div id="equationSuccess" style="color: #28a745; margin-top: 5px; font-size: 12px; display: none;">✓ Valid equation</div>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #dee2e6;">
+            <h4 style="margin: 0 0 10px 0; color: #667eea; font-size: 14px;">📚 Examples:</h4>
+            <div style="display: grid; gap: 8px;">
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('t * 2 + 100')">
+                    <strong>Linear motion:</strong> t * 2 + 100
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('sin(t * 10) * 100 + 300')">
+                    <strong>Sine wave:</strong> sin(t * 10) * 100 + 300
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('cos(t * 5) * 150 + 400')">
+                    <strong>Cosine wave:</strong> cos(t * 5) * 150 + 400
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('t * 5')">
+                    <strong>Rotation:</strong> t * 5
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('128 + sin(t * 6) * 127')">
+                    <strong>Color oscillation:</strong> 128 + sin(t * 6) * 127
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #b3d7ff;">
+            <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
+            <div style="font-size: 12px; color: #004085; line-height: 1.6;">
+                <strong>Variable:</strong> t (time/frame)<br>
+                <strong>Operators:</strong> + - * / ^ (power)<br>
+                <strong>Functions:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="success" onclick="saveEquation()" style="flex: 1;" id="saveEquationBtn">💾 Save</button>
+            <button class="secondary" onclick="closeEquationEditor()" style="flex: 1;">Cancel</button>
         </div>
     </div>
 
@@ -582,6 +644,227 @@
             const result = equation.expression.evaluate(context);
             equation.cache.set(time, result);
             return result;
+        }
+
+        // ==================== Equation Parser ====================
+
+        class Token {
+            constructor(type, value) {
+                this.type = type;
+                this.value = value;
+            }
+        }
+
+        class Tokenizer {
+            constructor(input) {
+                this.input = input.replace(/\s+/g, ''); // Remove whitespace
+                this.position = 0;
+            }
+
+            peek() {
+                return this.input[this.position];
+            }
+
+            advance() {
+                return this.input[this.position++];
+            }
+
+            isDigit(ch) {
+                return ch >= '0' && ch <= '9';
+            }
+
+            isLetter(ch) {
+                return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+            }
+
+            tokenize() {
+                const tokens = [];
+
+                while (this.position < this.input.length) {
+                    const ch = this.peek();
+
+                    if (this.isDigit(ch) || ch === '.') {
+                        tokens.push(this.readNumber());
+                    } else if (this.isLetter(ch)) {
+                        tokens.push(this.readIdentifier());
+                    } else if (ch === '+') {
+                        tokens.push(new Token('PLUS', '+'));
+                        this.advance();
+                    } else if (ch === '-') {
+                        tokens.push(new Token('MINUS', '-'));
+                        this.advance();
+                    } else if (ch === '*') {
+                        tokens.push(new Token('MULTIPLY', '*'));
+                        this.advance();
+                    } else if (ch === '/') {
+                        tokens.push(new Token('DIVIDE', '/'));
+                        this.advance();
+                    } else if (ch === '^') {
+                        tokens.push(new Token('POWER', '^'));
+                        this.advance();
+                    } else if (ch === '(') {
+                        tokens.push(new Token('LPAREN', '('));
+                        this.advance();
+                    } else if (ch === ')') {
+                        tokens.push(new Token('RPAREN', ')'));
+                        this.advance();
+                    } else if (ch === ',') {
+                        tokens.push(new Token('COMMA', ','));
+                        this.advance();
+                    } else {
+                        throw new Error(`Unexpected character: ${ch}`);
+                    }
+                }
+
+                tokens.push(new Token('EOF', null));
+                return tokens;
+            }
+
+            readNumber() {
+                let num = '';
+                while (this.position < this.input.length &&
+                       (this.isDigit(this.peek()) || this.peek() === '.')) {
+                    num += this.advance();
+                }
+                return new Token('NUMBER', parseFloat(num));
+            }
+
+            readIdentifier() {
+                let id = '';
+                while (this.position < this.input.length && this.isLetter(this.peek())) {
+                    id += this.advance();
+                }
+                return new Token('IDENTIFIER', id.toLowerCase());
+            }
+        }
+
+        class Parser {
+            constructor(tokens) {
+                this.tokens = tokens;
+                this.position = 0;
+            }
+
+            peek() {
+                return this.tokens[this.position];
+            }
+
+            advance() {
+                return this.tokens[this.position++];
+            }
+
+            expect(type) {
+                const token = this.advance();
+                if (token.type !== type) {
+                    throw new Error(`Expected ${type} but got ${token.type}`);
+                }
+                return token;
+            }
+
+            parse() {
+                const expr = this.parseExpression();
+                this.expect('EOF');
+                return expr;
+            }
+
+            parseExpression() {
+                return this.parseAddition();
+            }
+
+            parseAddition() {
+                let left = this.parseMultiplication();
+
+                while (this.peek().type === 'PLUS' || this.peek().type === 'MINUS') {
+                    const op = this.advance();
+                    const right = this.parseMultiplication();
+                    left = new BinaryOperatorExpression(op.value, left, right);
+                }
+
+                return left;
+            }
+
+            parseMultiplication() {
+                let left = this.parsePower();
+
+                while (this.peek().type === 'MULTIPLY' || this.peek().type === 'DIVIDE') {
+                    const op = this.advance();
+                    const right = this.parsePower();
+                    left = new BinaryOperatorExpression(op.value, left, right);
+                }
+
+                return left;
+            }
+
+            parsePower() {
+                let left = this.parseUnary();
+
+                if (this.peek().type === 'POWER') {
+                    this.advance();
+                    const right = this.parsePower(); // Right associative
+                    left = new BinaryOperatorExpression('^', left, right);
+                }
+
+                return left;
+            }
+
+            parseUnary() {
+                if (this.peek().type === 'MINUS') {
+                    this.advance();
+                    const operand = this.parseUnary();
+                    return new UnaryOperatorExpression('-', operand);
+                }
+
+                if (this.peek().type === 'PLUS') {
+                    this.advance();
+                    return this.parseUnary();
+                }
+
+                return this.parsePrimary();
+            }
+
+            parsePrimary() {
+                const token = this.peek();
+
+                if (token.type === 'NUMBER') {
+                    this.advance();
+                    return new ConstantExpression(token.value);
+                }
+
+                if (token.type === 'IDENTIFIER') {
+                    const id = this.advance();
+
+                    // Check if it's a function call
+                    if (this.peek().type === 'LPAREN') {
+                        this.advance(); // consume (
+                        const arg = this.parseExpression();
+                        this.expect('RPAREN');
+                        return new UnaryOperatorExpression(id.value, arg);
+                    }
+
+                    // It's a variable (like 't')
+                    return new VariableExpression(id.value);
+                }
+
+                if (token.type === 'LPAREN') {
+                    this.advance();
+                    const expr = this.parseExpression();
+                    this.expect('RPAREN');
+                    return expr;
+                }
+
+                throw new Error(`Unexpected token: ${token.type}`);
+            }
+        }
+
+        function parseEquation(equationText) {
+            try {
+                const tokenizer = new Tokenizer(equationText);
+                const tokens = tokenizer.tokenize();
+                const parser = new Parser(tokens);
+                const expression = parser.parse();
+                return { success: true, expression, error: null };
+            } catch (error) {
+                return { success: false, expression: null, error: error.message };
+            }
         }
 
         function updateObjectAtTime(obj, time, allObjects) {
@@ -936,6 +1219,7 @@
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
+                        text: 't * 2 + 100',
                         expression: new BinaryOperatorExpression('+',
                             new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(2)),
                             new ConstantExpression(100)
@@ -959,6 +1243,7 @@
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
+                        text: 'sin(t * 10) * 100 + 300',
                         expression: new BinaryOperatorExpression('+',
                             new BinaryOperatorExpression('*',
                                 new UnaryOperatorExpression('sin',
@@ -987,6 +1272,7 @@
                 equations: new Map([
                     ['rotation', {
                         attribute: 'rotation',
+                        text: 't * 5',
                         expression: new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(5)),
                         cache: new Map()
                     }]
@@ -1007,6 +1293,7 @@
                 equations: new Map([
                     ['red', {
                         attribute: 'red',
+                        text: '128 + sin(t * 6) * 127',
                         expression: new BinaryOperatorExpression('+',
                             new ConstantExpression(128),
                             new BinaryOperatorExpression('*',
@@ -1237,34 +1524,30 @@
                 }).join('');
             };
 
+            const propertyRow = (prop, label, min, max, unit = '') => {
+                const eqText = getEquationText(obj, prop);
+                const hasEq = eqText !== null;
+                return `
+                    <div class="property-row">
+                        <label>${label}: <span class="value-display">${Math.round(obj[prop])}${unit}</span></label>
+                        ${hasEq ? `<div style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace;">📐 ${eqText}</div>` : ''}
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <input type="range" min="${min}" max="${max}" value="${obj[prop]}" oninput="updateProperty('${prop}', this.value)" style="flex: 1;" ${hasEq ? 'disabled' : ''}>
+                            <button onclick="openEquationEditor('${prop}')" style="padding: 4px 8px; font-size: 11px;" title="Edit equation">📐</button>
+                            ${hasEq ? `<button onclick="clearEquation('${prop}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            };
+
             panel.innerHTML = `
                 <div class="property-group">
                     <h4>${obj.name}</h4>
-
-                    <div class="property-row">
-                        <label>X Position: <span class="value-display">${Math.round(obj.x)}</span></label>
-                        <input type="range" min="0" max="800" value="${obj.x}" oninput="updateProperty('x', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Y Position: <span class="value-display">${Math.round(obj.y)}</span></label>
-                        <input type="range" min="0" max="600" value="${obj.y}" oninput="updateProperty('y', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Width: <span class="value-display">${Math.round(obj.width)}</span></label>
-                        <input type="range" min="10" max="200" value="${obj.width}" oninput="updateProperty('width', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Height: <span class="value-display">${Math.round(obj.height)}</span></label>
-                        <input type="range" min="10" max="200" value="${obj.height}" oninput="updateProperty('height', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Rotation: <span class="value-display">${Math.round(obj.rotation)}°</span></label>
-                        <input type="range" min="0" max="360" value="${obj.rotation}" oninput="updateProperty('rotation', this.value)">
-                    </div>
+                    ${propertyRow('x', 'X Position', 0, 800)}
+                    ${propertyRow('y', 'Y Position', 0, 600)}
+                    ${propertyRow('width', 'Width', 10, 200)}
+                    ${propertyRow('height', 'Height', 10, 200)}
+                    ${propertyRow('rotation', 'Rotation', 0, 360, '°')}
                 </div>
 
                 <div class="property-group">
@@ -1275,20 +1558,9 @@
                         <input type="color" value="${rgbToHex(obj.red, obj.green, obj.blue)}" onchange="updatePropertyColor(this.value)">
                     </div>
 
-                    <div class="property-row">
-                        <label>Red: <span class="value-display">${Math.round(obj.red)}</span></label>
-                        <input type="range" min="0" max="255" value="${obj.red}" oninput="updateProperty('red', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Green: <span class="value-display">${Math.round(obj.green)}</span></label>
-                        <input type="range" min="0" max="255" value="${obj.green}" oninput="updateProperty('green', this.value)">
-                    </div>
-
-                    <div class="property-row">
-                        <label>Blue: <span class="value-display">${Math.round(obj.blue)}</span></label>
-                        <input type="range" min="0" max="255" value="${obj.blue}" oninput="updateProperty('blue', this.value)">
-                    </div>
+                    ${propertyRow('red', 'Red', 0, 255)}
+                    ${propertyRow('green', 'Green', 0, 255)}
+                    ${propertyRow('blue', 'Blue', 0, 255)}
 
                     <div class="property-row">
                         <label>Transparency: <span class="value-display">${Math.round(obj.transparency)}%</span></label>
@@ -1336,6 +1608,117 @@
             renderFrame(animationController.currentFrame);
         }
 
+        // ==================== Equation Management ====================
+
+        let currentEquationProperty = null;
+
+        function openEquationEditor(property) {
+            if (!selectedObjectId) return;
+
+            currentEquationProperty = property;
+            const obj = objects.get(selectedObjectId);
+
+            document.getElementById('equationProperty').value = property;
+            document.getElementById('equationEditorModal').style.display = 'block';
+
+            // Load existing equation if any
+            if (obj.equations.has(property)) {
+                const eq = obj.equations.get(property);
+                document.getElementById('equationInput').value = eq.text || '';
+            } else {
+                document.getElementById('equationInput').value = '';
+            }
+
+            validateEquation();
+        }
+
+        function closeEquationEditor() {
+            document.getElementById('equationEditorModal').style.display = 'none';
+            currentEquationProperty = null;
+        }
+
+        function validateEquation() {
+            const input = document.getElementById('equationInput').value.trim();
+            const errorDiv = document.getElementById('equationError');
+            const successDiv = document.getElementById('equationSuccess');
+            const saveBtn = document.getElementById('saveEquationBtn');
+
+            if (!input) {
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'none';
+                saveBtn.disabled = false;
+                return true;
+            }
+
+            const result = parseEquation(input);
+
+            if (result.success) {
+                errorDiv.style.display = 'none';
+                successDiv.style.display = 'block';
+                saveBtn.disabled = false;
+                return true;
+            } else {
+                errorDiv.textContent = '✗ Error: ' + result.error;
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                saveBtn.disabled = true;
+                return false;
+            }
+        }
+
+        function setEquationExample(example) {
+            document.getElementById('equationInput').value = example;
+            validateEquation();
+        }
+
+        function saveEquation() {
+            if (!selectedObjectId || !currentEquationProperty) return;
+
+            const input = document.getElementById('equationInput').value.trim();
+            const property = document.getElementById('equationProperty').value;
+            const obj = objects.get(selectedObjectId);
+
+            if (!input) {
+                // Remove equation
+                obj.equations.delete(property);
+            } else {
+                if (!validateEquation()) return;
+
+                const result = parseEquation(input);
+                if (result.success) {
+                    obj.equations.set(property, {
+                        attribute: property,
+                        expression: result.expression,
+                        text: input,
+                        cache: new Map()
+                    });
+                }
+            }
+
+            saveHistoryState();
+            updatePropertyPanel();
+            closeEquationEditor();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function clearEquation(property) {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            obj.equations.delete(property);
+
+            saveHistoryState();
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function getEquationText(obj, property) {
+            if (obj.equations.has(property)) {
+                return obj.equations.get(property).text || 'Legacy equation';
+            }
+            return null;
+        }
+
         // ==================== History (Undo/Redo) ====================
 
         function saveHistoryState() {
@@ -1379,30 +1762,56 @@
         }
 
         function serializeObjects() {
-            return Array.from(objects.values()).map(obj => ({
-                id: obj.id,
-                name: obj.name,
-                x: obj.x,
-                y: obj.y,
-                width: obj.width,
-                height: obj.height,
-                rotation: obj.rotation,
-                red: obj.red,
-                green: obj.green,
-                blue: obj.blue,
-                transparency: obj.transparency,
-                appearance: obj.appearance,
-                penDown: obj.penDown,
-                text: obj.text || ''
-            }));
+            return Array.from(objects.values()).map(obj => {
+                const equations = {};
+                obj.equations.forEach((eq, attr) => {
+                    equations[attr] = eq.text || '';
+                });
+
+                return {
+                    id: obj.id,
+                    name: obj.name,
+                    x: obj.x,
+                    y: obj.y,
+                    width: obj.width,
+                    height: obj.height,
+                    rotation: obj.rotation,
+                    red: obj.red,
+                    green: obj.green,
+                    blue: obj.blue,
+                    transparency: obj.transparency,
+                    appearance: obj.appearance,
+                    penDown: obj.penDown,
+                    text: obj.text || '',
+                    equations: equations
+                };
+            });
         }
 
         function deserializeObjects(objectsData) {
             objects.clear();
             objectsData.forEach(objData => {
+                const equationsMap = new Map();
+
+                if (objData.equations) {
+                    Object.entries(objData.equations).forEach(([attr, eqText]) => {
+                        if (eqText) {
+                            const result = parseEquation(eqText);
+                            if (result.success) {
+                                equationsMap.set(attr, {
+                                    attribute: attr,
+                                    expression: result.expression,
+                                    text: eqText,
+                                    cache: new Map()
+                                });
+                            }
+                        }
+                    });
+                }
+
                 objects.set(objData.id, {
                     ...objData,
-                    equations: new Map()
+                    equations: equationsMap
                 });
             });
         }
@@ -1415,13 +1824,24 @@
             const obj = objects.get(selectedObjectId);
             const id = 'obj' + nextObjectId++;
 
+            // Deep copy equations
+            const copiedEquations = new Map();
+            obj.equations.forEach((eq, attr) => {
+                copiedEquations.set(attr, {
+                    attribute: eq.attribute,
+                    text: eq.text,
+                    expression: eq.expression,
+                    cache: new Map()
+                });
+            });
+
             const newObj = {
                 ...obj,
                 id: id,
                 name: obj.name + ' Copy',
                 x: obj.x + 40,
                 y: obj.y + 40,
-                equations: new Map()
+                equations: copiedEquations
             };
 
             objects.set(id, newObj);
