@@ -2,6 +2,14 @@
 
 An educational visual programming platform that enables students to create animations and interactive models using algebraic equations.
 
+## 🌐 Live Demo
+
+**Try the modern web version:** [https://toontalk.github.io/mopix2/](https://toontalk.github.io/mopix2/)
+
+A proof-of-concept reimplementation using modern web technologies (vanilla JavaScript, no dependencies, 23KB single file). Features 4 animated objects demonstrating expression evaluation, canvas rendering, and frame-accurate animation.
+
+See [docs/](docs/) for the standalone HTML demo and [mopix-modern-poc/](mopix-modern-poc/) for the full TypeScript/React implementation.
+
 ## Overview
 
 MoPiX 2 allows users to:
@@ -27,16 +35,25 @@ This is a legacy educational project originally developed for Google Code and mi
 
 ```
 mopix2/
-├── LICENSE                    # BSD 3-Clause License
-├── README.md                  # This file
-├── IMPROVEMENTS.md           # Comprehensive improvement suggestions
-└── MoPiX/                    # Main project directory
-    ├── src/                  # Java source code (~10,000 LOC)
+├── LICENSE                       # BSD 3-Clause License
+├── README.md                     # This file
+├── IMPROVEMENTS.md              # Comprehensive improvement suggestions
+├── MODERNIZATION_GUIDE.md       # Complete guide for modern rewrite
+├── docs/                        # GitHub Pages demo
+│   └── index.html              # Standalone demo (23KB, no dependencies)
+├── mopix-modern-poc/           # Modern TypeScript/React proof-of-concept
+│   ├── src/                    # TypeScript source (~600 LOC)
+│   │   ├── engine/            # Core expression/rendering engine
+│   │   ├── components/        # React components
+│   │   └── types/             # TypeScript definitions
+│   └── package.json           # Vite + React + TypeScript
+└── MoPiX/                       # Original legacy project
+    ├── src/                    # Java source code (~10,000 LOC)
     │   └── uk/ac/lkl/
-    │       ├── client/       # GWT client-side code
-    │       └── server/       # Server-side servlets
-    └── war/                  # Web application resources
-        └── WEB-INF/          # Configuration and libraries
+    │       ├── client/         # GWT client-side code
+    │       └── server/         # Server-side servlets
+    └── war/                    # Web application resources
+        └── WEB-INF/            # Configuration and libraries
 ```
 
 ## Key Features
