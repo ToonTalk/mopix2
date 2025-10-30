@@ -363,8 +363,16 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Left Sidebar: Object List -->
+        <!-- Left Sidebar: Variables & Objects -->
         <div class="sidebar">
+            <h3>🔢 Variables</h3>
+            <div id="variablesList" style="margin-bottom: 15px;"></div>
+            <div style="display: flex; gap: 5px; margin-bottom: 20px;">
+                <input type="text" id="varName" placeholder="name" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <input type="number" id="varValue" placeholder="value" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <button onclick="addVariable()" style="padding: 6px 10px; font-size: 12px;">+</button>
+            </div>
+
             <h3>📦 Objects</h3>
             <ul id="objectList" class="object-list"></ul>
             <div style="margin-top: 15px;">
@@ -422,7 +430,8 @@
                     <li><kbd>↑↓←→</kbd> Nudge object 1px (<kbd>Shift</kbd> for 10px) | <kbd>[</kbd> Send back | <kbd>]</kbd> Bring front</li>
                     <li><kbd>Delete</kbd> Delete object | <kbd>P</kbd> Toggle pen | <kbd>C</kbd> Copy object</li>
                     <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid</li>
-                    <li><strong>📐 Equations:</strong> Click 📐 button - supports conditionals, object refs, and 20+ functions!</li>
+                    <li><strong>🔢 Variables:</strong> Define custom variables (speed, radius, etc.) - use in equations!</li>
+                    <li><strong>📐 Equations:</strong> 9 shapes, collision detection, conditionals, and 25+ functions!</li>
                 </ul>
             </div>
         </div>
@@ -454,6 +463,9 @@
                 <option value="square">Square</option>
                 <option value="circle">Circle</option>
                 <option value="triangle">Triangle</option>
+                <option value="star">Star (5-pointed)</option>
+                <option value="pentagon">Pentagon</option>
+                <option value="hexagon">Hexagon</option>
                 <option value="line">Line</option>
                 <option value="arrow">Arrow</option>
                 <option value="text">Text/Label</option>
@@ -538,17 +550,27 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('lerp(100, 700, sin(t * 5) / 2 + 0.5)')">
                     <strong>Interpolate:</strong> lerp(100, 700, sin(t * 5) / 2 + 0.5)
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('t * speed + 100')">
+                    <strong>Use variable:</strong> t * speed + 100
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(overlaps(mover, bouncer), 255, 100)')">
+                    <strong>Collision:</strong> if(overlaps(mover, bouncer), 255, 100)
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('centerX + cos(t * 5) * radius')">
+                    <strong>Orbit:</strong> centerX + cos(t * 5) * radius
+                </div>
             </div>
         </div>
 
         <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #b3d7ff;">
             <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
-                <strong>Variables:</strong> t (time), <em>objectId.property</em> (e.g., mover.x)<br>
+                <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
                 <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, floor, ceil, round<br>
-                <strong>Logic:</strong> if(condition, true, false), and, or, not<br>
-                <strong>Multi-arg:</strong> dist(x1,y1,x2,y2), angle(x1,y1,x2,y2), min(...), max(...), clamp(val,min,max), lerp(start,end,t)
+                <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
+                <strong>Collision:</strong> overlaps(obj1, obj2) - returns 1 if colliding<br>
+                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp
             </div>
         </div>
 
@@ -587,6 +609,11 @@
             evaluate(context) {
                 if (this.name === 't') {
                     return context.time;
+                }
+
+                // Check user-defined variables
+                if (userVariables.has(this.name)) {
+                    return userVariables.get(this.name);
                 }
 
                 // Handle object property references (e.g., "bouncer.x")
@@ -663,6 +690,33 @@
                         const values = this.args.map(arg => arg.evaluate(context));
                         if (values.length === 3) {
                             return values[0] + (values[1] - values[0]) * values[2];
+                        }
+                        return 0;
+                    }
+                    case 'overlaps': {
+                        // overlaps(obj1Id, obj2Id) - returns 1 if objects overlap, 0 otherwise
+                        if (this.args.length === 2) {
+                            const obj1Name = this.args[0];
+                            const obj2Name = this.args[1];
+
+                            // Get object IDs from variable expressions
+                            if (obj1Name instanceof VariableExpression && obj2Name instanceof VariableExpression) {
+                                const obj1 = context.allObjects.get(obj1Name.name);
+                                const obj2 = context.allObjects.get(obj2Name.name);
+
+                                if (obj1 && obj2) {
+                                    const updated1 = updateObjectAtTime(obj1, context.time, context.allObjects);
+                                    const updated2 = updateObjectAtTime(obj2, context.time, context.allObjects);
+
+                                    // Simple bounding box collision
+                                    const dx = Math.abs(updated1.x - updated2.x);
+                                    const dy = Math.abs(updated1.y - updated2.y);
+                                    const minDistX = (updated1.width + updated2.width) / 2;
+                                    const minDistY = (updated1.height + updated2.height) / 2;
+
+                                    return (dx < minDistX && dy < minDistY) ? 1 : 0;
+                                }
+                            }
                         }
                         return 0;
                     }
@@ -939,7 +993,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'overlaps'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -1090,6 +1144,14 @@
                             this.ctx.closePath();
                             this.ctx.stroke();
                             break;
+                        case 'star':
+                        case 'pentagon':
+                        case 'hexagon':
+                            // Use circle for selection highlight
+                            this.ctx.beginPath();
+                            this.ctx.arc(0, 0, Math.max(obj.width, obj.height) / 2 + 8, 0, 2 * Math.PI);
+                            this.ctx.stroke();
+                            break;
                         case 'line':
                         case 'arrow':
                             this.ctx.beginPath();
@@ -1124,6 +1186,53 @@
                         this.ctx.closePath();
                         this.ctx.fill();
                         break;
+                    case 'star': {
+                        // 5-pointed star
+                        const outerRadius = Math.max(obj.width, obj.height) / 2;
+                        const innerRadius = outerRadius * 0.4;
+                        this.ctx.beginPath();
+                        for (let i = 0; i < 10; i++) {
+                            const angle = (i * Math.PI / 5) - Math.PI / 2;
+                            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            if (i === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        break;
+                    }
+                    case 'pentagon': {
+                        // Regular pentagon
+                        const radius = Math.max(obj.width, obj.height) / 2;
+                        this.ctx.beginPath();
+                        for (let i = 0; i < 5; i++) {
+                            const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            if (i === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        break;
+                    }
+                    case 'hexagon': {
+                        // Regular hexagon
+                        const radius = Math.max(obj.width, obj.height) / 2;
+                        this.ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i * 2 * Math.PI / 6) - Math.PI / 2;
+                            const x = Math.cos(angle) * radius;
+                            const y = Math.sin(angle) * radius;
+                            if (i === 0) this.ctx.moveTo(x, y);
+                            else this.ctx.lineTo(x, y);
+                        }
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                        break;
+                    }
                     case 'line':
                         this.ctx.strokeStyle = this.ctx.fillStyle;
                         this.ctx.lineWidth = obj.height || 3;
@@ -1355,11 +1464,13 @@
         let canvas, renderer, animationController, trailManager, historyManager, objects;
         let isPlaying = false;
         let selectedObjectId = null;
+        let selectedObjectIds = new Set(); // Multi-select support
         let nextObjectId = 1;
         let isDragging = false;
         let dragOffsetX = 0;
         let dragOffsetY = 0;
         let isShiftPressed = false;
+        let userVariables = new Map(); // User-defined variables
         const GRID_SIZE = 25;
 
         function initDemo() {
@@ -1550,6 +1661,51 @@
                 ])
             });
 
+            // Star with collision detection and variables
+            const starX = parseEquation('centerX + cos(t * speed) * radius');
+            const starY = parseEquation('centerY + sin(t * speed) * radius');
+            const starRed = parseEquation('if(overlaps(star, bouncer), 255, 50)');
+            const starRot = parseEquation('t * 10');
+
+            objects.set('star', {
+                id: 'star',
+                name: 'Collision Star',
+                x: 500, y: 300,
+                width: 60, height: 60,
+                rotation: 0,
+                red: 50, green: 255, blue: 200,
+                transparency: 100,
+                appearance: 'star',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'centerX + cos(t * speed) * radius',
+                        expression: starX.expression,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'centerY + sin(t * speed) * radius',
+                        expression: starY.expression,
+                        cache: new Map()
+                    }],
+                    ['red', {
+                        attribute: 'red',
+                        text: 'if(overlaps(star, bouncer), 255, 50)',
+                        expression: starRed.expression,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * 10',
+                        expression: starRot.expression,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
             animationController = new AnimationController((frame) => {
                 renderFrame(frame);
                 updateFrameDisplay(frame);
@@ -1561,9 +1717,16 @@
             document.addEventListener('keydown', handleKeyDown);
             document.addEventListener('keyup', handleKeyUp);
 
+            // Set up some demo variables
+            userVariables.set('speed', 3);
+            userVariables.set('radius', 100);
+            userVariables.set('centerX', 400);
+            userVariables.set('centerY', 300);
+
             // Save initial state
             saveHistoryState();
 
+            updateVariablesList();
             updateObjectList();
             updatePropertyPanel();
             updateHistoryUI();
@@ -1732,6 +1895,10 @@
             } else if (obj.appearance === 'triangle') {
                 // Simple bounding box for triangle
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
+            } else if (obj.appearance === 'star' || obj.appearance === 'pentagon' || obj.appearance === 'hexagon') {
+                // Circle hit test for regular polygons
+                const radius = Math.max(obj.width, obj.height) / 2;
+                return (rotatedX * rotatedX + rotatedY * rotatedY) <= radius * radius;
             } else if (obj.appearance === 'line' || obj.appearance === 'arrow') {
                 // Hit test for line - check if within width and height tolerance
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= 10;
@@ -1795,6 +1962,69 @@
             });
 
             saveHistoryState();
+            renderFrame(animationController.currentFrame);
+        }
+
+        // ==================== Variables Management ====================
+
+        function updateVariablesList() {
+            const listEl = document.getElementById('variablesList');
+            if (userVariables.size === 0) {
+                listEl.innerHTML = '<div style="font-size: 11px; color: #999; font-style: italic;">No variables defined</div>';
+                return;
+            }
+
+            listEl.innerHTML = '';
+            userVariables.forEach((value, name) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'display: flex; align-items: center; gap: 5px; margin: 5px 0; padding: 5px; background: white; border-radius: 4px; font-size: 12px;';
+                div.innerHTML = `
+                    <span style="flex: 1; font-weight: 600; font-family: monospace;">${name}</span>
+                    <span style="flex: 1; color: #667eea; font-family: monospace;">${value}</span>
+                    <button onclick="deleteVariable('${name}')" style="padding: 2px 6px; font-size: 11px; background: #dc3545;">×</button>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        function addVariable() {
+            const nameInput = document.getElementById('varName');
+            const valueInput = document.getElementById('varValue');
+            const name = nameInput.value.trim();
+            const value = parseFloat(valueInput.value);
+
+            if (!name || isNaN(value)) {
+                alert('Please enter a valid variable name and numeric value');
+                return;
+            }
+
+            if (name === 't' || name.includes('.')) {
+                alert('Reserved variable name. Cannot use "t" or names with dots.');
+                return;
+            }
+
+            userVariables.set(name, value);
+            nameInput.value = '';
+            valueInput.value = '';
+
+            // Clear all equation caches since variables changed
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => eq.cache.clear());
+            });
+
+            updateVariablesList();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function deleteVariable(name) {
+            userVariables.delete(name);
+
+            // Clear all equation caches
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => eq.cache.clear());
+            });
+
+            updateVariablesList();
             renderFrame(animationController.currentFrame);
         }
 
@@ -1866,7 +2096,18 @@
 
             panel.innerHTML = `
                 <div class="property-group">
-                    <h4>${obj.name}</h4>
+                    <h4>Object</h4>
+                    <div class="property-row">
+                        <label>Name:</label>
+                        <input type="text" value="${obj.name}" onchange="renameObject('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;" />
+                    </div>
+                    <div class="property-row" style="margin-top: 10px;">
+                        <label>Shape: <span class="value-display">${obj.appearance}</span></label>
+                    </div>
+                </div>
+
+                <div class="property-group">
+                    <h4>Position & Size</h4>
                     ${propertyRow('x', 'X Position', 0, 800)}
                     ${propertyRow('y', 'Y Position', 0, 600)}
                     ${propertyRow('width', 'Width', 10, 200)}
@@ -2150,6 +2391,16 @@
 
         // ==================== Object Operations ====================
 
+        function renameObject(objectId, newName) {
+            const obj = objects.get(objectId);
+            if (obj && newName.trim()) {
+                obj.name = newName.trim();
+                saveHistoryState();
+                updateObjectList();
+                updatePropertyPanel();
+            }
+        }
+
         function copySelectedObject() {
             if (!selectedObjectId) return;
 
@@ -2400,9 +2651,15 @@
         }
 
         function serializeProject() {
+            const variablesObj = {};
+            userVariables.forEach((value, name) => {
+                variablesObj[name] = value;
+            });
+
             const data = {
-                version: '2.0',
+                version: '3.0',
                 currentFrame: animationController.currentFrame,
+                variables: variablesObj,
                 objects: serializeObjects()
             };
             return JSON.stringify(data, null, 2);
@@ -2411,6 +2668,14 @@
         function deserializeProject(jsonString) {
             const data = JSON.parse(jsonString);
             deserializeObjects(data.objects);
+
+            // Load variables
+            userVariables.clear();
+            if (data.variables) {
+                Object.entries(data.variables).forEach(([name, value]) => {
+                    userVariables.set(name, value);
+                });
+            }
 
             if (data.currentFrame !== undefined) {
                 animationController.setFrame(data.currentFrame);
@@ -2421,6 +2686,7 @@
             historyManager.clear();
             saveHistoryState();
 
+            updateVariablesList();
             updateObjectList();
             updatePropertyPanel();
             updateHistoryUI();
