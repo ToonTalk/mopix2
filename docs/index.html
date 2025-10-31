@@ -1202,8 +1202,17 @@
         }
 
         function updateObjectAtTime(obj, time, allObjects) {
+            // Check cache to prevent infinite recursion
+            const cacheKey = `${obj.id}_${time}`;
+            if (updateCache.has(cacheKey)) {
+                return updateCache.get(cacheKey);
+            }
+
             const context = { object: obj, time, allObjects };
             const updated = { ...obj };
+
+            // Mark this object as being computed to prevent recursion
+            updateCache.set(cacheKey, updated);
 
             // Get previous position for velocity calculation
             const prevKey = `${obj.id}_${time - 1}`;
@@ -1697,6 +1706,7 @@
         let lastPanX = 0;
         let lastPanY = 0;
         let velocityTracking = new Map(); // Track position history for velocity calculation
+        let updateCache = new Map(); // Cache to prevent infinite recursion in updateObjectAtTime
         const GRID_SIZE = 25;
 
         function initDemo() {
@@ -1816,6 +1826,11 @@
             const followerY = parseEquation('bouncer.y + 0');
             const followerRot = parseEquation('angle(bouncer.x, bouncer.y, mover.x, mover.y)');
 
+            // Debug: Log parsing results
+            if (!followerX.success) console.error('Failed to parse followerX:', followerX.error);
+            if (!followerY.success) console.error('Failed to parse followerY:', followerY.error);
+            if (!followerRot.success) console.error('Failed to parse followerRot:', followerRot.error);
+
             objects.set('follower', {
                 id: 'follower',
                 name: 'Follower',
@@ -1831,19 +1846,19 @@
                     ['x', {
                         attribute: 'x',
                         text: 'bouncer.x + 80',
-                        expression: followerX.expression,
+                        expression: followerX.success ? followerX.expression : null,
                         cache: new Map()
                     }],
                     ['y', {
                         attribute: 'y',
                         text: 'bouncer.y + 0',
-                        expression: followerY.expression,
+                        expression: followerY.success ? followerY.expression : null,
                         cache: new Map()
                     }],
                     ['rotation', {
                         attribute: 'rotation',
                         text: 'angle(bouncer.x, bouncer.y, mover.x, mover.y)',
-                        expression: followerRot.expression,
+                        expression: followerRot.success ? followerRot.expression : null,
                         cache: new Map()
                     }]
                 ])
@@ -1853,6 +1868,11 @@
             const triangleX = parseEquation('if(t < 100, 100 + t * 2, 300)');
             const triangleY = parseEquation('if(dist(bouncer.x, bouncer.y, 400, 500) < 150, bouncer.y - 100, 500)');
             const triangleRot = parseEquation('t * 3');
+
+            // Debug: Log parsing results
+            if (!triangleX.success) console.error('Failed to parse triangleX:', triangleX.error);
+            if (!triangleY.success) console.error('Failed to parse triangleY:', triangleY.error);
+            if (!triangleRot.success) console.error('Failed to parse triangleRot:', triangleRot.error);
 
             objects.set('triangle1', {
                 id: 'triangle1',
@@ -1869,19 +1889,19 @@
                     ['x', {
                         attribute: 'x',
                         text: 'if(t < 100, 100 + t * 2, 300)',
-                        expression: triangleX.expression,
+                        expression: triangleX.success ? triangleX.expression : null,
                         cache: new Map()
                     }],
                     ['y', {
                         attribute: 'y',
                         text: 'if(dist(bouncer.x, bouncer.y, 400, 500) < 150, bouncer.y - 100, 500)',
-                        expression: triangleY.expression,
+                        expression: triangleY.success ? triangleY.expression : null,
                         cache: new Map()
                     }],
                     ['rotation', {
                         attribute: 'rotation',
                         text: 't * 3',
-                        expression: triangleRot.expression,
+                        expression: triangleRot.success ? triangleRot.expression : null,
                         cache: new Map()
                     }]
                 ])
@@ -3006,6 +3026,9 @@
         // ==================== Rendering ====================
 
         function renderFrame(frame) {
+            // Clear update cache for this frame to allow fresh calculations
+            updateCache.clear();
+
             const objectsArray = Array.from(objects.values());
             const updatedObjects = objectsArray.map(obj => {
                 const updated = updateObjectAtTime(obj, frame, objects);
