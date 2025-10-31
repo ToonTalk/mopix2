@@ -577,12 +577,6 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('atan2(bouncer.y - mover.y, bouncer.x - mover.x)')">
                     <strong>Point from A to B:</strong> atan2(bouncer.y - mover.y, bouncer.x - mover.x)
                 </div>
-                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('sqrt(bouncer.vx^2 + bouncer.vy^2)')">
-                    <strong>Speed (magnitude):</strong> sqrt(bouncer.vx^2 + bouncer.vy^2)
-                </div>
-                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(abs(mover.vx) > 5, 255, 100)')">
-                    <strong>React to speed:</strong> if(abs(mover.vx) > 5, 255, 100)
-                </div>
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('100 + smoothstep(0, 100, t) * 400')">
                     <strong>Smooth easing:</strong> 100 + smoothstep(0, 100, t) * 400
                 </div>
@@ -600,7 +594,7 @@
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
                 <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
-                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, vx (velocity X), vy (velocity Y)<br>
+                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue<br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
                 <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
                 <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
@@ -1214,10 +1208,6 @@
             // Mark this object as being computed to prevent recursion
             updateCache.set(cacheKey, updated);
 
-            // Get previous position for velocity calculation
-            const prevKey = `${obj.id}_${time - 1}`;
-            const prevPos = velocityTracking.get(prevKey);
-
             obj.equations.forEach((equation, attribute) => {
                 const value = evaluateEquation(equation, context);
                 switch (attribute) {
@@ -1231,23 +1221,6 @@
                     case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
                 }
             });
-
-            // Calculate velocity based on position change
-            if (prevPos) {
-                updated.vx = updated.x - prevPos.x;
-                updated.vy = updated.y - prevPos.y;
-            } else {
-                updated.vx = 0;
-                updated.vy = 0;
-            }
-
-            // Store current position for next frame's velocity calculation
-            const currentKey = `${obj.id}_${time}`;
-            velocityTracking.set(currentKey, { x: updated.x, y: updated.y });
-
-            // Clean up old entries to prevent memory leak (keep last 100 frames)
-            const oldKey = `${obj.id}_${time - 100}`;
-            velocityTracking.delete(oldKey);
 
             return updated;
         }
@@ -1705,7 +1678,6 @@
         let isPanning = false;
         let lastPanX = 0;
         let lastPanY = 0;
-        let velocityTracking = new Map(); // Track position history for velocity calculation
         let updateCache = new Map(); // Cache to prevent infinite recursion in updateObjectAtTime
         const GRID_SIZE = 25;
 
@@ -2081,65 +2053,6 @@
                         attribute: 'rotation',
                         text: 't * pi',
                         expression: expRot.success ? expRot.expression : null,
-                        cache: new Map()
-                    }]
-                ])
-            });
-
-            // Velocity Indicator - demonstrates velocity tracking
-            const velX = parseEquation('bouncer.x - 100');
-            const velY = parseEquation('bouncer.y');
-            const velWidth = parseEquation('20 + abs(bouncer.vx) * 3');
-            const velHeight = parseEquation('20 + abs(bouncer.vy) * 3');
-            const velRed = parseEquation('clamp(abs(bouncer.vx) * 10, 50, 255)');
-            const velGreen = parseEquation('clamp(abs(bouncer.vy) * 10, 50, 255)');
-
-            objects.set('velocityIndicator', {
-                id: 'velocityIndicator',
-                name: 'Velocity Indicator',
-                x: 300, y: 300,
-                width: 40, height: 40,
-                rotation: 0,
-                red: 100, green: 100, blue: 255,
-                transparency: 100,
-                appearance: 'diamond',
-                penDown: false,
-                text: '',
-                equations: new Map([
-                    ['x', {
-                        attribute: 'x',
-                        text: 'bouncer.x - 100',
-                        expression: velX.success ? velX.expression : null,
-                        cache: new Map()
-                    }],
-                    ['y', {
-                        attribute: 'y',
-                        text: 'bouncer.y',
-                        expression: velY.success ? velY.expression : null,
-                        cache: new Map()
-                    }],
-                    ['width', {
-                        attribute: 'width',
-                        text: '20 + abs(bouncer.vx) * 3',
-                        expression: velWidth.success ? velWidth.expression : null,
-                        cache: new Map()
-                    }],
-                    ['height', {
-                        attribute: 'height',
-                        text: '20 + abs(bouncer.vy) * 3',
-                        expression: velHeight.success ? velHeight.expression : null,
-                        cache: new Map()
-                    }],
-                    ['red', {
-                        attribute: 'red',
-                        text: 'clamp(abs(bouncer.vx) * 10, 50, 255)',
-                        expression: velRed.success ? velRed.expression : null,
-                        cache: new Map()
-                    }],
-                    ['green', {
-                        attribute: 'green',
-                        text: 'clamp(abs(bouncer.vy) * 10, 50, 255)',
-                        expression: velGreen.success ? velGreen.expression : null,
                         cache: new Map()
                     }]
                 ])
