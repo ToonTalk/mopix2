@@ -431,7 +431,7 @@
                     <li><kbd>Delete</kbd> Delete object | <kbd>P</kbd> Toggle pen | <kbd>C</kbd> Copy object</li>
                     <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid</li>
                     <li><strong>🔢 Variables:</strong> Define custom variables (speed, radius, etc.) - use in equations!</li>
-                    <li><strong>📐 Equations:</strong> 12 shapes, collision detection, conditionals, and 25+ functions!</li>
+                    <li><strong>📐 Equations:</strong> 12 shapes, collision detection, conditionals, and 30+ functions!</li>
                 </ul>
             </div>
         </div>
@@ -583,6 +583,15 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(abs(mover.vx) > 5, 255, 100)')">
                     <strong>React to speed:</strong> if(abs(mover.vx) > 5, 255, 100)
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('100 + smoothstep(0, 100, t) * 400')">
+                    <strong>Smooth easing:</strong> 100 + smoothstep(0, 100, t) * 400
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('300 + bounce(t / 50) * 200')">
+                    <strong>Bounce effect:</strong> 300 + bounce(t / 50) * 200
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('wrap(t * 5, 100, 700)')">
+                    <strong>Wrapping motion:</strong> wrap(t * 5, 100, 700)
+                </div>
             </div>
         </div>
 
@@ -596,7 +605,8 @@
                 <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
                 <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
                 <strong>Collision:</strong> overlaps(obj1, obj2) - returns 1 if colliding<br>
-                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2
+                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2<br>
+                <strong>Easing:</strong> smoothstep(edge0, edge1, x), step(edge, x), ease(x, power), bounce(t), wrap(val, min, max)
             </div>
         </div>
 
@@ -762,6 +772,74 @@
                         const values = this.args.map(arg => arg.evaluate(context));
                         if (values.length === 2) {
                             return Math.atan2(values[0], values[1]) * 180 / Math.PI;
+                        }
+                        return 0;
+                    }
+                    case 'smoothstep': {
+                        // smoothstep(edge0, edge1, x) - smooth Hermite interpolation
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 3) {
+                            const edge0 = values[0];
+                            const edge1 = values[1];
+                            let x = values[2];
+                            // Clamp x to 0-1 range
+                            x = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+                            // Hermite interpolation: 3x^2 - 2x^3
+                            return x * x * (3 - 2 * x);
+                        }
+                        return 0;
+                    }
+                    case 'step': {
+                        // step(edge, x) - returns 0 if x < edge, else 1
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 2) {
+                            return values[1] < values[0] ? 0 : 1;
+                        }
+                        return 0;
+                    }
+                    case 'wrap': {
+                        // wrap(value, min, max) - wraps value to range [min, max)
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 3) {
+                            const value = values[0];
+                            const min = values[1];
+                            const max = values[2];
+                            const range = max - min;
+                            if (range === 0) return min;
+                            return min + ((((value - min) % range) + range) % range);
+                        }
+                        return 0;
+                    }
+                    case 'bounce': {
+                        // bounce(t) - bouncing easing (0 to 1 input)
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 1) {
+                            let t = values[0];
+                            // Normalize to 0-1 if needed
+                            t = t - Math.floor(t);
+
+                            if (t < 1/2.75) {
+                                return 7.5625 * t * t;
+                            } else if (t < 2/2.75) {
+                                t -= 1.5/2.75;
+                                return 7.5625 * t * t + 0.75;
+                            } else if (t < 2.5/2.75) {
+                                t -= 2.25/2.75;
+                                return 7.5625 * t * t + 0.9375;
+                            } else {
+                                t -= 2.625/2.75;
+                                return 7.5625 * t * t + 0.984375;
+                            }
+                        }
+                        return 0;
+                    }
+                    case 'ease': {
+                        // ease(x, power) - power-based easing
+                        const values = this.args.map(arg => arg.evaluate(context));
+                        if (values.length === 2) {
+                            const x = Math.max(0, Math.min(1, values[0]));  // Clamp to 0-1
+                            const power = values[1];
+                            return Math.pow(x, power);
                         }
                         return 0;
                     }
@@ -1076,7 +1154,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'overlaps'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -2042,6 +2120,82 @@
                         attribute: 'green',
                         text: 'clamp(abs(bouncer.vy) * 10, 50, 255)',
                         expression: velGreen.success ? velGreen.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Smooth Ease Ellipse - demonstrates smoothstep easing
+            const easeX = parseEquation('100 + smoothstep(0, 100, mod(t, 100)) * 500');
+            const easeY = parseEquation('250');
+            const easeRot = parseEquation('t * 3');
+
+            objects.set('smoothEase', {
+                id: 'smoothEase',
+                name: 'Smooth Easer',
+                x: 100, y: 250,
+                width: 45, height: 30,
+                rotation: 0,
+                red: 150, green: 255, blue: 150,
+                transparency: 100,
+                appearance: 'ellipse',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: '100 + smoothstep(0, 100, mod(t, 100)) * 500',
+                        expression: easeX.success ? easeX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '250',
+                        expression: easeY.success ? easeY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * 3',
+                        expression: easeRot.success ? easeRot.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Bounce Rounded Rect - demonstrates bounce easing
+            const bounceX = parseEquation('200');
+            const bounceY = parseEquation('100 + bounce(mod(t / 60, 1)) * 400');
+            const bounceHeight = parseEquation('50 + bounce(mod(t / 60, 1)) * 20');
+
+            objects.set('bouncer2', {
+                id: 'bouncer2',
+                name: 'Bouncer',
+                x: 200, y: 500,
+                width: 60, height: 40,
+                rotation: 0,
+                red: 255, green: 180, blue: 100,
+                transparency: 100,
+                appearance: 'roundrect',
+                penDown: false,
+                text: '',
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: '200',
+                        expression: bounceX.success ? bounceX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '100 + bounce(mod(t / 60, 1)) * 400',
+                        expression: bounceY.success ? bounceY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['height', {
+                        attribute: 'height',
+                        text: '50 + bounce(mod(t / 60, 1)) * 20',
+                        expression: bounceHeight.success ? bounceHeight.expression : null,
                         cache: new Map()
                     }]
                 ])
