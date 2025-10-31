@@ -586,6 +586,18 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('wrap(t * 5, 100, 700)')">
                     <strong>Wrapping motion:</strong> wrap(t * 5, 100, 700)
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('mouse.x')">
+                    <strong>Follow mouse X:</strong> mouse.x
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('mouse.y')">
+                    <strong>Follow mouse Y:</strong> mouse.y
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('400 + keyDown(d) * 150 - keyDown(a) * 150')">
+                    <strong>Keyboard control:</strong> 400 + keyDown(d) * 150 - keyDown(a) * 150
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(keyDown(space), 255, 100)')">
+                    <strong>Key pressed color:</strong> if(keyDown(space), 255, 100)
+                </div>
             </div>
         </div>
 
@@ -594,12 +606,13 @@
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
                 <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
-                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue<br>
+                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, transparencyPen<br>
+                <strong>Input:</strong> mouse.x, mouse.y (mouse position), keyDown(key) - returns 1 if pressed<br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
                 <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
                 <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
                 <strong>Collision:</strong> overlaps(obj1, obj2) - returns 1 if colliding<br>
-                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2<br>
+                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2, keyDown<br>
                 <strong>Easing:</strong> smoothstep(edge0, edge1, x), step(edge, x), ease(x, power), bounce(t), wrap(val, min, max)
             </div>
         </div>
@@ -653,6 +666,14 @@
                 // Handle object property references (e.g., "bouncer.x")
                 if (this.name.includes('.')) {
                     const [objectId, property] = this.name.split('.');
+
+                    // Special built-in object: mouse
+                    if (objectId === 'mouse') {
+                        if (property === 'x') return mouseX;
+                        if (property === 'y') return mouseY;
+                        return 0;
+                    }
+
                     const targetObj = context.allObjects.get(objectId);
 
                     if (targetObj) {
@@ -860,6 +881,19 @@
 
                                     return (dx < minDistX && dy < minDistY) ? 1 : 0;
                                 }
+                            }
+                        }
+                        return 0;
+                    }
+                    case 'keyDown': {
+                        // keyDown(key, t) - returns 1 if key is pressed, 0 otherwise
+                        // key can be a single letter or special key name
+                        if (this.args.length >= 1) {
+                            const keyArg = this.args[0];
+                            // Get the key name from the argument
+                            if (keyArg instanceof VariableExpression) {
+                                const keyName = keyArg.name.toLowerCase();
+                                return keysPressed.has(keyName) ? 1 : 0;
                             }
                         }
                         return 0;
@@ -1148,7 +1182,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps', 'keyDown'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -1219,6 +1253,11 @@
                     case 'red': updated.red = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'green': updated.green = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'thicknessPen': updated.thicknessPen = Math.max(0.5, value); break;
+                    case 'redColourPen': updated.redColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'greenColourPen': updated.greenColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'blueColourPen': updated.blueColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'transparencyPen': updated.transparencyPen = Math.max(0, Math.min(100, value)); break;
                 }
             });
 
@@ -1562,8 +1601,12 @@
                 if (!this.trails.has(obj.id)) {
                     this.trails.set(obj.id, {
                         points: [],
-                        color: { r: obj.red, g: obj.green, b: obj.blue },
-                        thickness: 2
+                        color: {
+                            r: obj.redColourPen !== undefined ? obj.redColourPen : obj.red,
+                            g: obj.greenColourPen !== undefined ? obj.greenColourPen : obj.green,
+                            b: obj.blueColourPen !== undefined ? obj.blueColourPen : obj.blue
+                        },
+                        thickness: obj.thicknessPen !== undefined ? obj.thicknessPen : 2
                     });
                 }
 
@@ -1571,7 +1614,12 @@
 
                 if (!last || last.frame + 1 === frame) {
                     trail.points.push({ x: obj.x, y: obj.y });
-                    trail.color = { r: obj.red, g: obj.green, b: obj.blue };
+                    trail.color = {
+                        r: obj.redColourPen !== undefined ? obj.redColourPen : obj.red,
+                        g: obj.greenColourPen !== undefined ? obj.greenColourPen : obj.green,
+                        b: obj.blueColourPen !== undefined ? obj.blueColourPen : obj.blue
+                    };
+                    trail.thickness = obj.thicknessPen !== undefined ? obj.thicknessPen : 2;
                 } else if (last.frame !== frame) {
                     trail.points = [{ x: obj.x, y: obj.y }];
                 }
@@ -1672,6 +1720,9 @@
         let dragOffsetX = 0;
         let dragOffsetY = 0;
         let isShiftPressed = false;
+        let mouseX = 0;  // Current mouse X position
+        let mouseY = 0;  // Current mouse Y position
+        let keysPressed = new Set();  // Currently pressed keys
         let userVariables = new Map(); // User-defined variables
         let randomSeed = 12345; // For deterministic random
         let camera = { x: 0, y: 0, zoom: 1 }; // Camera transform
@@ -1701,6 +1752,11 @@
                 appearance: 'square',
                 penDown: true,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 100,
+                blueColourPen: 100,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -1725,6 +1781,11 @@
                 appearance: 'circle',
                 penDown: true,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 100,
+                greenColourPen: 200,
+                blueColourPen: 255,
+                transparencyPen: 100,
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
@@ -1754,6 +1815,11 @@
                 appearance: 'square',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 100,
+                greenColourPen: 255,
+                blueColourPen: 100,
+                transparencyPen: 100,
                 equations: new Map([
                     ['rotation', {
                         attribute: 'rotation',
@@ -1775,6 +1841,11 @@
                 appearance: 'circle',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 128,
+                greenColourPen: 128,
+                blueColourPen: 255,
+                transparencyPen: 100,
                 equations: new Map([
                     ['red', {
                         attribute: 'red',
@@ -1814,6 +1885,11 @@
                 appearance: 'square',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 200,
+                blueColourPen: 50,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -1857,6 +1933,11 @@
                 appearance: 'triangle',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 150,
+                greenColourPen: 50,
+                blueColourPen: 200,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -1902,6 +1983,11 @@
                 appearance: 'star',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 50,
+                greenColourPen: 255,
+                blueColourPen: 200,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -1947,6 +2033,11 @@
                 appearance: 'pentagon',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 200,
+                blueColourPen: 100,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -1991,6 +2082,11 @@
                 appearance: 'hexagon',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 100,
+                blueColourPen: 150,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2030,6 +2126,11 @@
                 appearance: 'circle',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 100,
+                greenColourPen: 200,
+                blueColourPen: 255,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2074,6 +2175,11 @@
                 appearance: 'ellipse',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 150,
+                greenColourPen: 255,
+                blueColourPen: 150,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2112,6 +2218,11 @@
                 appearance: 'roundrect',
                 penDown: false,
                 text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 180,
+                blueColourPen: 100,
+                transparencyPen: 100,
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2129,6 +2240,99 @@
                         attribute: 'height',
                         text: '50 + bounce(mod(t / 60, 1)) * 20',
                         expression: bounceHeight.success ? bounceHeight.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Mouse Follower - demonstrates mouse.x and mouse.y
+            const mouseFollowerX = parseEquation('mouse.x');
+            const mouseFollowerY = parseEquation('mouse.y');
+            const mouseFollowerRot = parseEquation('t * 8');
+            const mouseFollowerSize = parseEquation('30 + sin(t * 5) * 10');
+
+            objects.set('mouseFollower', {
+                id: 'mouseFollower',
+                name: 'Mouse Follower',
+                x: 400, y: 300,
+                width: 30, height: 30,
+                rotation: 0,
+                red: 255, green: 50, blue: 150,
+                transparency: 80,
+                appearance: 'star',
+                penDown: true,
+                text: '',
+                thicknessPen: 1,
+                redColourPen: 255,
+                greenColourPen: 100,
+                blueColourPen: 200,
+                transparencyPen: 50,
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'mouse.x',
+                        expression: mouseFollowerX.success ? mouseFollowerX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'mouse.y',
+                        expression: mouseFollowerY.success ? mouseFollowerY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['rotation', {
+                        attribute: 'rotation',
+                        text: 't * 8',
+                        expression: mouseFollowerRot.success ? mouseFollowerRot.expression : null,
+                        cache: new Map()
+                    }],
+                    ['width', {
+                        attribute: 'width',
+                        text: '30 + sin(t * 5) * 10',
+                        expression: mouseFollowerSize.success ? mouseFollowerSize.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Keyboard controlled object - demonstrates keyDown()
+            const keyObjX = parseEquation('400 + keyDown(d) * 150 - keyDown(a) * 150');
+            const keyObjY = parseEquation('300 + keyDown(s) * 100 - keyDown(w) * 100');
+            const keyObjRed = parseEquation('if(keyDown(space), 255, 100)');
+
+            objects.set('keyboardObj', {
+                id: 'keyboardObj',
+                name: 'Keyboard Ctrl',
+                x: 400, y: 300,
+                width: 50, height: 50,
+                rotation: 0,
+                red: 100, green: 150, blue: 255,
+                transparency: 100,
+                appearance: 'square',
+                penDown: false,
+                text: '',
+                thicknessPen: 3,
+                redColourPen: 100,
+                greenColourPen: 150,
+                blueColourPen: 255,
+                transparencyPen: 100,
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: '400 + keyDown(d) * 150 - keyDown(a) * 150',
+                        expression: keyObjX.success ? keyObjX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: '300 + keyDown(s) * 100 - keyDown(w) * 100',
+                        expression: keyObjY.success ? keyObjY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['red', {
+                        attribute: 'red',
+                        text: 'if(keyDown(space), 255, 100)',
+                        expression: keyObjRed.success ? keyObjRed.expression : null,
                         cache: new Map()
                     }]
                 ])
@@ -2191,11 +2395,15 @@
         }
 
         function handleMouseMove(event) {
-            if (!isDragging || !selectedObjectId) return;
-
             const rect = canvas.getBoundingClientRect();
             let x = event.clientX - rect.left;
             let y = event.clientY - rect.top;
+
+            // Always track mouse position for mouse.x and mouse.y in equations
+            mouseX = x;
+            mouseY = y;
+
+            if (!isDragging || !selectedObjectId) return;
 
             const obj = objects.get(selectedObjectId);
             let newX = x + dragOffsetX;
@@ -2226,6 +2434,9 @@
 
         function handleKeyDown(event) {
             if (event.target.tagName === 'INPUT') return;
+
+            // Track all key presses for keyDown() function in equations
+            keysPressed.add(event.key.toLowerCase());
 
             // Track Shift key for grid snap
             if (event.key === 'Shift') {
@@ -2301,6 +2512,9 @@
         }
 
         function handleKeyUp(event) {
+            // Remove from tracked keys
+            keysPressed.delete(event.key.toLowerCase());
+
             if (event.key === 'Shift') {
                 isShiftPressed = false;
                 document.getElementById('gridSnapIndicator').classList.remove('active');
@@ -2561,6 +2775,25 @@
                     </div>
                 </div>
 
+                <div class="property-group">
+                    <h4>Pen Properties</h4>
+
+                    <div class="property-row">
+                        <label>Pen Color Picker</label>
+                        <input type="color" value="${rgbToHex(obj.redColourPen, obj.greenColourPen, obj.blueColourPen)}" onchange="updatePropertyPenColor(this.value)">
+                    </div>
+
+                    ${propertyRow('thicknessPen', 'Pen Thickness', 0.5, 20)}
+                    ${propertyRow('redColourPen', 'Pen Red', 0, 255)}
+                    ${propertyRow('greenColourPen', 'Pen Green', 0, 255)}
+                    ${propertyRow('blueColourPen', 'Pen Blue', 0, 255)}
+
+                    <div class="property-row">
+                        <label>Pen Transparency: <span class="value-display">${Math.round(obj.transparencyPen)}%</span></label>
+                        <input type="range" min="0" max="100" value="${obj.transparencyPen}" oninput="updateProperty('transparencyPen', this.value)">
+                    </div>
+                </div>
+
                 <div class="property-buttons">
                     <button class="secondary" onclick="togglePen()" title="Toggle pen (P)">${obj.penDown ? '✏️ Pen ON' : '✏️ Pen OFF'}</button>
                     <button class="success" onclick="copySelectedObject()" title="Copy object (C)">📋 Copy</button>
@@ -2604,6 +2837,22 @@
             obj.red = r;
             obj.green = g;
             obj.blue = b;
+
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function updatePropertyPenColor(hexColor) {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+
+            obj.redColourPen = r;
+            obj.greenColourPen = g;
+            obj.blueColourPen = b;
 
             updatePropertyPanel();
             renderFrame(animationController.currentFrame);
@@ -2923,6 +3172,11 @@
                 appearance: shape,
                 penDown: false,
                 text: shape === 'text' ? text : '',
+                thicknessPen: 2,
+                redColourPen: Math.floor(Math.random() * 256),
+                greenColourPen: Math.floor(Math.random() * 256),
+                blueColourPen: Math.floor(Math.random() * 256),
+                transparencyPen: 100,
                 equations: new Map()
             };
 
