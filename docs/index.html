@@ -3646,10 +3646,10 @@
                 description: 'A rectangle whose width and height increase.',
                 create: () => {
                     clearAll();
-                    createSampleObject('rect', 'square', 400, 300, 50, 50, 255, 100, 100, {
-                        width: '50 + t',
-                        height: '50 + t'
-                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = 50 + t\\nheight = 50 + t\\n\\nBoth dimensions start at 50 pixels and grow by 1 pixel per frame, creating a square that expands uniformly.');
+                    createSampleObject('rect', 'square', 340.7, 212.5, 10, 10, 255, 100, 100, {
+                        width: 't * 2',
+                        height: 't'
+                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThe width grows twice as fast as the height, creating a rectangle that expands non-uniformly.');
                 }
             },
             {
@@ -3658,9 +3658,9 @@
                 description: 'A semi-transparent ellipse that rotates.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ellipse', 'ellipse', 400, 300, 150, 80, 150, 100, 255, {
-                        rotation: 't * 2'
-                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 2\\n\\nThis ellipse rotates at 2 degrees per frame. The transparency allows you to see through it.');
+                    createSampleObject('ellipse', 'ellipse', 379.75, 321.5, 200, 100, 100, 100, 100, {
+                        rotation: 't * 3'
+                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 3\\n\\nThis ellipse rotates at 3 degrees per frame. The transparency allows you to see through it.');
                     objects.get('ellipse').transparency = 50;
                 }
             },
@@ -3708,11 +3708,11 @@
                 description: 'A rectangle changing in three different ways with different cycles.',
                 create: () => {
                     clearAll();
-                    createSampleObject('rect', 'square', 400, 300, 100, 60, 128, 128, 128, {
-                        x: 'sin(t * 5) * 100 + 400',
-                        y: 'cos(t * 3) * 80 + 300',
-                        rotation: 't * 7'
-                    }, 'A rectangle with three independent cycles.');
+                    createSampleObject('rect', 'square', 227.75, 241.5, 100, 200, 128, 128, 128, {
+                        width: '50 * sin(t) + 50',
+                        green: '50 * sin(2 * t) + 50',
+                        rotation: '50 * sin(3 * t) + 50'
+                    }, 'A rectangle with three independent cycles.\\n\\nEquations:\\nwidth = 50 × sin(t) + 50\\ngreen = 50 × sin(2t) + 50\\nrotation = 50 × sin(3t) + 50\\n\\nThree different periodic behaviors with sine waves at different frequencies.');
                 }
             },
             {
@@ -3721,9 +3721,9 @@
                 description: 'An exercise in negative gravity.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ball', 'circle', 400, 500, 40, 40, 255, 200, 100, {
-                        y: '500 - 0.5 * t * t'
-                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.5 × t²\\n\\nThis uses the physics equation for motion under constant acceleration (like gravity), but with negative gravity.');
+                    createSampleObject('ball', 'circle', 305.75, 500, 40, 40, 255, 200, 100, {
+                        y: '500 - 0.049 * t * t'
+                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
                 }
             }
         ];

@@ -53,6 +53,7 @@ export class CanvasRenderer {
         break;
 
       case 'circle':
+      case 'ellipse':
         this.ctx.beginPath();
         this.ctx.ellipse(
           0,
