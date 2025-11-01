@@ -598,6 +598,15 @@
                 <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('if(keyDown(space), 255, 100)')">
                     <strong>Key pressed color:</strong> if(keyDown(space), 255, 100)
                 </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('prev.x + 2')">
+                    <strong>Previous value (t-1):</strong> prev.x + 2
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('prev.y + prev.vy')">
+                    <strong>Physics velocity:</strong> prev.y + prev.vy
+                </div>
+                <div style="cursor: pointer; padding: 8px; background: white; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; font-family: 'Courier New', monospace;" onclick="setEquationExample('prev.bouncer.x + 10')">
+                    <strong>Track another object:</strong> prev.bouncer.x + 10
+                </div>
             </div>
         </div>
 
@@ -606,8 +615,9 @@
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
                 <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
-                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, transparencyPen<br>
+                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, transparencyPen, <em>custom properties</em><br>
                 <strong>Input:</strong> mouse.x, mouse.y (mouse position), keyDown(key) - returns 1 if pressed<br>
+                <strong>Previous Frame (t-1):</strong> prev.x, prev.objectId.property - access values from previous frame<br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
                 <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
                 <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
@@ -665,12 +675,32 @@
 
                 // Handle object property references (e.g., "bouncer.x")
                 if (this.name.includes('.')) {
-                    const [objectId, property] = this.name.split('.');
+                    const parts = this.name.split('.');
+                    const objectId = parts[0];
+                    const property = parts[1];
 
                     // Special built-in object: mouse
                     if (objectId === 'mouse') {
                         if (property === 'x') return mouseX;
                         if (property === 'y') return mouseY;
+                        return 0;
+                    }
+
+                    // Special built-in object: prev (previous frame values)
+                    if (objectId === 'prev') {
+                        // Handle both prev.x (current object) and prev.objectId.x (other object)
+                        if (parts.length === 2) {
+                            // prev.x - get current object's previous value
+                            const currentObjId = context.object.id;
+                            const prevValues = previousFrameValues.get(currentObjId);
+                            return prevValues ? (prevValues[property] || 0) : 0;
+                        } else if (parts.length === 3) {
+                            // prev.objectId.x - get another object's previous value
+                            const targetObjId = parts[1];
+                            const targetProperty = parts[2];
+                            const prevValues = previousFrameValues.get(targetObjId);
+                            return prevValues ? (prevValues[targetProperty] || 0) : 0;
+                        }
                         return 0;
                     }
 
@@ -1258,6 +1288,10 @@
                     case 'greenColourPen': updated.greenColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'blueColourPen': updated.blueColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'transparencyPen': updated.transparencyPen = Math.max(0, Math.min(100, value)); break;
+                    default:
+                        // Support custom user-defined properties (e.g., vy, vx, ax, ay)
+                        updated[attribute] = value;
+                        break;
                 }
             });
 
@@ -1723,6 +1757,7 @@
         let mouseX = 0;  // Current mouse X position
         let mouseY = 0;  // Current mouse Y position
         let keysPressed = new Set();  // Currently pressed keys
+        let previousFrameValues = new Map();  // Store t-1 values for each object
         let userVariables = new Map(); // User-defined variables
         let randomSeed = 12345; // For deterministic random
         let camera = { x: 0, y: 0, zoom: 1 }; // Camera transform
@@ -2349,11 +2384,68 @@
             document.addEventListener('keydown', handleKeyDown);
             document.addEventListener('keyup', handleKeyUp);
 
+            // Physics Ball - demonstrates prev.x for velocity-based motion (t-1)
+            const physicsX = parseEquation('prev.x + 2');
+            const physicsY = parseEquation('if(prev.y + prev.vy > 550, 550 - (prev.y + prev.vy - 550) * 0.8, prev.y + prev.vy)');
+            const physicsVy = parseEquation('if(prev.y + prev.vy > 550, prev.vy * -0.8, prev.vy + 0.5)');
+
+            objects.set('physicsBall', {
+                id: 'physicsBall',
+                name: 'Physics Ball',
+                x: 500, y: 100,
+                width: 40, height: 40,
+                rotation: 0,
+                red: 255, green: 100, blue: 50,
+                transparency: 100,
+                appearance: 'circle',
+                penDown: true,
+                text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 150,
+                blueColourPen: 100,
+                transparencyPen: 100,
+                vy: 0,  // Custom property for vertical velocity
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'prev.x + 2',
+                        expression: physicsX.success ? physicsX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'if(prev.y + prev.vy > 550, 550 - (prev.y + prev.vy - 550) * 0.8, prev.y + prev.vy)',
+                        expression: physicsY.success ? physicsY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['vy', {
+                        attribute: 'vy',
+                        text: 'if(prev.y + prev.vy > 550, prev.vy * -0.8, prev.vy + 0.5)',
+                        expression: physicsVy.success ? physicsVy.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
             // Set up some demo variables
             userVariables.set('speed', 3);
             userVariables.set('radius', 100);
             userVariables.set('centerX', 400);
             userVariables.set('centerY', 300);
+
+            // Initialize previousFrameValues with initial object states
+            objects.forEach(obj => {
+                const prevValues = { ...obj };
+                // Remove non-property fields
+                delete prevValues.id;
+                delete prevValues.name;
+                delete prevValues.appearance;
+                delete prevValues.penDown;
+                delete prevValues.text;
+                delete prevValues.equations;
+                previousFrameValues.set(obj.id, prevValues);
+            });
 
             // Save initial state
             saveHistoryState();
@@ -3203,6 +3295,20 @@
                     trailManager.recordPosition(updated, frame);
                 }
                 return updated;
+            });
+
+            // Store current frame values for use as prev in next frame (t-1 support)
+            updatedObjects.forEach(obj => {
+                // Store all properties, including custom user-defined ones
+                const prevValues = { ...obj };
+                // Remove non-property fields that shouldn't be in prev
+                delete prevValues.id;
+                delete prevValues.name;
+                delete prevValues.appearance;
+                delete prevValues.penDown;
+                delete prevValues.text;
+                delete prevValues.equations;
+                previousFrameValues.set(obj.id, prevValues);
             });
 
             const trails = trailManager.getAllTrails();
