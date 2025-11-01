@@ -2639,6 +2639,11 @@
             const key = event.key.toLowerCase();
             keysPressed.add(key);
 
+            // Clear all equation caches since keyboard state changed
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => eq.cache.clear());
+            });
+
             // DEBUG: Log key tracking (only for a-z, space)
             if (/^[a-z ]$/.test(key)) {
                 console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying}`);
@@ -2735,6 +2740,11 @@
             // Remove from tracked keys
             const key = event.key.toLowerCase();
             keysPressed.delete(key);
+
+            // Clear all equation caches since keyboard state changed
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => eq.cache.clear());
+            });
 
             // DEBUG: Log key release (only for a-z, space)
             if (/^[a-z ]$/.test(key)) {
