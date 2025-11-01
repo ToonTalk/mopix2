@@ -1026,6 +1026,12 @@
             }
 
             const result = equation.expression.evaluate(context);
+
+            // DEBUG: Log keyboard object equation evaluation results
+            if (context.object && context.object.id === 'keyboardObj' && (equation.attribute === 'x' || equation.attribute === 'y')) {
+                console.log(`[EVAL DETAIL] ${equation.attribute} equation "${equation.text}" = ${result} at t=${time}`);
+            }
+
             equation.cache.set(time, result);
             return result;
         }
