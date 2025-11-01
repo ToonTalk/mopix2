@@ -5,7 +5,7 @@
  * Compatible with MoPiX 2 expression system
  */
 
-import { Expression, EvaluationContext } from '../types';
+import { Expression, EvaluationContext, MoPiXObject, Equation } from '../types';
 
 /**
  * Constant numeric value
@@ -209,7 +209,7 @@ export function updateObjectAtTime(
   const updated = { ...obj };
 
   // Evaluate each equation and update corresponding property
-  obj.equations.forEach((equation, attribute) => {
+  obj.equations.forEach((equation: Equation, attribute: string) => {
     const value = evaluateEquation(equation, context);
 
     switch (attribute) {

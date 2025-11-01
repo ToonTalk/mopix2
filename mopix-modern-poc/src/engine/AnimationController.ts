@@ -12,7 +12,7 @@ export class AnimationController {
 
   constructor(
     private onFrame: (frameNumber: number) => void,
-    private fps: number = 30
+    fps: number = 30
   ) {
     this.frameDuration = 1000 / fps;
   }

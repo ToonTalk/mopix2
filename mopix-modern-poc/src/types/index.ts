@@ -24,6 +24,9 @@ export interface MoPiXObject {
 
   // Equations defining dynamic behavior
   equations: Map<string, Equation>;
+
+  // Optional information/help text explaining the object and its equations
+  info?: string;
 }
 
 export interface Equation {
