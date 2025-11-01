@@ -2756,7 +2756,7 @@
 
             if (obj.appearance === 'square') {
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
-            } else if (obj.appearance === 'circle') {
+            } else if (obj.appearance === 'circle' || obj.appearance === 'ellipse') {
                 const normalizedX = rotatedX / (obj.width/2);
                 const normalizedY = rotatedY / (obj.height/2);
                 return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
