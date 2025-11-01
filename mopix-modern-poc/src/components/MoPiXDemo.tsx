@@ -15,6 +15,7 @@ import {
   BinaryOperatorExpression,
   UnaryOperatorExpression
 } from '../engine/Expression';
+import { sampleModels } from '../data/sampleModels';
 
 export function MoPiXDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +25,8 @@ export function MoPiXDemo() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
+  const [selectedObjectInfo, setSelectedObjectInfo] = useState<string | null>(null);
+  const [showSamplesMenu, setShowSamplesMenu] = useState(false);
 
   // Initialize demo objects
   useEffect(() => {
@@ -57,7 +60,8 @@ export function MoPiXDemo() {
           ),
           cache: new Map()
         }]
-      ])
+      ]),
+      info: 'This square moves horizontally across the screen.\n\nEquation: x = t × 2 + 100\n\nThe x-position is calculated by multiplying time (t) by 2 and adding 100. This creates steady horizontal motion, starting at position 100 and moving 2 pixels per frame to the right.'
     };
 
     // Object 2: Bouncing vertically - y = sin(t * 10) * 100 + 300
@@ -95,7 +99,8 @@ export function MoPiXDemo() {
           ),
           cache: new Map()
         }]
-      ])
+      ]),
+      info: 'This circle bounces up and down smoothly.\n\nEquation: y = sin(t × 10) × 100 + 300\n\nThe sine function creates smooth oscillation between -1 and 1. Multiplying by 10 speeds up the oscillation, multiplying by 100 sets the bounce height (amplitude), and adding 300 centers it at y-position 300.'
     };
 
     // Object 3: Rotating - rotation = t * 5
@@ -122,7 +127,8 @@ export function MoPiXDemo() {
           ),
           cache: new Map()
         }]
-      ])
+      ]),
+      info: 'This rectangle rotates continuously.\n\nEquation: rotation = t × 5\n\nThe rotation angle is simply time multiplied by 5. This creates a steady rotation of 5 degrees per frame. As time increases, the rectangle keeps spinning.'
     };
 
     // Object 4: Color changing - red = 128 + sin(t * 6) * 127
@@ -160,7 +166,8 @@ export function MoPiXDemo() {
           ),
           cache: new Map()
         }]
-      ])
+      ]),
+      info: 'This circle pulses between purple and magenta.\n\nEquation: red = 128 + sin(t × 6) × 127\n\nThe red color channel oscillates using a sine wave. Since sin() ranges from -1 to 1, multiplying by 127 gives -127 to 127. Adding 128 centers this at 128, giving a final range of 1 to 255 (the valid color range).'
     };
 
     objects.set('mover', mover);
@@ -250,19 +257,187 @@ export function MoPiXDemo() {
     renderFrame(frame);
   };
 
+  const loadSampleModel = (modelId: string) => {
+    const model = sampleModels.find(m => m.id === modelId);
+    if (!model) return;
+
+    // Stop animation and reset
+    setIsPlaying(false);
+    animationRef.current?.reset();
+    setCurrentFrame(0);
+
+    // Load the sample model objects
+    objectsRef.current = new Map(model.objects);
+
+    // Re-render
+    renderFrame(0);
+    setShowSamplesMenu(false);
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>MoPiX Modern - Proof of Concept</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1 style={{ margin: 0 }}>MoPiX Modern - Proof of Concept</h1>
+        <button
+          onClick={() => setShowSamplesMenu(true)}
+          style={{
+            padding: '10px 20px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            borderRadius: '4px',
+            border: '1px solid #4CAF50',
+            backgroundColor: '#E8F5E9',
+            color: '#2E7D32',
+            fontWeight: 'bold'
+          }}
+        >
+          📚 Load Sample Model
+        </button>
+      </div>
+
+      {showSamplesMenu && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setShowSamplesMenu(false)}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '700px',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ marginTop: 0 }}>Sample Models</h2>
+            <p style={{ color: '#666', marginBottom: '20px' }}>
+              Choose a sample model to load. These are recreations of the original MoPiX examples.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {sampleModels.map(model => (
+                <div
+                  key={model.id}
+                  style={{
+                    padding: '15px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    backgroundColor: '#fff'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                  onClick={() => loadSampleModel(model.id)}
+                >
+                  <h3 style={{ margin: '0 0 8px 0', color: '#1976D2' }}>{model.name}</h3>
+                  <p style={{ margin: 0, color: '#666' }}>{model.description}</p>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowSamplesMenu(false)}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                backgroundColor: '#f5f5f5'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginBottom: '20px', backgroundColor: '#f5f5f5', padding: '15px', borderRadius: '8px' }}>
         <h2 style={{ marginTop: 0 }}>Demo Objects</h2>
-        <ul style={{ margin: '10px 0' }}>
-          <li><strong>Red Square (Mover):</strong> x = t × 2 + 100 (moves horizontally)</li>
-          <li><strong>Blue Circle (Bouncer):</strong> y = sin(t × 10) × 100 + 300 (bounces vertically)</li>
-          <li><strong>Green Rectangle (Spinner):</strong> rotation = t × 5 (rotates)</li>
-          <li><strong>Color-Changing Circle:</strong> red = 128 + sin(t × 6) × 127 (pulses red)</li>
+        <ul style={{ margin: '10px 0', listStyleType: 'none', paddingLeft: 0 }}>
+          {Array.from(objectsRef.current.values()).map(obj => (
+            <li key={obj.id} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ flex: 1 }}>
+                <strong>{obj.name}:</strong> {
+                  obj.equations.size > 0
+                    ? Array.from(obj.equations.values()).map(eq => eq.expression.toString()).join(', ')
+                    : 'Static object'
+                }
+              </span>
+              {obj.info && (
+                <button
+                  onClick={() => setSelectedObjectInfo(obj.info || null)}
+                  style={{
+                    padding: '5px 10px',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    border: '1px solid #2196F3',
+                    backgroundColor: '#E3F2FD',
+                    color: '#1976D2'
+                  }}
+                  title="Show information about this object"
+                >
+                  ℹ Info
+                </button>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
+
+      {selectedObjectInfo && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={() => setSelectedObjectInfo(null)}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ marginTop: 0 }}>Object Information</h2>
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+              {selectedObjectInfo}
+            </div>
+            <button
+              onClick={() => setSelectedObjectInfo(null)}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                backgroundColor: '#2196F3',
+                color: 'white'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       <canvas
         ref={canvasRef}
