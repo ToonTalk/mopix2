@@ -27,9 +27,10 @@ export function MoPiXDemo() {
   const [currentFrame, setCurrentFrame] = useState(0);
   const [selectedObjectInfo, setSelectedObjectInfo] = useState<string | null>(null);
   const [showSamplesMenu, setShowSamplesMenu] = useState(false);
+  const [, setObjectsVersion] = useState(0); // Force re-render when objects change
 
-  // Initialize demo objects
-  useEffect(() => {
+  // Store initial demo objects for reset
+  const createDefaultObjects = () => {
     const objects = new Map<string, MoPiXObject>();
 
     // Object 1: Moving horizontally - x = t * 2 + 100
@@ -175,7 +176,12 @@ export function MoPiXDemo() {
     objects.set('spinner', spinner);
     objects.set('colorChanger', colorChanger);
 
-    objectsRef.current = objects;
+    return objects;
+  };
+
+  // Initialize demo objects
+  useEffect(() => {
+    objectsRef.current = createDefaultObjects();
   }, []);
 
   // Initialize renderer and animation controller
@@ -257,6 +263,23 @@ export function MoPiXDemo() {
     renderFrame(frame);
   };
 
+  const loadDefaultDemo = () => {
+    // Stop animation and reset
+    setIsPlaying(false);
+    animationRef.current?.reset();
+    setCurrentFrame(0);
+
+    // Load default demo objects
+    objectsRef.current = createDefaultObjects();
+
+    // Force component to re-render to show new objects
+    setObjectsVersion((v: number) => v + 1);
+
+    // Re-render
+    renderFrame(0);
+    setShowSamplesMenu(false);
+  };
+
   const loadSampleModel = (modelId: string) => {
     const model = sampleModels.find(m => m.id === modelId);
     if (!model) return;
@@ -268,6 +291,9 @@ export function MoPiXDemo() {
 
     // Load the sample model objects
     objectsRef.current = new Map(model.objects);
+
+    // Force component to re-render to show new objects
+    setObjectsVersion((v: number) => v + 1);
 
     // Re-render
     renderFrame(0);
@@ -322,6 +348,22 @@ export function MoPiXDemo() {
               Choose a sample model to load. These are recreations of the original MoPiX examples.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div
+                style={{
+                  padding: '15px',
+                  border: '2px solid #4CAF50',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  backgroundColor: '#E8F5E9'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C8E6C9'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E8F5E9'}
+                onClick={() => loadDefaultDemo()}
+              >
+                <h3 style={{ margin: '0 0 8px 0', color: '#2E7D32' }}>🏠 Default Demo</h3>
+                <p style={{ margin: 0, color: '#1B5E20' }}>Four objects demonstrating basic movement, rotation, bouncing, and color changes.</p>
+              </div>
               {sampleModels.map(model => (
                 <div
                   key={model.id}
