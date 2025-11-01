@@ -1085,6 +1085,38 @@
                     } else if (ch === ',') {
                         tokens.push(new Token('COMMA', ','));
                         this.advance();
+                    } else if (ch === '<') {
+                        this.advance();
+                        if (this.peek() === '=') {
+                            tokens.push(new Token('LTE', '<='));
+                            this.advance();
+                        } else {
+                            tokens.push(new Token('LT', '<'));
+                        }
+                    } else if (ch === '>') {
+                        this.advance();
+                        if (this.peek() === '=') {
+                            tokens.push(new Token('GTE', '>='));
+                            this.advance();
+                        } else {
+                            tokens.push(new Token('GT', '>'));
+                        }
+                    } else if (ch === '=') {
+                        this.advance();
+                        if (this.peek() === '=') {
+                            tokens.push(new Token('EQ', '=='));
+                            this.advance();
+                        } else {
+                            throw new Error('Unexpected single = (use == for equality)');
+                        }
+                    } else if (ch === '!') {
+                        this.advance();
+                        if (this.peek() === '=') {
+                            tokens.push(new Token('NEQ', '!='));
+                            this.advance();
+                        } else {
+                            throw new Error('Unexpected ! (use != for inequality)');
+                        }
                     } else {
                         throw new Error(`Unexpected character: ${ch}`);
                     }
@@ -1142,7 +1174,19 @@
             }
 
             parseExpression() {
-                return this.parseAddition();
+                return this.parseComparison();
+            }
+
+            parseComparison() {
+                let left = this.parseAddition();
+
+                while (['LT', 'GT', 'LTE', 'GTE', 'EQ', 'NEQ'].includes(this.peek().type)) {
+                    const op = this.advance();
+                    const right = this.parseAddition();
+                    left = new BinaryOperatorExpression(op.value, left, right);
+                }
+
+                return left;
             }
 
             parseAddition() {
@@ -2373,21 +2417,15 @@
                 ])
             });
 
-            animationController = new AnimationController((frame) => {
-                renderFrame(frame);
-                updateFrameDisplay(frame);
-            }, 30);
-
-            canvas.addEventListener('mousedown', handleMouseDown);
-            canvas.addEventListener('mousemove', handleMouseMove);
-            canvas.addEventListener('mouseup', handleMouseUp);
-            document.addEventListener('keydown', handleKeyDown);
-            document.addEventListener('keyup', handleKeyUp);
-
             // Physics Ball - demonstrates prev.x for velocity-based motion (t-1)
             const physicsX = parseEquation('prev.x + 2');
             const physicsY = parseEquation('if(prev.y + prev.vy > 550, 550 - (prev.y + prev.vy - 550) * 0.8, prev.y + prev.vy)');
             const physicsVy = parseEquation('if(prev.y + prev.vy > 550, prev.vy * -0.8, prev.vy + 0.5)');
+
+            // Debug: Log parsing results
+            if (!physicsX.success) console.error('Failed to parse physicsX:', physicsX.error);
+            if (!physicsY.success) console.error('Failed to parse physicsY:', physicsY.error);
+            if (!physicsVy.success) console.error('Failed to parse physicsVy:', physicsVy.error);
 
             objects.set('physicsBall', {
                 id: 'physicsBall',
@@ -2427,6 +2465,17 @@
                     }]
                 ])
             });
+
+            animationController = new AnimationController((frame) => {
+                renderFrame(frame);
+                updateFrameDisplay(frame);
+            }, 30);
+
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
 
             // Set up some demo variables
             userVariables.set('speed', 3);
