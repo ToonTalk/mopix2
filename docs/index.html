@@ -448,6 +448,12 @@
             <div id="propertyPanel" class="property-panel empty">
                 Select an object to edit properties
             </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <button class="success" onclick="showSampleModels()" style="width: 100%; font-size: 12px; padding: 10px;">
+                    📚 Load Sample Model
+                </button>
+            </div>
         </div>
     </div>
 
@@ -636,6 +642,20 @@
                 <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2, keyDown<br>
                 <strong>Easing:</strong> smoothstep(edge0, edge1, x), step(edge, x), ease(x, power), bounce(t), wrap(val, min, max)
             </div>
+        </div>
+    </div>
+
+    <!-- Sample Models Dialog -->
+    <div id="sampleModelsDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 600px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <h3 style="margin-top: 0; color: #667eea;">📚 Sample Models</h3>
+        <p style="color: #666; margin-bottom: 20px;">Choose a sample model to load. These are recreations of the original MoPiX examples.</p>
+
+        <div id="sampleModelsList" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Sample models will be populated here -->
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="secondary" onclick="closeSampleModels()" style="width: 100%;">Cancel</button>
         </div>
     </div>
 
@@ -3604,6 +3624,210 @@
             updatePropertyPanel();
             updateHistoryUI();
             renderFrame(animationController.currentFrame);
+        }
+
+        // ==================== Sample Models ====================
+
+        const sampleModels = [
+            {
+                id: 'rotating-rectangle',
+                name: 'Rotating Rectangle',
+                description: 'A simple model of one rectangle that rotates.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('rect', 'square', 400, 300, 100, 60, 100, 150, 255, {
+                        rotation: 't * 3'
+                    }, 'A simple rotating rectangle.\\n\\nEquation: rotation = t × 3\\n\\nThis demonstrates basic rotation animation. The rectangle spins continuously at 3 degrees per frame.');
+                }
+            },
+            {
+                id: 'growing-rectangle',
+                name: 'Growing Rectangle',
+                description: 'A rectangle whose width and height increase.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('rect', 'square', 400, 300, 50, 50, 255, 100, 100, {
+                        width: '50 + t',
+                        height: '50 + t'
+                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = 50 + t\\nheight = 50 + t\\n\\nBoth dimensions start at 50 pixels and grow by 1 pixel per frame, creating a square that expands uniformly.');
+                }
+            },
+            {
+                id: 'rotating-ellipse',
+                name: 'Rotating Ellipse',
+                description: 'A semi-transparent ellipse that rotates.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('ellipse', 'ellipse', 400, 300, 150, 80, 150, 100, 255, {
+                        rotation: 't * 2'
+                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 2\\n\\nThis ellipse rotates at 2 degrees per frame. The transparency allows you to see through it.');
+                    objects.get('ellipse').transparency = 50;
+                }
+            },
+            {
+                id: 'three-rotating-rectangles',
+                name: 'Three Rotating Rectangles',
+                description: 'Three rectangles rotating at different speeds that are also changing colour.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('rect1', 'square', 250, 300, 80, 50, 255, 100, 100, {
+                        rotation: 't * 5',
+                        red: '128 + sin(t * 5) * 127'
+                    }, 'Fast rotating rectangle with color change.');
+                    createSampleObject('rect2', 'square', 400, 300, 80, 50, 100, 255, 100, {
+                        rotation: 't * 3',
+                        green: '128 + sin(t * 3) * 127'
+                    }, 'Medium rotating rectangle with color change.');
+                    createSampleObject('rect3', 'square', 550, 300, 80, 50, 100, 100, 255, {
+                        rotation: 't * 1.5',
+                        blue: '128 + sin(t * 1.5) * 127'
+                    }, 'Slow rotating rectangle with color change.');
+                }
+            },
+            {
+                id: 'bouncing-balls-average',
+                name: 'Average of Bouncing Balls',
+                description: 'Two bouncing balls and a trail of their average position.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('ball1', 'circle', 300, 300, 40, 40, 255, 100, 100, {
+                        y: 'abs(sin(t * 8)) * 150 + 150'
+                    }, 'First bouncing ball.');
+                    createSampleObject('ball2', 'circle', 500, 300, 40, 40, 100, 100, 255, {
+                        y: 'abs(sin((t + 5) * 8)) * 150 + 150'
+                    }, 'Second bouncing ball (phase shifted).');
+                    createSampleObject('average', 'circle', 400, 300, 20, 20, 100, 255, 100, {
+                        y: '(abs(sin(t * 8)) * 150 + 150 + abs(sin((t + 5) * 8)) * 150 + 150) / 2'
+                    }, 'Shows the average Y position of both balls.');
+                    objects.get('average').transparency = 60;
+                }
+            },
+            {
+                id: 'rectangle-three-cycles',
+                name: 'Rectangle with Three Cycles',
+                description: 'A rectangle changing in three different ways with different cycles.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('rect', 'square', 400, 300, 100, 60, 128, 128, 128, {
+                        x: 'sin(t * 5) * 100 + 400',
+                        y: 'cos(t * 3) * 80 + 300',
+                        rotation: 't * 7'
+                    }, 'A rectangle with three independent cycles.');
+                }
+            },
+            {
+                id: 'falling-upward',
+                name: 'Falling Upward',
+                description: 'An exercise in negative gravity.',
+                create: () => {
+                    clearAll();
+                    createSampleObject('ball', 'circle', 400, 500, 40, 40, 255, 200, 100, {
+                        y: '500 - 0.5 * t * t'
+                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.5 × t²\\n\\nThis uses the physics equation for motion under constant acceleration (like gravity), but with negative gravity.');
+                }
+            }
+        ];
+
+        function createSampleObject(id, shape, x, y, width, height, red, green, blue, equations, info) {
+            const obj = {
+                id: id,
+                name: id,
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+                rotation: 0,
+                red: red,
+                green: green,
+                blue: blue,
+                transparency: 100,
+                appearance: shape,
+                equations: new Map(),
+                penDown: false,
+                thicknessPen: 2,
+                redColourPen: 0,
+                greenColourPen: 0,
+                blueColourPen: 0,
+                transparencyPen: 100,
+                info: info || ''
+            };
+
+            // Parse and add equations
+            for (const [prop, expr] of Object.entries(equations)) {
+                try {
+                    const parsedExpr = parseExpression(expr);
+                    obj.equations.set(prop, {
+                        attribute: prop,
+                        expression: parsedExpr,
+                        cache: new Map()
+                    });
+                } catch (e) {
+                    console.error(`Error parsing equation for ${prop}:`, e);
+                }
+            }
+
+            objects.set(id, obj);
+        }
+
+        function clearAll() {
+            objects.clear();
+            userVariables.clear();
+            trailManager.clearAll();
+            selectedObjectId = null;
+            animationController.reset();
+            historyManager.clear();
+            updateObjectList();
+            updateVariablesList();
+            updatePropertyPanel();
+            updateHistoryUI();
+            renderFrame(0);
+        }
+
+        function showSampleModels() {
+            const dialog = document.getElementById('sampleModelsDialog');
+            const list = document.getElementById('sampleModelsList');
+
+            list.innerHTML = '';
+            sampleModels.forEach(model => {
+                const item = document.createElement('div');
+                item.style.cssText = 'padding: 15px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; background-color: #fff;';
+                item.innerHTML = `
+                    <h4 style="margin: 0 0 8px 0; color: #1976D2;">${model.name}</h4>
+                    <p style="margin: 0; color: #666; font-size: 14px;">${model.description}</p>
+                `;
+                item.onmouseenter = () => item.style.backgroundColor = '#f5f5f5';
+                item.onmouseleave = () => item.style.backgroundColor = '#fff';
+                item.onclick = () => loadSampleModel(model.id);
+                list.appendChild(item);
+            });
+
+            dialog.style.display = 'block';
+        }
+
+        function closeSampleModels() {
+            document.getElementById('sampleModelsDialog').style.display = 'none';
+        }
+
+        function loadSampleModel(modelId) {
+            const model = sampleModels.find(m => m.id === modelId);
+            if (!model) return;
+
+            // Stop animation
+            if (animationController.isPlaying) {
+                togglePlay();
+            }
+
+            // Load the model
+            model.create();
+
+            // Save state and update UI
+            saveHistoryState();
+            updateObjectList();
+            updateVariablesList();
+            updatePropertyPanel();
+            renderFrame(0);
+
+            closeSampleModels();
         }
 
         window.addEventListener('load', initDemo);
