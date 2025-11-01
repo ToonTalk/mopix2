@@ -20,7 +20,7 @@ export interface MoPiXObject {
   transparency: number; // 0-100 (percentage)
 
   // Shape type
-  appearance: 'square' | 'circle';
+  appearance: 'square' | 'circle' | 'ellipse';
 
   // Equations defining dynamic behavior
   equations: Map<string, Equation>;

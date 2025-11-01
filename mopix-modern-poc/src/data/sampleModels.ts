@@ -61,10 +61,10 @@ export const sampleModels: SampleModel[] = [
       ['rect', {
         id: 'rect',
         name: 'Growing Rectangle',
-        x: 400,
-        y: 300,
-        width: 50,
-        height: 50,
+        x: 340.7,
+        y: 212.5,
+        width: 10,
+        height: 10,
         rotation: 0,
         red: 255,
         green: 100,
@@ -75,23 +75,19 @@ export const sampleModels: SampleModel[] = [
           ['width', {
             attribute: 'width',
             expression: new BinaryOperatorExpression(
-              '+',
-              new ConstantExpression(50),
-              new VariableExpression('t')
+              '*',
+              new VariableExpression('t'),
+              new ConstantExpression(2)
             ),
             cache: new Map()
           }],
           ['height', {
             attribute: 'height',
-            expression: new BinaryOperatorExpression(
-              '+',
-              new ConstantExpression(50),
-              new VariableExpression('t')
-            ),
+            expression: new VariableExpression('t'),
             cache: new Map()
           }]
         ]),
-        info: 'A rectangle that grows over time.\n\nEquations:\nwidth = 50 + t\nheight = 50 + t\n\nBoth dimensions start at 50 pixels and grow by 1 pixel per frame, creating a square that expands uniformly.'
+        info: 'A rectangle that grows over time.\n\nEquations:\nwidth = t × 2\nheight = t\n\nThe width grows twice as fast as the height, creating a rectangle that expands non-uniformly.'
       }]
     ])
   },
@@ -103,28 +99,28 @@ export const sampleModels: SampleModel[] = [
       ['ellipse', {
         id: 'ellipse',
         name: 'Rotating Ellipse',
-        x: 400,
-        y: 300,
-        width: 150,
-        height: 80,
+        x: 379.75,
+        y: 321.5,
+        width: 200,
+        height: 100,
         rotation: 0,
-        red: 150,
+        red: 100,
         green: 100,
-        blue: 255,
+        blue: 100,
         transparency: 50,
-        appearance: 'circle',
+        appearance: 'ellipse',
         equations: new Map([
           ['rotation', {
             attribute: 'rotation',
             expression: new BinaryOperatorExpression(
               '*',
               new VariableExpression('t'),
-              new ConstantExpression(2)
+              new ConstantExpression(3)
             ),
             cache: new Map()
           }]
         ]),
-        info: 'A semi-transparent rotating ellipse.\n\nEquation: rotation = t × 2\n\nThis ellipse is rendered as a circle with different width and height, creating an oval shape. The 50% transparency allows you to see through it. It rotates at 2 degrees per frame.'
+        info: 'A semi-transparent rotating ellipse.\n\nEquation: rotation = t × 3\n\nThis ellipse rotates at 3 degrees per frame. The 50% transparency allows you to see through it.'
       }]
     ])
   },
@@ -442,10 +438,10 @@ export const sampleModels: SampleModel[] = [
       ['rect', {
         id: 'rect',
         name: 'Multi-cycling Rectangle',
-        x: 400,
-        y: 300,
+        x: 227.75,
+        y: 241.5,
         width: 100,
-        height: 60,
+        height: 200,
         rotation: 0,
         red: 128,
         green: 128,
@@ -453,8 +449,24 @@ export const sampleModels: SampleModel[] = [
         transparency: 100,
         appearance: 'square',
         equations: new Map([
-          ['x', {
-            attribute: 'x',
+          ['width', {
+            attribute: 'width',
+            expression: new BinaryOperatorExpression(
+              '+',
+              new BinaryOperatorExpression(
+                '*',
+                new UnaryOperatorExpression(
+                  'sin',
+                  new VariableExpression('t')
+                ),
+                new ConstantExpression(50)
+              ),
+              new ConstantExpression(50)
+            ),
+            cache: new Map()
+          }],
+          ['greenColour', {
+            attribute: 'greenColour',
             expression: new BinaryOperatorExpression(
               '+',
               new BinaryOperatorExpression(
@@ -463,47 +475,38 @@ export const sampleModels: SampleModel[] = [
                   'sin',
                   new BinaryOperatorExpression(
                     '*',
-                    new VariableExpression('t'),
-                    new ConstantExpression(5)
+                    new ConstantExpression(2),
+                    new VariableExpression('t')
                   )
                 ),
-                new ConstantExpression(100)
+                new ConstantExpression(50)
               ),
-              new ConstantExpression(400)
-            ),
-            cache: new Map()
-          }],
-          ['y', {
-            attribute: 'y',
-            expression: new BinaryOperatorExpression(
-              '+',
-              new BinaryOperatorExpression(
-                '*',
-                new UnaryOperatorExpression(
-                  'cos',
-                  new BinaryOperatorExpression(
-                    '*',
-                    new VariableExpression('t'),
-                    new ConstantExpression(3)
-                  )
-                ),
-                new ConstantExpression(80)
-              ),
-              new ConstantExpression(300)
+              new ConstantExpression(50)
             ),
             cache: new Map()
           }],
           ['rotation', {
             attribute: 'rotation',
             expression: new BinaryOperatorExpression(
-              '*',
-              new VariableExpression('t'),
-              new ConstantExpression(7)
+              '+',
+              new BinaryOperatorExpression(
+                '*',
+                new UnaryOperatorExpression(
+                  'sin',
+                  new BinaryOperatorExpression(
+                    '*',
+                    new ConstantExpression(3),
+                    new VariableExpression('t')
+                  )
+                ),
+                new ConstantExpression(50)
+              ),
+              new ConstantExpression(50)
             ),
             cache: new Map()
           }]
         ]),
-        info: 'A rectangle with three independent cycles.\n\nEquations:\nx = sin(t × 5) × 100 + 400\ny = cos(t × 3) × 80 + 300\nrotation = t × 7\n\nThree different periodic behaviors:\n- X oscillates with period 5\n- Y oscillates with period 3\n- Rotation increases linearly at 7 degrees/frame'
+        info: 'A rectangle with three independent cycles.\n\nEquations:\nwidth = 50 × sin(t) + 50\ngreen = 50 × sin(2t) + 50\nrotation = 50 × sin(3t) + 50\n\nThree different periodic behaviors with sine waves at different frequencies.'
       }]
     ])
   },
@@ -515,7 +518,7 @@ export const sampleModels: SampleModel[] = [
       ['ball', {
         id: 'ball',
         name: 'Anti-gravity Ball',
-        x: 400,
+        x: 305.75,
         y: 500,
         width: 40,
         height: 40,
@@ -533,7 +536,7 @@ export const sampleModels: SampleModel[] = [
               new ConstantExpression(500),
               new BinaryOperatorExpression(
                 '*',
-                new ConstantExpression(0.5),
+                new ConstantExpression(0.049),
                 new BinaryOperatorExpression(
                   '*',
                   new VariableExpression('t'),
@@ -544,7 +547,7 @@ export const sampleModels: SampleModel[] = [
             cache: new Map()
           }]
         ]),
-        info: 'A ball that falls upward!\n\nEquation: y = 500 - 0.5 × t²\n\nThis uses the physics equation for motion under constant acceleration (like gravity), but with negative gravity. The ball accelerates upward, moving faster and faster as time goes on. The t² term creates the acceleration effect.'
+        info: 'A ball that falls upward!\n\nEquation: y = 500 - 0.049 × t²\n\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.'
       }]
     ])
   }
