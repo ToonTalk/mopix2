@@ -1331,6 +1331,12 @@
 
             obj.equations.forEach((equation, attribute) => {
                 const value = evaluateEquation(equation, context);
+
+                // DEBUG: Log keyboard object equation evaluation
+                if (obj.id === 'keyboardObj' && (attribute === 'x' || attribute === 'y')) {
+                    console.log(`[EVAL] ${obj.id}.${attribute} = ${value} at t=${time}`);
+                }
+
                 switch (attribute) {
                     case 'x': updated.x = value; break;
                     case 'y': updated.y = value; break;
@@ -2393,6 +2399,12 @@
             const keyObjY = parseEquation('300 + keyDown(s) * 100 - keyDown(w) * 100');
             const keyObjRed = parseEquation('if(keyDown(space), 255, 100)');
 
+            // DEBUG: Log parsing results for keyboard object
+            console.log('[INIT] Keyboard Ctrl equations:');
+            console.log('  X parsed:', keyObjX.success, keyObjX.error || '✓');
+            console.log('  Y parsed:', keyObjY.success, keyObjY.error || '✓');
+            console.log('  Red parsed:', keyObjRed.success, keyObjRed.error || '✓');
+
             objects.set('keyboardObj', {
                 id: 'keyboardObj',
                 name: 'Keyboard Ctrl',
@@ -2589,6 +2601,13 @@
 
         function handleKeyDown(event) {
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+
+            // CRITICAL: Prevent Space from activating focused buttons (e.g., Play button)
+            // This must happen BEFORE any other processing
+            if (event.key === ' ') {
+                event.preventDefault();
+                console.log(`[SPACE PREVENTED] Blocked browser default for Space key`);
+            }
 
             // Always track all key presses for keyDown() function in equations
             const key = event.key.toLowerCase();
