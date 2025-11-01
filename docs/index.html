@@ -931,9 +931,9 @@
                                 const keyName = keyArg.name.toLowerCase();
                                 const result = keysPressed.has(keyName) ? 1 : 0;
 
-                                // DEBUG: Log keyboard state
-                                if (result === 1) {
-                                    console.log(`keyDown(${keyName}) = ${result}, keysPressed:`, Array.from(keysPressed));
+                                // DEBUG: Log keyboard state (always log for w/a/s/d to see if evaluated)
+                                if (/^[wasd]$/.test(keyName)) {
+                                    console.log(`[EQUATION] keyDown(${keyName}) = ${result}, keysPressed:`, Array.from(keysPressed));
                                 }
 
                                 return result;
@@ -2596,7 +2596,7 @@
 
             // DEBUG: Log key tracking (only for a-z, space)
             if (/^[a-z ]$/.test(key)) {
-                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed));
+                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying}`);
             }
 
             // Always track Shift key for grid snap
@@ -2606,7 +2606,18 @@
             }
 
             // Only process keyboard shortcuts if enabled
-            if (!keyboardShortcutsEnabled) return;
+            if (!keyboardShortcutsEnabled) {
+                // DEBUG: Show that shortcuts are being blocked
+                if (key === ' ') {
+                    console.log(`[SHORTCUTS BLOCKED] Space key ignored (shortcuts disabled)`);
+                }
+                return;
+            }
+
+            // DEBUG: Show that shortcuts are being processed
+            if (key === ' ') {
+                console.log(`[SHORTCUTS ACTIVE] Space key will toggle play (shortcuts enabled)`);
+            }
 
             // Ctrl+Z for undo
             if (event.ctrlKey && event.key === 'z') {
