@@ -3759,6 +3759,7 @@
                     obj.equations.set(prop, {
                         attribute: prop,
                         expression: parsedExpr,
+                        text: expr,  // Store the original equation text
                         cache: new Map()
                     });
                 } catch (e) {
