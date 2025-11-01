@@ -3754,15 +3754,16 @@
 
             // Parse and add equations
             for (const [prop, expr] of Object.entries(equations)) {
-                try {
-                    const parsedExpr = parseExpression(expr);
+                const result = parseEquation(expr);
+                if (result.success) {
                     obj.equations.set(prop, {
                         attribute: prop,
-                        expression: parsedExpr,
+                        expression: result.expression,
+                        text: expr,
                         cache: new Map()
                     });
-                } catch (e) {
-                    console.error(`Error parsing equation for ${prop}:`, e);
+                } else {
+                    console.error(`Error parsing equation for ${prop}:`, result.error);
                 }
             }
 
