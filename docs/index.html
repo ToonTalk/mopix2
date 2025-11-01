@@ -425,11 +425,17 @@
 
             <div class="stats-compact">
                 <h4>⌨️ Keyboard Shortcuts & Features</h4>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="keyboardShortcutsToggle" onchange="toggleKeyboardShortcuts(this.checked)" style="cursor: pointer;">
+                        <span>Enable Keyboard Shortcuts (disabled by default to avoid conflicts with equation-based keyboard controls)</span>
+                    </label>
+                </div>
                 <ul>
                     <li><kbd>Space</kbd> Play/Pause | <kbd>←/→</kbd> Step (or nudge object) | <kbd>Home</kbd> Reset</li>
                     <li><kbd>↑↓←→</kbd> Nudge object 1px (<kbd>Shift</kbd> for 10px) | <kbd>[</kbd> Send back | <kbd>]</kbd> Bring front</li>
                     <li><kbd>Delete</kbd> Delete object | <kbd>P</kbd> Toggle pen | <kbd>C</kbd> Copy object</li>
-                    <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid</li>
+                    <li><kbd>Ctrl+Z</kbd> Undo | <kbd>Ctrl+Y</kbd> Redo | <kbd>Shift+Drag</kbd> Snap to grid (always active)</li>
                     <li><strong>🔢 Variables:</strong> Define custom variables (speed, radius, etc.) - use in equations!</li>
                     <li><strong>📐 Equations:</strong> 12 shapes, collision detection, conditionals, and 30+ functions!</li>
                 </ul>
@@ -518,9 +524,14 @@
 
         <div style="margin: 15px 0;">
             <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Equation:</label>
-            <input type="text" id="equationInput" placeholder="e.g., sin(t * 10) * 100 + 300" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px;" oninput="validateEquation()" />
+            <textarea id="equationInput" placeholder="e.g., sin(t * 10) * 100 + 300" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; min-height: 60px; resize: vertical;" oninput="validateEquation()" rows="3"></textarea>
             <div id="equationError" style="color: #dc3545; margin-top: 5px; font-size: 12px; display: none;"></div>
             <div id="equationSuccess" style="color: #28a745; margin-top: 5px; font-size: 12px; display: none;">✓ Valid equation</div>
+
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="success" onclick="saveEquation()" style="flex: 1;" id="saveEquationBtn">💾 Save</button>
+                <button class="secondary" onclick="closeEquationEditor()" style="flex: 1;">Cancel</button>
+            </div>
         </div>
 
         <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #dee2e6;">
@@ -625,11 +636,6 @@
                 <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2, keyDown<br>
                 <strong>Easing:</strong> smoothstep(edge0, edge1, x), step(edge, x), ease(x, power), bounce(t), wrap(val, min, max)
             </div>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="success" onclick="saveEquation()" style="flex: 1;" id="saveEquationBtn">💾 Save</button>
-            <button class="secondary" onclick="closeEquationEditor()" style="flex: 1;">Cancel</button>
         </div>
     </div>
 
@@ -1802,6 +1808,7 @@
         let mouseY = 0;  // Current mouse Y position
         let keysPressed = new Set();  // Currently pressed keys
         let previousFrameValues = new Map();  // Store t-1 values for each object
+        let keyboardShortcutsEnabled = false;  // Toggle for keyboard shortcuts (default off to avoid conflicts)
         let userVariables = new Map(); // User-defined variables
         let randomSeed = 12345; // For deterministic random
         let camera = { x: 0, y: 0, zoom: 1 }; // Camera transform
@@ -2574,16 +2581,19 @@
         }
 
         function handleKeyDown(event) {
-            if (event.target.tagName === 'INPUT') return;
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
-            // Track all key presses for keyDown() function in equations
+            // Always track all key presses for keyDown() function in equations
             keysPressed.add(event.key.toLowerCase());
 
-            // Track Shift key for grid snap
+            // Always track Shift key for grid snap
             if (event.key === 'Shift') {
                 isShiftPressed = true;
                 document.getElementById('gridSnapIndicator').classList.add('active');
             }
+
+            // Only process keyboard shortcuts if enabled
+            if (!keyboardShortcutsEnabled) return;
 
             // Ctrl+Z for undo
             if (event.ctrlKey && event.key === 'z') {
@@ -3390,6 +3400,10 @@
                 button.className = 'play';
                 animationController.stop();
             }
+        }
+
+        function toggleKeyboardShortcuts(enabled) {
+            keyboardShortcutsEnabled = enabled;
         }
 
         function resetAnimation() {
