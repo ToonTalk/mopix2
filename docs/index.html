@@ -1026,6 +1026,12 @@
             }
 
             const result = equation.expression.evaluate(context);
+
+            // DEBUG: Log keyboard object equation evaluation results
+            if (context.object && context.object.id === 'keyboardObj' && (equation.attribute === 'x' || equation.attribute === 'y')) {
+                console.log(`[EVAL DETAIL] ${equation.attribute} equation "${equation.text}" = ${result} at t=${time}, expression type: ${equation.expression.constructor.name}`);
+            }
+
             equation.cache.set(time, result);
             return result;
         }
@@ -2401,9 +2407,9 @@
 
             // DEBUG: Log parsing results for keyboard object
             console.log('[INIT] Keyboard Ctrl equations:');
-            console.log('  X parsed:', keyObjX.success, keyObjX.error || '✓');
-            console.log('  Y parsed:', keyObjY.success, keyObjY.error || '✓');
-            console.log('  Red parsed:', keyObjRed.success, keyObjRed.error || '✓');
+            console.log('  X parsed:', keyObjX.success, keyObjX.error || '✓', 'expression type:', keyObjX.expression?.constructor.name);
+            console.log('  Y parsed:', keyObjY.success, keyObjY.error || '✓', 'expression type:', keyObjY.expression?.constructor.name);
+            console.log('  Red parsed:', keyObjRed.success, keyObjRed.error || '✓', 'expression type:', keyObjRed.expression?.constructor.name);
 
             objects.set('keyboardObj', {
                 id: 'keyboardObj',
