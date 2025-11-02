@@ -686,6 +686,8 @@
             }
 
             evaluate(context) {
+                const isObject3 = context.object && context.object.id === 'object_3' && context.time <= 2;
+
                 if (this.name === 't') {
                     return context.time;
                 }
@@ -719,7 +721,15 @@
                             // prev.x - get current object's previous value
                             const currentObjId = context.object.id;
                             const prevValues = previousFrameValues.get(currentObjId);
-                            return prevValues ? (prevValues[property] || 0) : 0;
+                            const result = prevValues ? (prevValues[property] || 0) : 0;
+
+                            if (isObject3) {
+                                console.log(`    [VAR] prev.${property} → looking up in previousFrameValues['${currentObjId}']`);
+                                console.log(`    [VAR] prevValues =`, prevValues);
+                                console.log(`    [VAR] prev.${property} = ${result}`);
+                            }
+
+                            return result;
                         } else if (parts.length === 3) {
                             // prev.objectId.x - get another object's previous value
                             const targetObjId = parts[1];
@@ -742,7 +752,18 @@
                 // Check current object's properties (local variables)
                 // This allows equations to reference properties like "Vx", "Vy", etc.
                 if (context.object && this.name in context.object) {
-                    return context.object[this.name];
+                    const result = context.object[this.name];
+
+                    if (isObject3 && (this.name === 'Vx' || this.name === 'Vy' || this.name === 'Ax' || this.name === 'Ay')) {
+                        console.log(`    [VAR] ${this.name} → found in context.object`);
+                        console.log(`    [VAR] ${this.name} = ${result}`);
+                    }
+
+                    return result;
+                }
+
+                if (isObject3 && (this.name === 'Vx' || this.name === 'Vy' || this.name === 'Ax' || this.name === 'Ay' || this.name === 'x' || this.name === 'y')) {
+                    console.log(`    [VAR] ${this.name} → NOT FOUND, returning 0`);
                 }
 
                 return 0;
