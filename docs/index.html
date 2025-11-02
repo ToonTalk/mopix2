@@ -750,20 +750,17 @@
                 }
 
                 // Check current object's properties (local variables)
-                // This allows equations to reference properties like "Vx", "Vy", etc.
+                // For same-object property references, use the updated value from cache if available
+                // This ensures proper evaluation order (e.g., x=prev.x+Vx uses the current frame's Vx)
                 if (context.object && this.name in context.object) {
-                    const result = context.object[this.name];
-
-                    if (isObject3 && (this.name === 'Vx' || this.name === 'Vy' || this.name === 'Ax' || this.name === 'Ay')) {
-                        console.log(`    [VAR] ${this.name} → found in context.object`);
-                        console.log(`    [VAR] ${this.name} = ${result}`);
+                    const cacheKey = `${context.object.id}_${context.time}`;
+                    if (updateCache.has(cacheKey)) {
+                        const updatedObj = updateCache.get(cacheKey);
+                        if (this.name in updatedObj) {
+                            return updatedObj[this.name];
+                        }
                     }
-
-                    return result;
-                }
-
-                if (isObject3 && (this.name === 'Vx' || this.name === 'Vy' || this.name === 'Ax' || this.name === 'Ay' || this.name === 'x' || this.name === 'y')) {
-                    console.log(`    [VAR] ${this.name} → NOT FOUND, returning 0`);
+                    return context.object[this.name];
                 }
 
                 return 0;
