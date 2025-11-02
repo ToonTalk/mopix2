@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap</p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-custom-props</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -2996,6 +2996,8 @@
                         customProps.push({ name: prop, text: eq.text || 'Legacy equation' });
                     }
                 });
+
+                console.log('renderCustomProperties called, found', customProps.length, 'custom properties:', customProps.map(p => p.name));
 
                 if (customProps.length === 0) {
                     return '';
