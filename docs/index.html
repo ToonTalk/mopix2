@@ -739,6 +739,12 @@
                     }
                 }
 
+                // Check current object's properties (local variables)
+                // This allows equations to reference properties like "Vx", "Vy", etc.
+                if (context.object && this.name in context.object) {
+                    return context.object[this.name];
+                }
+
                 return 0;
             }
         }
@@ -3899,23 +3905,23 @@
                 create: () => {
                     clearAll();
                     // Bouncing ball with full physics simulation
-                    const obj = createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
+                    createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
                         // Acceleration (constant)
                         Ay: '-0.098',
                         Ax: '0',
 
                         // Velocity updates with collision detection
-                        // If next position hits wall (x+Vx <= 0 or >= 799), reverse Vx
-                        Vx: 'if(prev.x + prev.Vx <= 0 || prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax)',
-                        // If next position hits ground (y+Vy <= height/2), reverse Vy
-                        Vy: 'if(prev.y + prev.Vy <= height / 2 && prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay)',
+                        // Bounce off walls at x=0 or x=799
+                        Vx: 'if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax))',
+                        // Bounce off ground at y=20 when moving downward (Vy < 0)
+                        Vy: 'if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay)',
 
                         // Position updates
                         x: 'prev.x + Vx',
                         y: 'prev.y + Vy'
                     }, 'Bouncing ball with physics - initial Vx=3, Vy=0, gravity=-0.098');
 
-                    // Set initial velocities as properties
+                    // Set initial velocities as properties (not equations)
                     objects.get('object_3').Vx = 3;
                     objects.get('object_3').Vy = 0;
 
