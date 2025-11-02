@@ -4124,7 +4124,25 @@
             updateVariablesList();
             updatePropertyPanel();
             updateHistoryUI();
+            initializePreviousFrameValues();  // Initialize before rendering
             renderFrame(0);
+        }
+
+        function initializePreviousFrameValues() {
+            // Initialize previousFrameValues with current object states
+            // This is critical for prev.x, prev.y to work at frame 0
+            previousFrameValues.clear();
+            objects.forEach(obj => {
+                const prevValues = { ...obj };
+                // Remove non-property fields
+                delete prevValues.id;
+                delete prevValues.name;
+                delete prevValues.appearance;
+                delete prevValues.penDown;
+                delete prevValues.text;
+                delete prevValues.equations;
+                previousFrameValues.set(obj.id, prevValues);
+            });
         }
 
         function showSampleModels() {
@@ -4163,6 +4181,9 @@
 
             // Load the model
             model.create();
+
+            // Initialize previousFrameValues with the loaded objects
+            initializePreviousFrameValues();
 
             // Save state and update UI
             saveHistoryState();
