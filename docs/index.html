@@ -1300,7 +1300,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps', 'keyDown'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps', 'keydown'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
