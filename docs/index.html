@@ -1355,8 +1355,8 @@
                 return updateCache.get(cacheKey);
             }
 
-            const context = { object: obj, time, allObjects };
             const updated = { ...obj };
+            const context = { object: updated, time, allObjects };
 
             // Mark this object as being computed to prevent recursion
             updateCache.set(cacheKey, updated);
