@@ -2640,13 +2640,22 @@
             keysPressed.add(key);
 
             // Clear all equation caches since keyboard state changed
+            let cacheCount = 0;
             objects.forEach(obj => {
-                obj.equations.forEach(eq => eq.cache.clear());
+                obj.equations.forEach(eq => {
+                    eq.cache.clear();
+                    cacheCount++;
+                });
             });
+
+            // Force re-render if playing to update objects using keyDown()
+            if (isPlaying) {
+                renderFrame(animationController.currentFrame);
+            }
 
             // DEBUG: Log key tracking (only for a-z, space)
             if (/^[a-z ]$/.test(key)) {
-                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying}`);
+                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying} | cleared ${cacheCount} equation caches`);
             }
 
             // Always track Shift key for grid snap
@@ -2745,6 +2754,11 @@
             objects.forEach(obj => {
                 obj.equations.forEach(eq => eq.cache.clear());
             });
+
+            // Force re-render if playing to update objects using keyDown()
+            if (isPlaying) {
+                renderFrame(animationController.currentFrame);
+            }
 
             // DEBUG: Log key release (only for a-z, space)
             if (/^[a-z ]$/.test(key)) {
