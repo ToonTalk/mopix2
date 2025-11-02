@@ -739,6 +739,12 @@
                     }
                 }
 
+                // Check current object's properties (local variables)
+                // This allows equations to reference properties like "Vx", "Vy", etc.
+                if (context.object && this.name in context.object) {
+                    return context.object[this.name];
+                }
+
                 return 0;
             }
         }
@@ -751,6 +757,11 @@
             }
 
             evaluate(context) {
+                // DEBUG: Log function calls for keyboard object
+                if (context.object && context.object.id === 'keyboardObj') {
+                    console.log(`[FUNC EVAL] ${this.functionName}() called for keyboardObj`);
+                }
+
                 switch (this.functionName) {
                     case 'if': {
                         // if(condition, trueValue, falseValue) - conditional expression
@@ -944,14 +955,19 @@
                     case 'keydown': {
                         // keyDown(key, t) - returns 1 if key is pressed, 0 otherwise
                         // key can be a single letter or special key name
+                        console.log(`[DEBUG] keyDown case hit! args.length=${this.args.length}`);
                         if (this.args.length >= 1) {
                             const keyArg = this.args[0];
+                            console.log(`[DEBUG] keyArg type:`, keyArg.constructor.name);
                             // Get the key name from the argument
                             if (keyArg instanceof VariableExpression) {
                                 const keyName = keyArg.name.toLowerCase();
                                 const result = keysPressed.has(keyName) ? 1 : 0;
 
-                                return keysPressed.has(keyName) ? 1 : 0;
+                                // DEBUG: Log keyboard state (always log for w/a/s/d to see if evaluated)
+                                console.log(`[EQUATION] keyDown(${keyName}) = ${result}, keysPressed:`, Array.from(keysPressed));
+
+                                return result;
                             }
                         }
                         return 0;
@@ -1285,7 +1301,7 @@
                         this.advance(); // consume (
 
                         // Check for multi-argument functions
-                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps', 'keyDown'];
+                        const multiFuncs = ['if', 'dist', 'angle', 'min', 'max', 'clamp', 'lerp', 'random', 'mod', 'pow', 'atan2', 'smoothstep', 'step', 'wrap', 'bounce', 'ease', 'overlaps', 'keydown'];
                         if (multiFuncs.includes(id.value)) {
                             const args = [];
                             if (this.peek().type !== 'RPAREN') {
@@ -2623,6 +2639,25 @@
             const key = event.key.toLowerCase();
             keysPressed.add(key);
 
+            // Clear all equation caches since keyboard state changed
+            let cacheCount = 0;
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => {
+                    eq.cache.clear();
+                    cacheCount++;
+                });
+            });
+
+            // Force re-render if playing to update objects using keyDown()
+            if (isPlaying) {
+                renderFrame(animationController.currentFrame);
+            }
+
+            // DEBUG: Log key tracking (only for a-z, space)
+            if (/^[a-z ]$/.test(key)) {
+                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying} | cleared ${cacheCount} equation caches`);
+            }
+
             // Always track Shift key for grid snap
             if (event.key === 'Shift') {
                 isShiftPressed = true;
@@ -2706,6 +2741,21 @@
             const key = event.key.toLowerCase();
             keysPressed.delete(key);
 
+            // Clear all equation caches since keyboard state changed
+            objects.forEach(obj => {
+                obj.equations.forEach(eq => eq.cache.clear());
+            });
+
+            // Force re-render if playing to update objects using keyDown()
+            if (isPlaying) {
+                renderFrame(animationController.currentFrame);
+            }
+
+            // DEBUG: Log key release (only for a-z, space)
+            if (/^[a-z ]$/.test(key)) {
+                console.log(`[KEY UP] ${key}, keysPressed:`, Array.from(keysPressed));
+            }
+
             if (event.key === 'Shift') {
                 isShiftPressed = false;
                 document.getElementById('gridSnapIndicator').classList.remove('active');
@@ -2721,7 +2771,7 @@
 
             if (obj.appearance === 'square') {
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
-            } else if (obj.appearance === 'circle') {
+            } else if (obj.appearance === 'circle' || obj.appearance === 'ellipse') {
                 const normalizedX = rotatedX / (obj.width/2);
                 const normalizedY = rotatedY / (obj.height/2);
                 return (normalizedX * normalizedX + normalizedY * normalizedY) <= 1;
@@ -3611,10 +3661,10 @@
                 description: 'A rectangle whose width and height increase.',
                 create: () => {
                     clearAll();
-                    createSampleObject('rect', 'square', 400, 300, 50, 50, 255, 100, 100, {
-                        width: '50 + t',
-                        height: '50 + t'
-                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = 50 + t\\nheight = 50 + t\\n\\nBoth dimensions start at 50 pixels and grow by 1 pixel per frame, creating a square that expands uniformly.');
+                    createSampleObject('rect', 'square', 340.7, 212.5, 10, 10, 255, 100, 100, {
+                        width: 't * 2',
+                        height: 't'
+                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThe width grows twice as fast as the height, creating a rectangle that expands non-uniformly.');
                 }
             },
             {
@@ -3623,9 +3673,9 @@
                 description: 'A semi-transparent ellipse that rotates.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ellipse', 'ellipse', 400, 300, 150, 80, 150, 100, 255, {
-                        rotation: 't * 2'
-                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 2\\n\\nThis ellipse rotates at 2 degrees per frame. The transparency allows you to see through it.');
+                    createSampleObject('ellipse', 'ellipse', 379.75, 321.5, 200, 100, 100, 100, 100, {
+                        rotation: 't * 3'
+                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 3\\n\\nThis ellipse rotates at 3 degrees per frame. The transparency allows you to see through it.');
                     objects.get('ellipse').transparency = 50;
                 }
             },
@@ -3673,11 +3723,11 @@
                 description: 'A rectangle changing in three different ways with different cycles.',
                 create: () => {
                     clearAll();
-                    createSampleObject('rect', 'square', 400, 300, 100, 60, 128, 128, 128, {
-                        x: 'sin(t * 5) * 100 + 400',
-                        y: 'cos(t * 3) * 80 + 300',
-                        rotation: 't * 7'
-                    }, 'A rectangle with three independent cycles.');
+                    createSampleObject('rect', 'square', 227.75, 241.5, 100, 200, 128, 128, 128, {
+                        width: '50 * sin(t) + 50',
+                        green: '50 * sin(2 * t) + 50',
+                        rotation: '50 * sin(3 * t) + 50'
+                    }, 'A rectangle with three independent cycles.\\n\\nEquations:\\nwidth = 50 × sin(t) + 50\\ngreen = 50 × sin(2t) + 50\\nrotation = 50 × sin(3t) + 50\\n\\nThree different periodic behaviors with sine waves at different frequencies.');
                 }
             },
             {
@@ -3686,9 +3736,228 @@
                 description: 'An exercise in negative gravity.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ball', 'circle', 400, 500, 40, 40, 255, 200, 100, {
-                        y: '500 - 0.5 * t * t'
-                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.5 × t²\\n\\nThis uses the physics equation for motion under constant acceleration (like gravity), but with negative gravity.');
+                    createSampleObject('ball', 'circle', 305.75, 500, 40, 40, 255, 200, 100, {
+                        y: '500 - 0.049 * t * t'
+                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
+                }
+            },
+            {
+                id: 'two-animated-objects-graphs',
+                name: 'Two Animated Objects with Graphs',
+                description: 'Graphing aspects of two animated objects.',
+                create: () => {
+                    clearAll();
+                    // First animated object (rectangle)
+                    createSampleObject('object_1', 'square', 247.75, 244.5, 100, 100, 128, 128, 128, {
+                        width: '50 * sin(t) + 50',
+                        green: '50 * sin(2 * t) + 50',
+                        rotation: '50 * sin(4 * t) + 50',
+                        height: '50 * sin(0.5 * t) + 50',
+                        red: '50 * sin(t) + 50'
+                    }, 'First animated object with multiple cycles.');
+
+                    // Second animated object (circle)
+                    createSampleObject('object_4', 'circle', 420.75, 243.5, 100, 100, 128, 128, 128, {
+                        width: '50 * sin(t) + 50',
+                        green: '50 * sin(2 * t) + 50',
+                        rotation: '50 * sin(2 * t) + 50',
+                        height: '50 * sin(3 * t) + 50',
+                        red: '50 * sin(t) + 50',
+                        blue: '50 * sin(3 * t) + 50'
+                    }, 'Second animated object with different cycles.');
+
+                    // Graph objects with pens
+                    createSampleObject('object_12', 'circle', 141, 392, 5, 5, 0, 100, 0, {
+                        x: 't',
+                        y: '(50 * sin(4 * t) + 50) / 4 + 400'
+                    }, 'Graph of object_1 rotation.');
+                    objects.get('object_12').penDown = true;
+                    objects.get('object_12').greenColourPen = 100;
+                    objects.get('object_12').thicknessPen = 4;
+
+                    createSampleObject('object_5', 'circle', 324, 386.55, 5, 5, 0, 0, 100, {
+                        x: 't',
+                        y: '(50 * sin(2 * t) + 50) / 4 + 400'
+                    }, 'Graph of object_4 rotation.');
+                    objects.get('object_5').penDown = true;
+                    objects.get('object_5').blueColourPen = 100;
+                    objects.get('object_5').thicknessPen = 4;
+                }
+            },
+            {
+                id: 'path-around-pond',
+                name: 'Path Around a Pond',
+                description: 'Maintains a path around a rectangular pond.',
+                create: () => {
+                    clearAll();
+                    // The pond (growing rectangle)
+                    createSampleObject('object_2', 'square', 569, 192, 317, 100, 50, 50, 100, {
+                        width: 't'
+                    }, 'The pond that grows over time.');
+
+                    // Path objects around the pond
+                    createSampleObject('object_1', 'square', 569, 192, 317, 80, 150, 150, 150, {
+                        width: 't + 80'
+                    }, 'Top path around pond.');
+
+                    createSampleObject('object_3', 'square', 569, 192, 317, 100, 150, 150, 150, {}, 'Side path.');
+
+                    createSampleObject('object_4', 'square', 569, 192, 317, 100, 150, 150, 150, {}, 'Bottom path.');
+
+                    createSampleObject('object_5', 'square', 569, 192, 397, 100, 150, 150, 150, {
+                        width: 't + 80'
+                    }, 'Other side path.');
+                }
+            },
+            {
+                id: 'juggler-scenario',
+                name: 'Juggler Scenario',
+                description: 'A ball bouncing between two paddles.',
+                create: () => {
+                    clearAll();
+                    // Left paddle
+                    createSampleObject('object_1', 'square', 174.75, 86.5, 50, 10, 40, 20, 0, {}, 'Left paddle.');
+
+                    // Right paddle
+                    createSampleObject('object_2', 'square', 458.75, 90.5, 50, 10, 40, 20, 0, {}, 'Right paddle.');
+
+                    // Ball with simple bouncing motion
+                    createSampleObject('object_3', 'circle', 355.75, 337.5, 30, 30, 100, 0, 0, {
+                        y: 'abs(sin(t * 0.2)) * 200 + 150',
+                        x: '355.75 + sin(t * 0.15) * 150'
+                    }, 'Bouncing ball between paddles.');
+                }
+            },
+            {
+                id: 'toss-ball',
+                name: 'Toss Ball',
+                description: 'A ball released from a rotating rectangle.',
+                create: () => {
+                    clearAll();
+                    // Rotating rectangle
+                    createSampleObject('object_5', 'square', 137.75, 152.5, 200, 80, 100, 50, 50, {
+                        rotation: 't * 3'
+                    }, 'Rotating rectangle that releases the ball.');
+
+                    // Ball that gets released
+                    createSampleObject('object_6', 'circle', 206.4, 277.45, 30, 30, 0, 100, 0, {
+                        y: 't < 75 ? 277.45 : 277.45 - 0.098 * (t - 75) * (t - 75)',
+                        x: 't < 75 ? 206.4 : 206.4 + 3 * (t - 75)'
+                    }, 'Ball released at t=75.');
+                    objects.get('object_6').penDown = true;
+                }
+            },
+            {
+                id: 'three-rotating-rectangles-colour',
+                name: 'Three Rotating Rectangles (Color Cycles)',
+                description: 'Three rectangles with different rotation speeds and color oscillations.',
+                create: () => {
+                    clearAll();
+                    // Rectangle 1 - fastest (5x)
+                    createSampleObject('object_107', 'square', 338.75, 340.45, 200, 100, 50, 50, 50, {
+                        rotation: 't * 5',
+                        blue: '50 + 50 * sin(t * 0.3)'
+                    }, 'Fast rotating rectangle with blue oscillation.');
+                    objects.get('object_107').transparency = 50;
+
+                    // Rectangle 2 - medium (3x)
+                    createSampleObject('object_105', 'square', 180.75, 340.45, 200, 100, 50, 50, 50, {
+                        rotation: 't * 3',
+                        red: '50 + 50 * sin(t * 0.3)'
+                    }, 'Medium rotating rectangle with red oscillation.');
+                    objects.get('object_105').transparency = 50;
+
+                    // Rectangle 3 - fastest (7x)
+                    createSampleObject('object_118', 'square', 494.75, 340.45, 200, 100, 50, 50, 50, {
+                        rotation: 't * 7',
+                        green: '50 + 50 * sin(t * 0.3)'
+                    }, 'Very fast rotating rectangle with green oscillation.');
+                    objects.get('object_118').transparency = 50;
+
+                    // Indicator that shows when two are aligned
+                    createSampleObject('object_97', 'circle', 718.75, 72.5, 30, 30, 255, 255, 0, {}, 'Alignment indicator.');
+                }
+            },
+            {
+                id: 'four-graphs',
+                name: 'Four Graphs',
+                description: 'Four graphs showing different properties of a bouncing ball.',
+                create: () => {
+                    clearAll();
+                    // Bouncing ball with full physics simulation
+                    createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
+                        // Acceleration (constant)
+                        Ay: '-0.098',
+                        Ax: '0',
+
+                        // Velocity updates: initial values at t=0, then formulas
+                        // Vx: initial=3, then bounce off walls at x=0 or x=799
+                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax)))',
+                        // Vy: initial=0, then bounce off ground at y=20 when moving downward
+                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
+
+                        // Position updates
+                        x: 'prev.x + Vx',
+                        y: 'prev.y + Vy'
+                    }, 'Bouncing ball with physics - initial Vx=3, Vy=0, gravity=-0.098');
+
+                    // Graph 1: X position (blue)
+                    createSampleObject('object_5', 'circle', 103.75, 280.45, 5, 5, 0, 0, 100, {
+                        x: 't',
+                        y: 'object_3.x / 10 + 400'
+                    }, 'Graph of object_3 X position.');
+                    objects.get('object_5').penDown = true;
+                    objects.get('object_5').blueColourPen = 100;
+                    objects.get('object_5').thicknessPen = 4;
+
+                    // Graph 2: Y position (red)
+                    createSampleObject('object_4', 'circle', 189.75, 413.45, 5, 5, 100, 0, 0, {
+                        x: 't',
+                        y: 'object_3.y / 10 + 400'
+                    }, 'Graph of object_3 Y position.');
+                    objects.get('object_4').penDown = true;
+                    objects.get('object_4').redColourPen = 100;
+                    objects.get('object_4').thicknessPen = 4;
+
+                    // Graph 3: Vx (horizontal velocity - purple/mixed)
+                    createSampleObject('object_7', 'circle', 242, 314.3, 5, 5, 50, 50, 0, {
+                        x: 't',
+                        y: 'object_3.Vx / 1 + 400'
+                    }, 'Graph of object_3 X velocity (constant at 3, reverses at walls).');
+                    objects.get('object_7').penDown = true;
+                    objects.get('object_7').redColourPen = 50;
+                    objects.get('object_7').blueColourPen = 50;
+                    objects.get('object_7').thicknessPen = 4;
+
+                    // Graph 4: Vy (vertical velocity - green)
+                    createSampleObject('object_6', 'circle', 387, 314.2, 5, 5, 0, 100, 0, {
+                        x: 't',
+                        y: 'object_3.Vy / 1 + 400'
+                    }, 'Graph of object_3 Y velocity (changes with gravity and bounces).');
+                    objects.get('object_6').penDown = true;
+                    objects.get('object_6').greenColourPen = 100;
+                    objects.get('object_6').thicknessPen = 4;
+                }
+            },
+            {
+                id: 'impulsive-triangle',
+                name: 'An Impulsive Triangle',
+                description: 'A triangle that receives impulses at specific times.',
+                create: () => {
+                    clearAll();
+                    // Triangle with impulses at t=20 and t=40
+                    createSampleObject('object_5', 'triangle', 253.75, 191.5, 40, 40, 255, 150, 50, {
+                        x: '253.75 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))',
+                        y: '191.5 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))'
+                    }, 'Triangle with velocity changes at t=20 (deceleration) and t=40 (stop).');
+                    objects.get('object_5').penDown = true;
+
+                    // Second triangle with same impulses
+                    createSampleObject('object_3', 'triangle', 253.75, 191.5, 40, 40, 50, 150, 255, {
+                        x: '253.75 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))',
+                        y: '191.5 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))'
+                    }, 'Second triangle following same path.');
+                    objects.get('object_3').penDown = true;
                 }
             }
         ];
@@ -3714,20 +3983,26 @@
                 greenColourPen: 0,
                 blueColourPen: 0,
                 transparencyPen: 100,
+                // Physics properties for velocity and acceleration
+                Vx: 0,
+                Vy: 0,
+                Ax: 0,
+                Ay: 0,
                 info: info || ''
             };
 
             // Parse and add equations
             for (const [prop, expr] of Object.entries(equations)) {
-                try {
-                    const parsedExpr = parseExpression(expr);
+                const result = parseEquation(expr);
+                if (result.success) {
                     obj.equations.set(prop, {
                         attribute: prop,
-                        expression: parsedExpr,
+                        expression: result.expression,
+                        text: expr,  // Store the original equation text
                         cache: new Map()
                     });
-                } catch (e) {
-                    console.error(`Error parsing equation for ${prop}:`, e);
+                } else {
+                    console.error(`Error parsing equation for ${prop}:`, result.error);
                 }
             }
 
