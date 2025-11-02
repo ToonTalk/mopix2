@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoPiX Modern - Professional Demo</title>
+    <title>MoPiX v2024.11.02-INVERTED-Y! - Professional Demo</title>
     <style>
         * {
             margin: 0;
@@ -1667,7 +1667,11 @@
                         this.ctx.font = `${obj.height}px Arial`;
                         this.ctx.textAlign = 'center';
                         this.ctx.textBaseline = 'middle';
+                        // Counter the y-flip so text is readable
+                        this.ctx.save();
+                        this.ctx.scale(1, -1);
                         this.ctx.fillText(obj.text || obj.name, 0, 0);
+                        this.ctx.restore();
                         break;
                 }
 
@@ -1676,9 +1680,17 @@
 
             renderScene(objects, trails, selectedId = null) {
                 this.clear();
+
+                // Apply coordinate transformation: y=0 at bottom, y increases upward (mathematical convention)
+                this.ctx.save();
+                this.ctx.translate(0, this.ctx.canvas.height);
+                this.ctx.scale(1, -1);
+
                 this.drawGrid();
                 this.renderTrails(trails);
                 objects.forEach(obj => this.renderObject(obj, obj.id === selectedId));
+
+                this.ctx.restore();
             }
         }
 
@@ -2597,7 +2609,8 @@
         function handleMouseDown(event) {
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+            // Convert y-coordinate to match inverted axis (y=0 at bottom, increases upward)
+            const y = canvas.height - (event.clientY - rect.top);
 
             const objectsArray = Array.from(objects.values()).reverse();
             const currentFrame = animationController.currentFrame;
@@ -2626,7 +2639,8 @@
         function handleMouseMove(event) {
             const rect = canvas.getBoundingClientRect();
             let x = event.clientX - rect.left;
-            let y = event.clientY - rect.top;
+            // Convert y-coordinate to match inverted axis (y=0 at bottom, increases upward)
+            let y = canvas.height - (event.clientY - rect.top);
 
             // Always track mouse position for mouse.x and mouse.y in equations
             mouseX = x;
@@ -3861,9 +3875,9 @@
                 description: 'An exercise in negative gravity.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ball', 'circle', 305.75, 500, 40, 40, 255, 200, 100, {
-                        y: '500 - 0.049 * t * t'
-                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
+                    createSampleObject('ball', 'circle', 305.75, 100, 40, 40, 255, 200, 100, {
+                        y: '100 + 0.049 * t * t'
+                    }, 'A ball that falls upward!\\n\\nEquation: y = 100 + 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
                 }
             },
             {
