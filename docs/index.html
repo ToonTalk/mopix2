@@ -3910,20 +3910,16 @@
                         Ay: '-0.098',
                         Ax: '0',
 
-                        // Velocity updates with collision detection
-                        // Bounce off walls at x=0 or x=799
-                        Vx: 'if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax))',
-                        // Bounce off ground at y=20 when moving downward (Vy < 0)
-                        Vy: 'if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay)',
+                        // Velocity updates: initial values at t=0, then formulas
+                        // Vx: initial=3, then bounce off walls at x=0 or x=799
+                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax)))',
+                        // Vy: initial=0, then bounce off ground at y=20 when moving downward
+                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
 
                         // Position updates
                         x: 'prev.x + Vx',
                         y: 'prev.y + Vy'
                     }, 'Bouncing ball with physics - initial Vx=3, Vy=0, gravity=-0.098');
-
-                    // Set initial velocities as properties (not equations)
-                    objects.get('object_3').Vx = 3;
-                    objects.get('object_3').Vy = 0;
 
                     // Graph 1: X position (blue)
                     createSampleObject('object_5', 'circle', 103.75, 280.45, 5, 5, 0, 0, 100, {
