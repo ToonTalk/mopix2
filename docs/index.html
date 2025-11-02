@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #28a745;">v2024.11.02-FIXED!</span></p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #28a745;">v2024.11.02-COMPLETE!</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -1106,6 +1106,11 @@
                 return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
             }
 
+            isIdentifierChar(ch) {
+                // Allow letters, digits, underscores, and dots in identifiers
+                return this.isLetter(ch) || this.isDigit(ch) || ch === '_' || ch === '.';
+            }
+
             tokenize() {
                 const tokens = [];
 
@@ -1195,12 +1200,17 @@
 
             readIdentifier() {
                 let id = '';
-                while (this.position < this.input.length &&
-                       (this.isLetter(this.peek()) || this.peek() === '.')) {
+                // First character must be a letter
+                if (this.isLetter(this.peek())) {
+                    id += this.advance();
+                }
+                // Subsequent characters can be letters, digits, underscores, or dots
+                while (this.position < this.input.length && this.isIdentifierChar(this.peek())) {
                     id += this.advance();
                 }
                 // PRESERVE CASE - don't lowercase identifiers!
                 // This allows case-sensitive variables like Vx, Vy, Ax, Ay
+                // and object names with underscores like object_3
                 return new Token('IDENTIFIER', id);
             }
         }
