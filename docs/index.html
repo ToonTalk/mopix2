@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-debug</span></p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #28a745;">v2024.11.02-FIXED!</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -1199,7 +1199,9 @@
                        (this.isLetter(this.peek()) || this.peek() === '.')) {
                     id += this.advance();
                 }
-                return new Token('IDENTIFIER', id.toLowerCase());
+                // PRESERVE CASE - don't lowercase identifiers!
+                // This allows case-sensitive variables like Vx, Vy, Ax, Ay
+                return new Token('IDENTIFIER', id);
             }
         }
 
