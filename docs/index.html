@@ -952,7 +952,7 @@
                         }
                         return 0;
                     }
-                    case 'keyDown': {
+                    case 'keydown': {
                         // keyDown(key, t) - returns 1 if key is pressed, 0 otherwise
                         // key can be a single letter or special key name
                         console.log(`[DEBUG] keyDown case hit! args.length=${this.args.length}`);
@@ -1057,11 +1057,6 @@
             }
 
             const result = equation.expression.evaluate(context);
-
-            // DEBUG: Log keyboard object equation evaluation results
-            if (context.object && context.object.id === 'keyboardObj' && (equation.attribute === 'x' || equation.attribute === 'y')) {
-                console.log(`[EVAL DETAIL] ${equation.attribute} equation "${equation.text}" = ${result} at t=${time}, expression type: ${equation.expression.constructor.name}`);
-            }
 
             equation.cache.set(time, result);
             return result;
@@ -1368,11 +1363,6 @@
 
             obj.equations.forEach((equation, attribute) => {
                 const value = evaluateEquation(equation, context);
-
-                // DEBUG: Log keyboard object equation evaluation
-                if (obj.id === 'keyboardObj' && (attribute === 'x' || attribute === 'y')) {
-                    console.log(`[EVAL] ${obj.id}.${attribute} = ${value} at t=${time}`);
-                }
 
                 switch (attribute) {
                     case 'x': updated.x = value; break;
@@ -1682,13 +1672,13 @@
             }
 
             tick(currentTime) {
+                this.animationFrameId = requestAnimationFrame((time) => this.tick(time));
                 const elapsed = currentTime - this.lastFrameTime;
                 if (elapsed >= this.frameDuration) {
                     this.currentFrame++;
                     this.onFrame(this.currentFrame);
-                    this.lastFrameTime = currentTime;
+                    this.lastFrameTime = currentTime - (elapsed % this.frameDuration);
                 }
-                this.animationFrameId = requestAnimationFrame((time) => this.tick(time));
             }
 
             reset() {
@@ -2643,7 +2633,6 @@
             // This must happen BEFORE any other processing
             if (event.key === ' ') {
                 event.preventDefault();
-                console.log(`[SPACE PREVENTED] Blocked browser default for Space key`);
             }
 
             // Always track all key presses for keyDown() function in equations
@@ -2677,16 +2666,7 @@
 
             // Only process keyboard shortcuts if enabled
             if (!keyboardShortcutsEnabled) {
-                // DEBUG: Show that shortcuts are being blocked
-                if (key === ' ') {
-                    console.log(`[SHORTCUTS BLOCKED] Space key ignored (shortcuts disabled)`);
-                }
                 return;
-            }
-
-            // DEBUG: Show that shortcuts are being processed
-            if (key === ' ') {
-                console.log(`[SHORTCUTS ACTIVE] Space key will toggle play (shortcuts enabled)`);
             }
 
             // Ctrl+Z for undo
