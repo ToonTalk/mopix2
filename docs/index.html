@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-fixed</span></p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-debug</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -757,11 +757,6 @@
             }
 
             evaluate(context) {
-                // DEBUG: Log function calls for keyboard object
-                if (context.object && context.object.id === 'keyboardObj') {
-                    console.log(`[FUNC EVAL] ${this.functionName}() called for keyboardObj`);
-                }
-
                 switch (this.functionName) {
                     case 'if': {
                         // if(condition, trueValue, falseValue) - conditional expression
@@ -953,21 +948,12 @@
                         return 0;
                     }
                     case 'keydown': {
-                        // keyDown(key, t) - returns 1 if key is pressed, 0 otherwise
-                        // key can be a single letter or special key name
-                        console.log(`[DEBUG] keyDown case hit! args.length=${this.args.length}`);
+                        // keyDown(key) - returns 1 if key is pressed, 0 otherwise
                         if (this.args.length >= 1) {
                             const keyArg = this.args[0];
-                            console.log(`[DEBUG] keyArg type:`, keyArg.constructor.name);
-                            // Get the key name from the argument
                             if (keyArg instanceof VariableExpression) {
                                 const keyName = keyArg.name.toLowerCase();
-                                const result = keysPressed.has(keyName) ? 1 : 0;
-
-                                // DEBUG: Log keyboard state (always log for w/a/s/d to see if evaluated)
-                                console.log(`[EQUATION] keyDown(${keyName}) = ${result}, keysPressed:`, Array.from(keysPressed));
-
-                                return result;
+                                return keysPressed.has(keyName) ? 1 : 0;
                             }
                         }
                         return 0;
@@ -1361,8 +1347,20 @@
             // Mark this object as being computed to prevent recursion
             updateCache.set(cacheKey, updated);
 
+            // DEBUG: Log for object_3 at early frames
+            const isObject3 = obj.id === 'object_3';
+            if (isObject3 && time <= 5) {
+                console.log(`\n[FRAME ${time}] Updating object_3:`);
+                console.log(`  Before: x=${obj.x.toFixed(2)}, y=${obj.y.toFixed(2)}, Vx=${obj.Vx}, Vy=${obj.Vy}, Ax=${obj.Ax}, Ay=${obj.Ay}`);
+                console.log(`  Equations to evaluate:`, Array.from(obj.equations.keys()));
+            }
+
             obj.equations.forEach((equation, attribute) => {
                 const value = evaluateEquation(equation, context);
+
+                if (isObject3 && time <= 5) {
+                    console.log(`  ${attribute} = ${value} (was ${obj[attribute]})`);
+                }
 
                 switch (attribute) {
                     case 'x': updated.x = value; break;
@@ -1384,6 +1382,10 @@
                         break;
                 }
             });
+
+            if (isObject3 && time <= 5) {
+                console.log(`  After: x=${updated.x.toFixed(2)}, y=${updated.y.toFixed(2)}, Vx=${updated.Vx}, Vy=${updated.Vy}, Ax=${updated.Ax}, Ay=${updated.Ay}`);
+            }
 
             return updated;
         }
@@ -2426,12 +2428,6 @@
             const keyObjY = parseEquation('300 + keyDown(s) * 100 - keyDown(w) * 100');
             const keyObjRed = parseEquation('if(keyDown(space), 255, 100)');
 
-            // DEBUG: Log parsing results for keyboard object
-            console.log('[INIT] Keyboard Ctrl equations:');
-            console.log('  X parsed:', keyObjX.success, keyObjX.error || '✓', 'expression type:', keyObjX.expression?.constructor.name);
-            console.log('  Y parsed:', keyObjY.success, keyObjY.error || '✓', 'expression type:', keyObjY.expression?.constructor.name);
-            console.log('  Red parsed:', keyObjRed.success, keyObjRed.error || '✓', 'expression type:', keyObjRed.expression?.constructor.name);
-
             objects.set('keyboardObj', {
                 id: 'keyboardObj',
                 name: 'Keyboard Ctrl',
@@ -2653,11 +2649,6 @@
                 renderFrame(animationController.currentFrame);
             }
 
-            // DEBUG: Log key tracking (only for a-z, space)
-            if (/^[a-z ]$/.test(key)) {
-                console.log(`[KEY DOWN] ${key}, keysPressed:`, Array.from(keysPressed), `| shortcuts: ${keyboardShortcutsEnabled} | playing: ${isPlaying} | cleared ${cacheCount} equation caches`);
-            }
-
             // Always track Shift key for grid snap
             if (event.key === 'Shift') {
                 isShiftPressed = true;
@@ -2749,11 +2740,6 @@
             // Force re-render if playing to update objects using keyDown()
             if (isPlaying) {
                 renderFrame(animationController.currentFrame);
-            }
-
-            // DEBUG: Log key release (only for a-z, space)
-            if (/^[a-z ]$/.test(key)) {
-                console.log(`[KEY UP] ${key}, keysPressed:`, Array.from(keysPressed));
             }
 
             if (event.key === 'Shift') {
@@ -3550,6 +3536,18 @@
                 delete prevValues.text;
                 delete prevValues.equations;
                 previousFrameValues.set(obj.id, prevValues);
+
+                // DEBUG: Log what's stored for object_3
+                if (obj.id === 'object_3' && frame <= 5) {
+                    console.log(`[PREV FRAME ${frame}] Stored for object_3:`, {
+                        x: prevValues.x?.toFixed(2),
+                        y: prevValues.y?.toFixed(2),
+                        Vx: prevValues.Vx,
+                        Vy: prevValues.Vy,
+                        Ax: prevValues.Ax,
+                        Ay: prevValues.Ay
+                    });
+                }
             });
 
             const trails = trailManager.getAllTrails();
