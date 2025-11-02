@@ -991,8 +991,17 @@
             }
 
             evaluate(context) {
+                const isObject3 = context.object && context.object.id === 'object_3' && context.time <= 2;
+
                 const leftValue = this.left.evaluate(context);
                 const rightValue = this.right.evaluate(context);
+
+                if (isObject3 && this.operator === '+') {
+                    // Log addition operations for debugging
+                    const leftStr = this.left.constructor.name === 'VariableExpression' ? this.left.name : 'expr';
+                    const rightStr = this.right.constructor.name === 'VariableExpression' ? this.right.name : 'expr';
+                    console.log(`    [BINOP] ${leftStr} + ${rightStr} = ${leftValue} + ${rightValue} = ${leftValue + rightValue}`);
+                }
 
                 switch (this.operator) {
                     case '+': return leftValue + rightValue;
