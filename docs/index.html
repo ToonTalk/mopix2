@@ -3875,9 +3875,9 @@
                 description: 'An exercise in negative gravity.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ball', 'circle', 305.75, 500, 40, 40, 255, 200, 100, {
-                        y: '500 - 0.049 * t * t'
-                    }, 'A ball that falls upward!\\n\\nEquation: y = 500 - 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
+                    createSampleObject('ball', 'circle', 305.75, 100, 40, 40, 255, 200, 100, {
+                        y: '100 + 0.049 * t * t'
+                    }, 'A ball that falls upward!\\n\\nEquation: y = 100 + 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
                 }
             },
             {
