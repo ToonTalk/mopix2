@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-custom-props</span></p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-fixed</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -1363,8 +1363,8 @@
                 return updateCache.get(cacheKey);
             }
 
-            const context = { object: obj, time, allObjects };
             const updated = { ...obj };
+            const context = { object: updated, time, allObjects };
 
             // Mark this object as being computed to prevent recursion
             updateCache.set(cacheKey, updated);
