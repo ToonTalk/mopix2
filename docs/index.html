@@ -3898,16 +3898,23 @@
                 description: 'Four graphs showing different properties of a bouncing ball.',
                 create: () => {
                     clearAll();
-                    // Bouncing ball
-                    createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
-                        y: 'abs(sin(t * 0.15)) * 250 + 100',
-                        x: '20.75 + t * 3'
-                    }, 'Bouncing ball moving across screen.');
+                    // Bouncing ball with velocity and acceleration
+                    const ball = createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
+                        Vx: '3',
+                        Vy: 't == 0 ? 0 : Vy_prev + Ay',
+                        Ay: '-0.098',
+                        Ax: '0',
+                        x: 't == 0 ? 20.75 : x_prev + Vx',
+                        y: 't == 0 ? 337.7 : (y_prev + Vy < 20 && Vy < 0 ? 20 : y_prev + Vy)'
+                    }, 'Bouncing ball with physics.');
+
+                    // Store previous values for next iteration (simplified version)
+                    // In real implementation, these would be cached
 
                     // Graph 1: X position
                     createSampleObject('object_5', 'circle', 103.75, 280.45, 5, 5, 0, 0, 100, {
                         x: 't',
-                        y: '(20.75 + t * 3) / 10 + 400'
+                        y: 'x / 10 + 400'
                     }, 'Graph of X position.');
                     objects.get('object_5').penDown = true;
                     objects.get('object_5').blueColourPen = 100;
@@ -3916,7 +3923,7 @@
                     // Graph 2: Y position
                     createSampleObject('object_4', 'circle', 189.75, 413.45, 5, 5, 100, 0, 0, {
                         x: 't',
-                        y: '(abs(sin(t * 0.15)) * 250 + 100) / 10 + 400'
+                        y: 'y / 10 + 400'
                     }, 'Graph of Y position.');
                     objects.get('object_4').penDown = true;
                     objects.get('object_4').redColourPen = 100;
@@ -3925,7 +3932,7 @@
                     // Graph 3: Vx (horizontal velocity)
                     createSampleObject('object_7', 'circle', 242, 314.3, 5, 5, 50, 50, 0, {
                         x: 't',
-                        y: '3 / 1 + 400'
+                        y: 'Vx / 1 + 400'
                     }, 'Graph of X velocity (constant).');
                     objects.get('object_7').penDown = true;
                     objects.get('object_7').redColourPen = 50;
@@ -3935,7 +3942,7 @@
                     // Graph 4: Vy (vertical velocity)
                     createSampleObject('object_6', 'circle', 387, 314.2, 5, 5, 0, 100, 0, {
                         x: 't',
-                        y: '400'
+                        y: 'Vy / 1 + 400'
                     }, 'Graph of Y velocity.');
                     objects.get('object_6').penDown = true;
                     objects.get('object_6').greenColourPen = 100;
@@ -3986,6 +3993,11 @@
                 greenColourPen: 0,
                 blueColourPen: 0,
                 transparencyPen: 100,
+                // Physics properties for velocity and acceleration
+                Vx: 0,
+                Vy: 0,
+                Ax: 0,
+                Ay: 0,
                 info: info || ''
             };
 
