@@ -686,6 +686,8 @@
             }
 
             evaluate(context) {
+                const isObject3 = context.object && context.object.id === 'object_3' && context.time <= 2;
+
                 if (this.name === 't') {
                     return context.time;
                 }
@@ -719,7 +721,15 @@
                             // prev.x - get current object's previous value
                             const currentObjId = context.object.id;
                             const prevValues = previousFrameValues.get(currentObjId);
-                            return prevValues ? (prevValues[property] || 0) : 0;
+                            const result = prevValues ? (prevValues[property] || 0) : 0;
+
+                            if (isObject3) {
+                                console.log(`    [VAR] prev.${property} → looking up in previousFrameValues['${currentObjId}']`);
+                                console.log(`    [VAR] prevValues =`, prevValues);
+                                console.log(`    [VAR] prev.${property} = ${result}`);
+                            }
+
+                            return result;
                         } else if (parts.length === 3) {
                             // prev.objectId.x - get another object's previous value
                             const targetObjId = parts[1];
