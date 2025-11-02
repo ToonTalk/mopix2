@@ -383,7 +383,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <h1>🎨 MoPiX Modern - Professional Demo</h1>
-            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap</p>
+            <p class="subtitle">Full-featured visual programming with property inspector, undo/redo, and grid snap | <span style="color: #667eea;">v2024.11.02-custom-props</span></p>
 
             <canvas id="canvas" width="800" height="600"></canvas>
 
@@ -2989,6 +2989,51 @@
                 `;
             };
 
+            const renderCustomProperties = (obj) => {
+                // List of standard properties that are already displayed
+                const standardProps = new Set([
+                    'x', 'y', 'width', 'height', 'rotation',
+                    'red', 'green', 'blue', 'transparency',
+                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'transparencyPen'
+                ]);
+
+                // Find custom properties (those with equations that aren't standard)
+                const customProps = [];
+                obj.equations.forEach((eq, prop) => {
+                    if (!standardProps.has(prop)) {
+                        customProps.push({ name: prop, text: eq.text || 'Legacy equation' });
+                    }
+                });
+
+                console.log('renderCustomProperties called, found', customProps.length, 'custom properties:', customProps.map(p => p.name));
+
+                if (customProps.length === 0) {
+                    return '';
+                }
+
+                // Render custom properties section
+                const customPropsHtml = customProps.map(({ name, text }) => {
+                    const value = obj[name] !== undefined ? obj[name] : 0;
+                    return `
+                        <div class="property-row">
+                            <label>${name}: <span class="value-display">${typeof value === 'number' ? Math.round(value * 100) / 100 : value}</span></label>
+                            <div style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace;">📐 ${text}</div>
+                            <div style="display: flex; gap: 5px; align-items: center;">
+                                <button onclick="openCustomEquationEditor('${name}')" style="padding: 4px 8px; font-size: 11px; flex: 1;" title="Edit equation">✏️ Edit Equation</button>
+                                <button onclick="clearEquation('${name}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="property-group">
+                        <h4>Custom Properties</h4>
+                        ${customPropsHtml}
+                    </div>
+                `;
+            };
+
             panel.innerHTML = `
                 <div class="property-group">
                     <h4>Object</h4>
@@ -3052,6 +3097,8 @@
                     <button class="success" onclick="copySelectedObject()" title="Copy object (C)">📋 Copy</button>
                     <button class="danger" onclick="deleteSelectedObject()" title="Delete (Del)">🗑️ Delete</button>
                 </div>
+
+                ${renderCustomProperties(obj)}
 
                 <div class="property-group">
                     <h4>Layer Order</h4>
@@ -3138,6 +3185,47 @@
         function closeEquationEditor() {
             document.getElementById('equationEditorModal').style.display = 'none';
             currentEquationProperty = null;
+        }
+
+        function openCustomEquationEditor(property) {
+            if (!selectedObjectId) return;
+
+            currentEquationProperty = property;
+            const obj = objects.get(selectedObjectId);
+
+            // For custom properties, we need to add them to the dropdown or handle differently
+            // For now, we'll use a simple approach: set the property and open the modal
+            const selectElement = document.getElementById('equationProperty');
+
+            // Check if the property exists in the dropdown
+            let optionExists = false;
+            for (let option of selectElement.options) {
+                if (option.value === property) {
+                    optionExists = true;
+                    break;
+                }
+            }
+
+            // If not in dropdown, temporarily add it
+            if (!optionExists) {
+                const newOption = document.createElement('option');
+                newOption.value = property;
+                newOption.text = property + ' (Custom)';
+                selectElement.add(newOption);
+            }
+
+            selectElement.value = property;
+            document.getElementById('equationEditorModal').style.display = 'block';
+
+            // Load existing equation if any
+            if (obj.equations.has(property)) {
+                const eq = obj.equations.get(property);
+                document.getElementById('equationInput').value = eq.text || '';
+            } else {
+                document.getElementById('equationInput').value = '';
+            }
+
+            validateEquation();
         }
 
         function validateEquation() {
