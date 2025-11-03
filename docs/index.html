@@ -377,10 +377,11 @@
             </div>
 
             <h3>📦 Objects</h3>
-            <ul id="objectList" class="object-list"></ul>
-            <div style="margin-top: 15px;">
+            <div style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px;">
                 <button class="success" onclick="toggleCreateForm()" style="width: 100%; font-size: 12px;">➕ Create New</button>
+                <button class="danger" onclick="clearAllObjects()" style="width: 100%; font-size: 12px;">🗑️ Clear All</button>
             </div>
+            <ul id="objectList" class="object-list"></ul>
         </div>
 
         <!-- Main Content -->
@@ -3787,6 +3788,25 @@
 
             trailManager.clearObject(selectedObjectId);
             objects.delete(selectedObjectId);
+            selectedObjectId = null;
+
+            saveHistoryState();
+            updateObjectList();
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function clearAllObjects() {
+            if (objects.size === 0) return;
+
+            const confirmed = confirm(`Are you sure you want to delete all ${objects.size} object(s)? This cannot be undone.`);
+            if (!confirmed) return;
+
+            // Clear all trails
+            trailManager.clearAll();
+
+            // Clear all objects
+            objects.clear();
             selectedObjectId = null;
 
             saveHistoryState();
