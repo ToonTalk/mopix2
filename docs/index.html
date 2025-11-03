@@ -174,6 +174,9 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .object-item:hover {
@@ -2970,59 +2973,6 @@
 
         // ==================== Object List ====================
 
-        function createShapeIcon(obj) {
-            const canvas = document.createElement('canvas');
-            const size = 16;
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-
-            ctx.fillStyle = `rgb(${obj.red}, ${obj.green}, ${obj.blue})`;
-            ctx.strokeStyle = ctx.fillStyle;
-
-            switch(obj.appearance) {
-                case 'circle':
-                    ctx.beginPath();
-                    ctx.arc(size/2, size/2, size/2 - 1, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                case 'square':
-                    ctx.fillRect(1, 1, size - 2, size - 2);
-                    break;
-                case 'line':
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(1, size/2);
-                    ctx.lineTo(size - 1, size/2);
-                    ctx.stroke();
-                    break;
-                case 'arrow':
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(1, size/2);
-                    ctx.lineTo(size - 5, size/2);
-                    ctx.stroke();
-                    // Arrowhead
-                    ctx.beginPath();
-                    ctx.moveTo(size - 2, size/2);
-                    ctx.lineTo(size - 6, size/2 - 3);
-                    ctx.lineTo(size - 6, size/2 + 3);
-                    ctx.closePath();
-                    ctx.fill();
-                    break;
-                case 'text':
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('A', size/2, size/2);
-                    break;
-                default:
-                    ctx.fillRect(1, 1, size - 2, size - 2);
-            }
-
-            return canvas;
-        }
-
         function updateObjectList() {
             const listEl = document.getElementById('objectList');
             listEl.innerHTML = '';
@@ -3032,24 +2982,63 @@
                 li.className = 'object-item' + (obj.id === selectedObjectId ? ' selected' : '');
                 li.onclick = () => selectObject(obj.id);
 
-                const icon = createShapeIcon(obj);
-                icon.style.marginRight = '8px';
-                icon.style.verticalAlign = 'middle';
+                // Create miniature shape based on appearance type
+                let shapeIcon = '';
+                const color = `rgb(${obj.red}, ${obj.green}, ${obj.blue})`;
 
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'object-name';
-                nameDiv.textContent = obj.name;
+                switch(obj.appearance) {
+                    case 'circle':
+                        shapeIcon = `<span style="display: inline-block; width: 12px; height: 12px; background: ${color}; border-radius: 50%;"></span>`;
+                        break;
+                    case 'square':
+                        shapeIcon = `<span style="display: inline-block; width: 12px; height: 12px; background: ${color};"></span>`;
+                        break;
+                    case 'line':
+                        shapeIcon = `<span style="display: inline-block; width: 12px; height: 2px; background: ${color};"></span>`;
+                        break;
+                    case 'arrow':
+                        shapeIcon = `<span style="display: inline-block; color: ${color}; font-size: 12px; line-height: 12px;">→</span>`;
+                        break;
+                    case 'text':
+                        shapeIcon = `<span style="display: inline-block; color: ${color}; font-size: 12px; font-weight: bold; line-height: 12px;">A</span>`;
+                        break;
+                    default:
+                        shapeIcon = `<span style="display: inline-block; width: 12px; height: 12px; background: ${color}; border-radius: 2px;"></span>`;
+                }
 
-                const typeDiv = document.createElement('div');
-                typeDiv.className = 'object-type';
-                typeDiv.textContent = obj.appearance + (obj.penDown ? ' ✏️' : '');
-
-                li.appendChild(icon);
-                li.appendChild(nameDiv);
-                li.appendChild(typeDiv);
-
+                li.innerHTML = `
+                    ${shapeIcon}
+                    <div style="flex: 1;">
+                        <div class="object-name">${obj.name}</div>
+                        <div class="object-type">${obj.appearance} ${obj.penDown ? '✏️' : ''}</div>
+                    </div>
+                    <button onclick="event.stopPropagation(); showObjectInfo('${obj.id}')" style="padding: 4px 8px; font-size: 11px; background: #667eea; color: white; border: none; border-radius: 3px; cursor: pointer;" title="Show info">ℹ️</button>
+                `;
                 listEl.appendChild(li);
             });
+        }
+
+        function showObjectInfo(id) {
+            const obj = objects.get(id);
+            if (!obj) return;
+
+            let info = `Object: ${obj.name}\n`;
+            info += `Type: ${obj.appearance}\n`;
+            info += `Position: (${Math.round(obj.x)}, ${Math.round(obj.y)})\n`;
+            info += `Size: ${Math.round(obj.width)} × ${Math.round(obj.height)}\n`;
+            info += `Color: RGB(${obj.red}, ${obj.green}, ${obj.blue})\n`;
+            if (obj.rotation) info += `Rotation: ${Math.round(obj.rotation)}°\n`;
+            if (obj.penDown) info += `Pen: ON (thickness ${obj.thicknessPen})\n`;
+
+            // Show equations if any
+            if (obj.equations.size > 0) {
+                info += `\nEquations:\n`;
+                obj.equations.forEach((eq, prop) => {
+                    info += `  ${prop} = ${eq.text}\n`;
+                });
+            }
+
+            alert(info);
         }
 
         function selectObject(id) {
