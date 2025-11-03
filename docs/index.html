@@ -4677,6 +4677,36 @@
                     objects.get('object_6').greenColourPen = 100;
                     objects.get('object_6').thicknessPen = 4;
                 }
+            },
+            {
+                id: 'pong-game',
+                name: 'Pong Game',
+                description: 'Interactive Pong game controlled by keyboard. Use W/S for left paddle, Up/Down arrows for right paddle.',
+                create: () => {
+                    clearAll();
+
+                    // Left paddle controlled by W/S keys
+                    createSampleObject('pongLeft', 'roundrect', 50, 300, 15, 80, 100, 200, 255, {
+                        y: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)'
+                    }, 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.');
+
+                    // Right paddle controlled by arrow keys
+                    createSampleObject('pongRight', 'roundrect', 750, 300, 15, 80, 255, 100, 100, {
+                        y: 'clamp(400 + keyDown(arrowdown) * 200 - keyDown(arrowup) * 200, 60, 540)'
+                    }, 'Pong right paddle controlled by Up/Down arrow keys.');
+
+                    // Ball with complex physics
+                    createSampleObject('pongBall', 'circle', 400, 300, 20, 20, 255, 255, 100, {
+                        vx: 'if(t == 0, 4, if((prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft)) || (prev.x + prev.vx > 765 && overlaps(pongBall, pongRight)), prev.vx * -1, if(prev.x < 15 || prev.x > 785, 4 * if(prev.x < 400, 1, -1), prev.vx)))',
+                        vy: 'if(t == 0, 3, if((prev.y + prev.vy < 20 && prev.vy < 0) || (prev.y + prev.vy > 580 && prev.vy > 0), prev.vy * -1, if(prev.x < 15 || prev.x > 785, 0, prev.vy)))',
+                        x: 'if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 400, prev.x + prev.vx)))',
+                        y: 'if(prev.y + prev.vy < 20, 20, if(prev.y + prev.vy > 580, 580, if(prev.x < 15 || prev.x > 785, 300, prev.y + prev.vy)))'
+                    }, 'Pong ball with collision detection, paddle bouncing, and reset on score.\\n\\nEquations use:\\n- overlaps() function to detect paddle collisions\\n- prev values for velocity and position\\n- Complex conditionals for bouncing and scoring\\n\\nThis demonstrates MoPiX\'s ability to create interactive games with keyboard control and physics!');
+
+                    // Center line (decorative)
+                    createSampleObject('pongCenter', 'roundrect', 400, 300, 4, 600, 100, 100, 100, {}, 'Pong center line for visual reference.');
+                    objects.get('pongCenter').transparency = 30;
+                }
             }
         ];
 
