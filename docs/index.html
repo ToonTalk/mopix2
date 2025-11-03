@@ -481,10 +481,7 @@
                 <option value="star">Star (5-pointed)</option>
                 <option value="pentagon">Pentagon</option>
                 <option value="hexagon">Hexagon</option>
-                <option value="diamond">Diamond</option>
-                <option value="ellipse">Ellipse</option>
                 <option value="roundrect">Rounded Rectangle</option>
-                <option value="line">Line</option>
                 <option value="arrow">Arrow</option>
                 <option value="text">Text/Label</option>
             </select>
@@ -3159,7 +3156,22 @@
                         <input type="text" value="${obj.name}" onchange="renameObject('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;" />
                     </div>
                     <div class="property-row" style="margin-top: 10px;">
-                        <label>Shape: <span class="value-display">${obj.appearance}</span></label>
+                        <label>Description:</label>
+                        <textarea onchange="updateObjectDescription('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; min-height: 60px; resize: vertical; font-family: inherit;">${obj.description || obj.info || ''}</textarea>
+                    </div>
+                    <div class="property-row" style="margin-top: 10px;">
+                        <label>Shape:</label>
+                        <select onchange="updateObjectShape('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px;">
+                            <option value="square" ${obj.appearance === 'square' ? 'selected' : ''}>Square</option>
+                            <option value="circle" ${obj.appearance === 'circle' ? 'selected' : ''}>Circle</option>
+                            <option value="triangle" ${obj.appearance === 'triangle' ? 'selected' : ''}>Triangle</option>
+                            <option value="star" ${obj.appearance === 'star' ? 'selected' : ''}>Star (5-pointed)</option>
+                            <option value="pentagon" ${obj.appearance === 'pentagon' ? 'selected' : ''}>Pentagon</option>
+                            <option value="hexagon" ${obj.appearance === 'hexagon' ? 'selected' : ''}>Hexagon</option>
+                            <option value="roundrect" ${obj.appearance === 'roundrect' ? 'selected' : ''}>Rounded Rectangle</option>
+                            <option value="arrow" ${obj.appearance === 'arrow' ? 'selected' : ''}>Arrow</option>
+                            <option value="text" ${obj.appearance === 'text' ? 'selected' : ''}>Text/Label</option>
+                        </select>
                     </div>
                 </div>
 
@@ -3538,6 +3550,25 @@
                 saveHistoryState();
                 updateObjectList();
                 updatePropertyPanel();
+            }
+        }
+
+        function updateObjectDescription(objectId, description) {
+            const obj = objects.get(objectId);
+            if (obj) {
+                obj.description = description;
+                saveHistoryState();
+            }
+        }
+
+        function updateObjectShape(objectId, newShape) {
+            const obj = objects.get(objectId);
+            if (obj) {
+                obj.appearance = newShape;
+                saveHistoryState();
+                updateObjectList();
+                updatePropertyPanel();
+                renderFrame(animationController.currentFrame);
             }
         }
 
