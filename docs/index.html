@@ -2970,6 +2970,59 @@
 
         // ==================== Object List ====================
 
+        function createShapeIcon(obj) {
+            const canvas = document.createElement('canvas');
+            const size = 16;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = `rgb(${obj.red}, ${obj.green}, ${obj.blue})`;
+            ctx.strokeStyle = ctx.fillStyle;
+
+            switch(obj.appearance) {
+                case 'circle':
+                    ctx.beginPath();
+                    ctx.arc(size/2, size/2, size/2 - 1, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'square':
+                    ctx.fillRect(1, 1, size - 2, size - 2);
+                    break;
+                case 'line':
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(1, size/2);
+                    ctx.lineTo(size - 1, size/2);
+                    ctx.stroke();
+                    break;
+                case 'arrow':
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(1, size/2);
+                    ctx.lineTo(size - 5, size/2);
+                    ctx.stroke();
+                    // Arrowhead
+                    ctx.beginPath();
+                    ctx.moveTo(size - 2, size/2);
+                    ctx.lineTo(size - 6, size/2 - 3);
+                    ctx.lineTo(size - 6, size/2 + 3);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                case 'text':
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('A', size/2, size/2);
+                    break;
+                default:
+                    ctx.fillRect(1, 1, size - 2, size - 2);
+            }
+
+            return canvas;
+        }
+
         function updateObjectList() {
             const listEl = document.getElementById('objectList');
             listEl.innerHTML = '';
@@ -2979,13 +3032,22 @@
                 li.className = 'object-item' + (obj.id === selectedObjectId ? ' selected' : '');
                 li.onclick = () => selectObject(obj.id);
 
-                const colorBox = `<span style="display: inline-block; width: 12px; height: 12px; background: rgb(${obj.red}, ${obj.green}, ${obj.blue}); border-radius: 2px; margin-right: 8px;"></span>`;
+                const icon = createShapeIcon(obj);
+                icon.style.marginRight = '8px';
+                icon.style.verticalAlign = 'middle';
 
-                li.innerHTML = `
-                    ${colorBox}
-                    <div class="object-name">${obj.name}</div>
-                    <div class="object-type">${obj.appearance} ${obj.penDown ? '✏️' : ''}</div>
-                `;
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'object-name';
+                nameDiv.textContent = obj.name;
+
+                const typeDiv = document.createElement('div');
+                typeDiv.className = 'object-type';
+                typeDiv.textContent = obj.appearance + (obj.penDown ? ' ✏️' : '');
+
+                li.appendChild(icon);
+                li.appendChild(nameDiv);
+                li.appendChild(typeDiv);
+
                 listEl.appendChild(li);
             });
         }
@@ -3172,6 +3234,10 @@
             }
 
             updatePropertyPanel();
+            // Update object list if color property changed
+            if (prop === 'red' || prop === 'green' || prop === 'blue') {
+                updateObjectList();
+            }
             renderFrame(animationController.currentFrame);
         }
 
@@ -3188,6 +3254,7 @@
             obj.blue = b;
 
             updatePropertyPanel();
+            updateObjectList(); // Update icon color in object list
             renderFrame(animationController.currentFrame);
         }
 
@@ -4013,9 +4080,6 @@
                         green: '50 + 50 * sin(t * 0.3)'
                     }, 'Very fast rotating rectangle with green oscillation.');
                     objects.get('object_118').transparency = 50;
-
-                    // Indicator that shows when two are aligned
-                    createSampleObject('object_97', 'circle', 718.75, 72.5, 30, 30, 255, 255, 0, {}, 'Alignment indicator.');
                 }
             },
             {
