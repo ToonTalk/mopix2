@@ -2569,6 +2569,10 @@
             animationController = new AnimationController((frame) => {
                 renderFrame(frame);
                 updateFrameDisplay(frame);
+                // Update property panel during playback if an object is selected
+                if (selectedObjectId) {
+                    updatePropertyPanel();
+                }
             }, 30);
 
             canvas.addEventListener('mousedown', handleMouseDown);
@@ -3575,6 +3579,19 @@
                     trailManager.recordPosition(updated, frame);
                 }
                 return updated;
+            });
+
+            // Update the objects Map with current frame values (for property panel display)
+            updatedObjects.forEach(updated => {
+                const original = objects.get(updated.id);
+                if (original) {
+                    // Update all property values but keep equations
+                    Object.keys(updated).forEach(key => {
+                        if (key !== 'equations' && key !== 'id' && key !== 'name' && key !== 'appearance') {
+                            original[key] = updated[key];
+                        }
+                    });
+                }
             });
 
             // Store current frame values for use as prev in next frame (t-1 support)
