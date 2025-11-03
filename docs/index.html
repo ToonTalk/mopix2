@@ -2665,10 +2665,24 @@
             obj.x = newX;
             obj.y = newY;
 
+            // Clear x and y equations when manually dragging
+            // Dragging is an explicit override of position
+            if (obj.equations.has('x')) {
+                obj.equations.delete('x');
+            }
+            if (obj.equations.has('y')) {
+                obj.equations.delete('y');
+            }
+
             obj.equations.forEach(eq => eq.cache.clear());
 
             updatePropertyPanel();
-            renderFrame(animationController.currentFrame);
+
+            // During dragging, render directly without evaluating equations
+            // This prevents equations from overriding the dragged position
+            const trails = trailManager.getAllTrails();
+            const objectsArray = Array.from(objects.values());
+            renderer.renderScene(objectsArray, trails, selectedObjectId);
         }
 
         function handleMouseUp(event) {
