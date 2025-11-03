@@ -2905,7 +2905,8 @@
                 greenColourPen: 100,
                 blueColourPen: 100,
                 transparencyPen: 100,
-                info: 'Pong center line for visual reference.'
+                info: 'Pong center line for visual reference.',
+                equations: new Map()
             });
 
             animationController = new AnimationController((frame) => {
@@ -3051,10 +3052,12 @@
             // Clear all equation caches since keyboard state changed
             let cacheCount = 0;
             objects.forEach(obj => {
-                obj.equations.forEach(eq => {
-                    eq.cache.clear();
-                    cacheCount++;
-                });
+                if (obj.equations) {
+                    obj.equations.forEach(eq => {
+                        eq.cache.clear();
+                        cacheCount++;
+                    });
+                }
             });
 
             // Force re-render if playing to update objects using keyDown()
@@ -3147,7 +3150,9 @@
 
             // Clear all equation caches since keyboard state changed
             objects.forEach(obj => {
-                obj.equations.forEach(eq => eq.cache.clear());
+                if (obj.equations) {
+                    obj.equations.forEach(eq => eq.cache.clear());
+                }
             });
 
             // Force re-render if playing to update objects using keyDown()
@@ -3937,12 +3942,14 @@
         function serializeObjects() {
             return Array.from(objects.values()).map(obj => {
                 const equations = {};
-                obj.equations.forEach((eq, attr) => {
-                    equations[attr] = {
-                        text: eq.text || '',
-                        description: eq.description || ''
-                    };
-                });
+                if (obj.equations) {
+                    obj.equations.forEach((eq, attr) => {
+                        equations[attr] = {
+                            text: eq.text || '',
+                            description: eq.description || ''
+                        };
+                    });
+                }
 
                 return {
                     id: obj.id,
