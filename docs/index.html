@@ -3977,13 +3977,27 @@
                     createSampleObject('object_5', 'square', 137.75, 152.5, 200, 80, 100, 50, 50, {
                         rotation: 't * 3'
                     }, 'Rotating rectangle that releases the ball.');
+                    objects.get('object_5').red = 100;
 
-                    // Ball that gets released
+                    // Ball that follows the rectangle then falls with physics
                     createSampleObject('object_6', 'circle', 206.4, 277.45, 30, 30, 0, 100, 0, {
-                        y: 't < 75 ? 277.45 : 277.45 - 0.098 * (t - 75) * (t - 75)',
-                        x: 't < 75 ? 206.4 : 206.4 + 3 * (t - 75)'
-                    }, 'Ball released at t=75.');
+                        // Position follows rectangle's 90-degree point until t=75, then uses prev + velocity
+                        x: 'if(t <= 75, object_5.x + cos((object_5.rotation + 90) * pi / 180) * (object_5.width / 2), prev.x + Vx)',
+                        y: 'if(t <= 75, object_5.y + sin((object_5.rotation + 90) * pi / 180) * (object_5.width / 2), prev.y + Vy)',
+
+                        // Velocity: at release time, calculate from position change; then accumulate with acceleration
+                        Vx: 'if(t == 75, x - prev.x, prev.Vx + Ax)',
+                        Vy: 'if(t == 75, y - prev.y, if(prev.amIHittingGround, 0, prev.Vy + Ay))',
+
+                        // Acceleration
+                        Ax: '0',
+                        Ay: '-0.098',
+
+                        // Ground collision detection
+                        amIHittingGround: 'y <= 15 && Vy < 0'
+                    }, 'Ball follows rectangle until t=75, then released with physics.');
                     objects.get('object_6').penDown = true;
+                    objects.get('object_6').greenColourPen = 100;
                 }
             },
             {
