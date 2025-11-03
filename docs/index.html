@@ -539,6 +539,12 @@
                 <option value="red">Red (0-255)</option>
                 <option value="green">Green (0-255)</option>
                 <option value="blue">Blue (0-255)</option>
+                <option value="transparency">Transparency (0-100)</option>
+                <option value="thicknessPen">Pen Thickness</option>
+                <option value="redColourPen">Pen Red (0-255)</option>
+                <option value="greenColourPen">Pen Green (0-255)</option>
+                <option value="blueColourPen">Pen Blue (0-255)</option>
+                <option value="transparencyPen">Pen Transparency (0-100)</option>
             </select>
         </div>
 
@@ -1582,6 +1588,7 @@
                     case 'red': updated.red = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'green': updated.green = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'transparency': updated.transparency = Math.max(0, Math.min(100, value)); break;
                     case 'thicknessPen': updated.thicknessPen = Math.max(0.5, value); break;
                     case 'redColourPen': updated.redColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'greenColourPen': updated.greenColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
@@ -2761,6 +2768,146 @@
                 ])
             });
 
+            // ========== PONG GAME ==========
+            // Left paddle controlled by W/S keys
+            const pongLeftY = parseEquation('clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)');
+
+            objects.set('pongLeft', {
+                id: 'pongLeft',
+                name: 'Pong Left Paddle',
+                x: 50, y: 300,
+                width: 15, height: 80,
+                rotation: 0,
+                red: 100, green: 200, blue: 255,
+                transparency: 100,
+                appearance: 'roundrect',
+                penDown: false,
+                text: '',
+                thicknessPen: 2,
+                redColourPen: 100,
+                greenColourPen: 200,
+                blueColourPen: 255,
+                transparencyPen: 100,
+                info: 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.',
+                equations: new Map([
+                    ['y', {
+                        attribute: 'y',
+                        text: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)',
+                        description: 'Keyboard control with boundary clamping',
+                        expression: pongLeftY.success ? pongLeftY.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Right paddle controlled by Up/Down arrow keys
+            const pongRightY = parseEquation('clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)');
+
+            objects.set('pongRight', {
+                id: 'pongRight',
+                name: 'Pong Right Paddle',
+                x: 750, y: 300,
+                width: 15, height: 80,
+                rotation: 0,
+                red: 255, green: 100, blue: 100,
+                transparency: 100,
+                appearance: 'roundrect',
+                penDown: false,
+                text: '',
+                thicknessPen: 2,
+                redColourPen: 255,
+                greenColourPen: 100,
+                blueColourPen: 100,
+                transparencyPen: 100,
+                info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses clamp() to keep paddle within bounds.',
+                equations: new Map([
+                    ['y', {
+                        attribute: 'y',
+                        text: 'clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)',
+                        description: 'Keyboard control with boundary clamping',
+                        expression: pongRightY.success ? pongRightY.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Pong ball with physics
+            const pongBallX = parseEquation('if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 400, prev.x + prev.vx)))');
+            const pongBallY = parseEquation('if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, clamp(prev.y, 20, 580), prev.y + prev.vy)');
+            const pongBallVx = parseEquation('if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 3, prev.vx)))');
+            const pongBallVy = parseEquation('if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft) || overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy))');
+
+            objects.set('pongBall', {
+                id: 'pongBall',
+                name: 'Pong Ball',
+                x: 400, y: 300,
+                width: 15, height: 15,
+                rotation: 0,
+                red: 255, green: 255, blue: 255,
+                transparency: 100,
+                appearance: 'circle',
+                penDown: true,
+                text: '',
+                thicknessPen: 1,
+                redColourPen: 200,
+                greenColourPen: 200,
+                blueColourPen: 200,
+                transparencyPen: 30,
+                info: 'Pong ball with physics: bounces off paddles and walls, uses overlaps() for collision, prev.vx/vy for velocity. Resets if it goes past paddles.',
+                vx: 3,  // Initial velocity
+                vy: 2,
+                equations: new Map([
+                    ['x', {
+                        attribute: 'x',
+                        text: 'if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 400, prev.x + prev.vx)))',
+                        description: 'Ball movement with paddle collision and reset',
+                        expression: pongBallX.success ? pongBallX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, clamp(prev.y, 20, 580), prev.y + prev.vy)',
+                        description: 'Ball bounces off top and bottom walls',
+                        expression: pongBallY.success ? pongBallY.expression : null,
+                        cache: new Map()
+                    }],
+                    ['vx', {
+                        attribute: 'vx',
+                        text: 'if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 3, prev.vx)))',
+                        description: 'Horizontal velocity with bounce and speed increase',
+                        expression: pongBallVx.success ? pongBallVx.expression : null,
+                        cache: new Map()
+                    }],
+                    ['vy', {
+                        attribute: 'vy',
+                        text: 'if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft) || overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy))',
+                        description: 'Vertical velocity with bounce and paddle spin effect',
+                        expression: pongBallVy.success ? pongBallVy.expression : null,
+                        cache: new Map()
+                    }]
+                ])
+            });
+
+            // Center line (decorative)
+            objects.set('pongCenter', {
+                id: 'pongCenter',
+                name: 'Pong Center Line',
+                x: 400, y: 300,
+                width: 4, height: 600,
+                rotation: 0,
+                red: 100, green: 100, blue: 100,
+                transparency: 30,
+                appearance: 'roundrect',
+                penDown: false,
+                text: '',
+                thicknessPen: 2,
+                redColourPen: 100,
+                greenColourPen: 100,
+                blueColourPen: 100,
+                transparencyPen: 100,
+                info: 'Pong center line for visual reference.'
+            });
+
             animationController = new AnimationController((frame) => {
                 renderFrame(frame);
                 updateFrameDisplay(frame);
@@ -3424,11 +3571,7 @@
                     ${propertyRow('red', 'Red', 0, 255)}
                     ${propertyRow('green', 'Green', 0, 255)}
                     ${propertyRow('blue', 'Blue', 0, 255)}
-
-                    <div class="property-row">
-                        <label>Transparency: <span class="value-display">${Math.round(obj.transparency)}%</span></label>
-                        <input type="range" min="0" max="100" value="${obj.transparency}" oninput="updateProperty('transparency', this.value)">
-                    </div>
+                    ${propertyRow('transparency', 'Transparency', 0, 100, '%')}
                 </div>
 
                 <div class="property-group">
@@ -3443,11 +3586,7 @@
                     ${propertyRow('redColourPen', 'Pen Red', 0, 255)}
                     ${propertyRow('greenColourPen', 'Pen Green', 0, 255)}
                     ${propertyRow('blueColourPen', 'Pen Blue', 0, 255)}
-
-                    <div class="property-row">
-                        <label>Pen Transparency: <span class="value-display">${Math.round(obj.transparencyPen)}%</span></label>
-                        <input type="range" min="0" max="100" value="${obj.transparencyPen}" oninput="updateProperty('transparencyPen', this.value)">
-                    </div>
+                    ${propertyRow('transparencyPen', 'Pen Transparency', 0, 100, '%')}
                 </div>
 
                 <div class="property-buttons">
