@@ -2831,11 +2831,11 @@
                 ])
             });
 
-            // Pong ball with physics
-            const pongBallX = parseEquation('if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 400, prev.x + prev.vx)))');
-            const pongBallY = parseEquation('if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, clamp(prev.y, 20, 580), prev.y + prev.vy)');
-            const pongBallVx = parseEquation('if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 3, prev.vx)))');
-            const pongBallVy = parseEquation('if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft) || overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy))');
+            // Pong ball with physics (using nested ifs instead of && and ||)
+            const pongBallVx = parseEquation('if(t == 0, 3, if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx < 15, 3, if(prev.x + prev.vx > 785, 3, prev.vx)))))');
+            const pongBallVy = parseEquation('if(t == 0, 2, if(prev.y + prev.vy < 20, prev.vy * -1, if(prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft), prev.vy + random(-1, 1), if(overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy)))))');
+            const pongBallX = parseEquation('if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx < 15, 400, prev.x + prev.vx)), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx > 785, 400, prev.x + prev.vx)), prev.x + prev.vx))');
+            const pongBallY = parseEquation('if(prev.y + prev.vy < 20, clamp(prev.y, 20, 580), if(prev.y + prev.vy > 580, clamp(prev.y, 20, 580), if(prev.x + prev.vx < 15, 300, if(prev.x + prev.vx > 785, 300, prev.y + prev.vy))))');
 
             objects.set('pongBall', {
                 id: 'pongBall',
@@ -2857,32 +2857,32 @@
                 vx: 3,  // Initial velocity
                 vy: 2,
                 equations: new Map([
-                    ['x', {
-                        attribute: 'x',
-                        text: 'if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 400, prev.x + prev.vx)))',
-                        description: 'Ball movement with paddle collision and reset',
-                        expression: pongBallX.success ? pongBallX.expression : null,
-                        cache: new Map()
-                    }],
-                    ['y', {
-                        attribute: 'y',
-                        text: 'if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, clamp(prev.y, 20, 580), prev.y + prev.vy)',
-                        description: 'Ball bounces off top and bottom walls',
-                        expression: pongBallY.success ? pongBallY.expression : null,
-                        cache: new Map()
-                    }],
                     ['vx', {
                         attribute: 'vx',
-                        text: 'if(prev.x + prev.vx < 35 && overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, if(prev.x + prev.vx > 765 && overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, if(prev.x + prev.vx < 15 || prev.x + prev.vx > 785, 3, prev.vx)))',
+                        text: 'if(t == 0, 3, if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx < 15, 3, if(prev.x + prev.vx > 785, 3, prev.vx)))))',
                         description: 'Horizontal velocity with bounce and speed increase',
                         expression: pongBallVx.success ? pongBallVx.expression : null,
                         cache: new Map()
                     }],
                     ['vy', {
                         attribute: 'vy',
-                        text: 'if(prev.y + prev.vy < 20 || prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft) || overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy))',
+                        text: 'if(t == 0, 2, if(prev.y + prev.vy < 20, prev.vy * -1, if(prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft), prev.vy + random(-1, 1), if(overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy)))))',
                         description: 'Vertical velocity with bounce and paddle spin effect',
                         expression: pongBallVy.success ? pongBallVy.expression : null,
+                        cache: new Map()
+                    }],
+                    ['x', {
+                        attribute: 'x',
+                        text: 'if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx < 15, 400, prev.x + prev.vx)), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx > 785, 400, prev.x + prev.vx)), prev.x + prev.vx))',
+                        description: 'Ball movement with paddle collision and reset',
+                        expression: pongBallX.success ? pongBallX.expression : null,
+                        cache: new Map()
+                    }],
+                    ['y', {
+                        attribute: 'y',
+                        text: 'if(prev.y + prev.vy < 20, clamp(prev.y, 20, 580), if(prev.y + prev.vy > 580, clamp(prev.y, 20, 580), if(prev.x + prev.vx < 15, 300, if(prev.x + prev.vx > 785, 300, prev.y + prev.vy))))',
+                        description: 'Ball bounces off top and bottom walls',
+                        expression: pongBallY.success ? pongBallY.expression : null,
                         cache: new Map()
                     }]
                 ])
