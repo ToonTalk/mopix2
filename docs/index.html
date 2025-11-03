@@ -547,7 +547,14 @@
             <textarea id="equationInput" placeholder="e.g., sin(t * 10) * 100 + 300" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; min-height: 60px; resize: vertical;" oninput="validateEquation()" rows="3"></textarea>
             <div id="equationError" style="color: #dc3545; margin-top: 5px; font-size: 12px; display: none;"></div>
             <div id="equationSuccess" style="color: #28a745; margin-top: 5px; font-size: 12px; display: none;">✓ Valid equation</div>
+        </div>
 
+        <div style="margin: 15px 0;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Description (optional):</label>
+            <textarea id="equationDescription" placeholder="e.g., Makes the object bounce vertically" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; min-height: 40px; resize: vertical;" rows="2"></textarea>
+        </div>
+
+        <div style="margin: 15px 0;">
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button class="success" onclick="saveEquation()" style="flex: 1;" id="saveEquationBtn">💾 Save</button>
                 <button class="secondary" onclick="closeEquationEditor()" style="flex: 1;">Cancel</button>
@@ -860,23 +867,37 @@
 
                             return result;
                         } else if (parts.length === 3) {
-                            // prev.objectId.x - get another object's previous value
+                            // prev.objectId.x - get another object's previous value (case-insensitive)
                             const targetObjId = parts[1];
                             const targetProperty = parts[2];
-                            const prevValues = previousFrameValues.get(targetObjId);
+
+                            // Try exact match first
+                            let prevValues = previousFrameValues.get(targetObjId);
+
+                            // If not found, try case-insensitive search
+                            if (!prevValues) {
+                                const targetObjIdLower = targetObjId.toLowerCase();
+                                for (const [id, obj] of context.allObjects.entries()) {
+                                    if (id.toLowerCase() === targetObjIdLower || obj.name.toLowerCase() === targetObjIdLower) {
+                                        prevValues = previousFrameValues.get(id);
+                                        break;
+                                    }
+                                }
+                            }
+
                             return prevValues ? (prevValues[targetProperty] || 0) : 0;
                         }
                         return 0;
                     }
 
-                    // Try to find object by ID first, then by name (case-insensitive)
+                    // Try to find object by ID or name (case-insensitive)
                     let targetObj = context.allObjects.get(objectId);
 
-                    // If not found by ID, try to find by name (case-insensitive)
+                    // If not found by exact ID, try case-insensitive search by both ID and name
                     if (!targetObj) {
                         const objectIdLower = objectId.toLowerCase();
                         for (const [id, obj] of context.allObjects.entries()) {
-                            if (obj.name.toLowerCase() === objectIdLower) {
+                            if (id.toLowerCase() === objectIdLower || obj.name.toLowerCase() === objectIdLower) {
                                 targetObj = obj;
                                 break;
                             }
@@ -3155,6 +3176,20 @@
                 li.className = 'object-item' + (obj.id === selectedObjectId ? ' selected' : '');
                 li.onclick = () => selectObject(obj.id);
 
+                // Make droppable for equation drag-and-drop
+                li.ondragover = (e) => {
+                    e.preventDefault();
+                    li.style.background = '#e3f2fd';
+                };
+                li.ondragleave = () => {
+                    li.style.background = '';
+                };
+                li.ondrop = (e) => {
+                    e.preventDefault();
+                    li.style.background = '';
+                    handleEquationDrop(e, obj.id);
+                };
+
                 // Create miniature shape based on appearance type
                 let shapeIcon = '';
                 const color = `rgb(${obj.red}, ${obj.green}, ${obj.blue})`;
@@ -3266,12 +3301,21 @@
             const propertyRow = (prop, label, min, max, unit = '') => {
                 const eqText = getEquationText(obj, prop);
                 const hasEq = eqText !== null;
+                const eqDesc = hasEq && obj.equations.has(prop) ? obj.equations.get(prop).description : '';
                 // Display rotation mod 360 for better readability
                 const displayValue = prop === 'rotation' ? Math.round(((obj[prop] % 360) + 360) % 360) : Math.round(obj[prop]);
+                const dragHandleHtml = hasEq ? `<span style="cursor: grab; margin-right: 3px; user-select: none;" title="Drag to copy equation">⋮⋮</span>` : '';
                 return `
                     <div class="property-row">
                         <label>${label}: <span class="value-display">${displayValue}${unit}</span></label>
-                        ${hasEq ? `<div style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace;">📐 ${eqText}</div>` : ''}
+                        ${hasEq ? `<div
+                            draggable="true"
+                            ondragstart="handleEquationDragStart(event, '${obj.id}', '${prop}')"
+                            style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace; cursor: grab; padding: 2px; border-radius: 3px;"
+                            onmouseenter="this.style.background='#f0f0ff'"
+                            onmouseleave="this.style.background=''"
+                        >${dragHandleHtml}📐 ${eqText}</div>` : ''}
+                        ${hasEq && eqDesc ? `<div style="font-size: 10px; color: #6c757d; margin: 2px 0 3px 0; font-style: italic;">${eqDesc}</div>` : ''}
                         <div style="display: flex; gap: 5px; align-items: center;">
                             <input type="range" min="${min}" max="${max}" value="${obj[prop]}" oninput="updateProperty('${prop}', this.value)" style="flex: 1;" ${hasEq ? 'disabled' : ''}>
                             <button onclick="openEquationEditor('${prop}')" style="padding: 4px 8px; font-size: 11px;" title="Edit equation">📐</button>
@@ -3481,6 +3525,57 @@
 
         let currentEquationProperty = null;
 
+        // Drag-and-drop for equations
+        function handleEquationDragStart(event, sourceObjectId, property) {
+            const sourceObj = objects.get(sourceObjectId);
+            if (!sourceObj || !sourceObj.equations.has(property)) return;
+
+            const equation = sourceObj.equations.get(property);
+            const equationData = {
+                text: equation.text,
+                description: equation.description || '',
+                property: property
+            };
+
+            event.dataTransfer.setData('application/json', JSON.stringify(equationData));
+            event.dataTransfer.effectAllowed = 'copy';
+        }
+
+        function handleEquationDrop(event, targetObjectId) {
+            try {
+                const equationData = JSON.parse(event.dataTransfer.getData('application/json'));
+                const targetObj = objects.get(targetObjectId);
+
+                if (!targetObj || !equationData.text) return;
+
+                // Parse and validate the equation
+                const result = parseEquation(equationData.text);
+                if (!result.success) {
+                    showError(`Cannot copy equation: ${result.error}`);
+                    return;
+                }
+
+                // Apply equation to the target object for the same property
+                targetObj.equations.set(equationData.property, {
+                    attribute: equationData.property,
+                    expression: result.expression,
+                    text: equationData.text,
+                    description: equationData.description || '',
+                    cache: new Map()
+                });
+
+                saveHistoryState();
+                updatePropertyPanel();
+                updateObjectList();
+                renderFrame(animationController.currentFrame);
+
+                // Show success feedback
+                showError(`✓ Copied ${equationData.property} equation to ${targetObj.name}`, false);
+            } catch (e) {
+                console.error('Drop error:', e);
+            }
+        }
+
         function openEquationEditor(property) {
             if (!selectedObjectId) return;
 
@@ -3494,8 +3589,10 @@
             if (obj.equations.has(property)) {
                 const eq = obj.equations.get(property);
                 document.getElementById('equationInput').value = eq.text || '';
+                document.getElementById('equationDescription').value = eq.description || '';
             } else {
                 document.getElementById('equationInput').value = '';
+                document.getElementById('equationDescription').value = '';
             }
 
             validateEquation();
@@ -3610,6 +3707,7 @@
             if (!selectedObjectId || !currentEquationProperty) return;
 
             const input = document.getElementById('equationInput').value.trim();
+            const description = document.getElementById('equationDescription').value.trim();
             const property = document.getElementById('equationProperty').value;
             const obj = objects.get(selectedObjectId);
 
@@ -3625,6 +3723,7 @@
                         attribute: property,
                         expression: result.expression,
                         text: input,
+                        description: description,
                         cache: new Map()
                     });
                 }
@@ -3700,7 +3799,10 @@
             return Array.from(objects.values()).map(obj => {
                 const equations = {};
                 obj.equations.forEach((eq, attr) => {
-                    equations[attr] = eq.text || '';
+                    equations[attr] = {
+                        text: eq.text || '',
+                        description: eq.description || ''
+                    };
                 });
 
                 return {
@@ -3730,16 +3832,23 @@
                 const equationsMap = new Map();
 
                 if (objData.equations) {
-                    Object.entries(objData.equations).forEach(([attr, eqText]) => {
-                        if (eqText) {
-                            const result = parseEquation(eqText);
-                            if (result.success) {
-                                equationsMap.set(attr, {
-                                    attribute: attr,
-                                    expression: result.expression,
-                                    text: eqText,
-                                    cache: new Map()
-                                });
+                    Object.entries(objData.equations).forEach(([attr, eqData]) => {
+                        if (eqData) {
+                            // Handle both old format (string) and new format (object with text and description)
+                            const eqText = typeof eqData === 'string' ? eqData : eqData.text;
+                            const eqDesc = typeof eqData === 'object' ? eqData.description : '';
+
+                            if (eqText) {
+                                const result = parseEquation(eqText);
+                                if (result.success) {
+                                    equationsMap.set(attr, {
+                                        attribute: attr,
+                                        expression: result.expression,
+                                        text: eqText,
+                                        description: eqDesc || '',
+                                        cache: new Map()
+                                    });
+                                }
                             }
                         }
                     });
