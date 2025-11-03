@@ -2993,6 +2993,15 @@
                     case 'square':
                         shapeIcon = `<span style="display: inline-block; width: 12px; height: 12px; background: ${color};"></span>`;
                         break;
+                    case 'triangle':
+                        shapeIcon = `<span style="display: inline-block; color: ${color}; font-size: 12px; line-height: 12px;">▲</span>`;
+                        break;
+                    case 'star':
+                        shapeIcon = `<span style="display: inline-block; color: ${color}; font-size: 12px; line-height: 12px;">★</span>`;
+                        break;
+                    case 'hexagon':
+                        shapeIcon = `<span style="display: inline-block; color: ${color}; font-size: 12px; line-height: 12px;">⬡</span>`;
+                        break;
                     case 'line':
                         shapeIcon = `<span style="display: inline-block; width: 12px; height: 2px; background: ${color};"></span>`;
                         break;
@@ -3023,7 +3032,15 @@
             if (!obj) return;
 
             let info = `Object: ${obj.name}\n`;
-            info += `Type: ${obj.appearance}\n`;
+
+            // Show description if it exists
+            if (obj.description) {
+                info += `\nDescription:\n${obj.description}\n`;
+            } else if (obj.info) {
+                info += `\nDescription:\n${obj.info}\n`;
+            }
+
+            info += `\nType: ${obj.appearance}\n`;
             info += `Position: (${Math.round(obj.x)}, ${Math.round(obj.y)})\n`;
             info += `Size: ${Math.round(obj.width)} × ${Math.round(obj.height)}\n`;
             info += `Color: RGB(${obj.red}, ${obj.green}, ${obj.blue})\n`;
@@ -3623,7 +3640,8 @@
                 greenColourPen: Math.floor(Math.random() * 256),
                 blueColourPen: Math.floor(Math.random() * 256),
                 transparencyPen: 100,
-                equations: new Map()
+                equations: new Map(),
+                description: ''
             };
 
             objects.set(id, newObj);
@@ -3719,6 +3737,8 @@
                 button.textContent = '▶ Play';
                 button.className = 'play';
                 animationController.stop();
+                // Update object list to reflect any color changes from equations
+                updateObjectList();
             }
         }
 
@@ -3735,6 +3755,7 @@
             trailManager.clearAll();
             renderFrame(0);
             updateFrameDisplay(0);
+            updateObjectList();
         }
 
         function stepForward() {
