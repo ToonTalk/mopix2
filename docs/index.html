@@ -655,9 +655,17 @@
     <!-- Emoji Picker Modal -->
     <div id="emojiPickerModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 500px; max-width: 600px;">
         <h3 style="margin-top: 0; color: #667eea;">😀 Emoji Picker</h3>
+
+        <!-- Search Input -->
+        <div style="margin-bottom: 15px;">
+            <input type="text" id="emojiSearch" placeholder="🔍 Search emojis (e.g., 'smile', 'heart', 'food')..."
+                   oninput="filterEmojis(this.value)"
+                   style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 6px; font-size: 14px;">
+        </div>
+
         <p style="color: #666; margin-bottom: 15px;">Click an emoji to insert it into your text:</p>
 
-        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
+        <div id="emojiContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
             <div style="margin-bottom: 15px;">
                 <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">😊 Smileys & Emotion</h4>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
@@ -3490,11 +3498,61 @@
         function openEmojiPicker(objectId) {
             currentEmojiPickerObjectId = objectId;
             document.getElementById('emojiPickerModal').style.display = 'block';
+            // Clear search and show all emojis
+            document.getElementById('emojiSearch').value = '';
+            filterEmojis('');
         }
 
         function closeEmojiPicker() {
             document.getElementById('emojiPickerModal').style.display = 'none';
             currentEmojiPickerObjectId = null;
+            // Clear search
+            document.getElementById('emojiSearch').value = '';
+        }
+
+        function filterEmojis(searchTerm) {
+            const container = document.getElementById('emojiContainer');
+            const sections = container.querySelectorAll('div[style*="margin-bottom: 15px"]');
+            const lowerSearch = searchTerm.toLowerCase().trim();
+
+            if (!lowerSearch) {
+                // Show all sections and buttons
+                sections.forEach(section => {
+                    section.style.display = 'block';
+                    const buttons = section.querySelectorAll('button');
+                    buttons.forEach(btn => btn.style.display = 'inline-block');
+                });
+                return;
+            }
+
+            let foundAny = false;
+
+            sections.forEach(section => {
+                const buttons = section.querySelectorAll('button');
+                let foundInSection = false;
+
+                buttons.forEach(btn => {
+                    const title = (btn.getAttribute('title') || '').toLowerCase();
+                    const emoji = btn.textContent;
+
+                    // Match against title or emoji character
+                    if (title.includes(lowerSearch) || emoji.includes(searchTerm)) {
+                        btn.style.display = 'inline-block';
+                        foundInSection = true;
+                        foundAny = true;
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                });
+
+                // Show section if it has matching emojis
+                section.style.display = foundInSection ? 'block' : 'none';
+            });
+
+            // If no matches found, show a message (optional)
+            if (!foundAny) {
+                console.log('No emojis found matching:', searchTerm);
+            }
         }
 
         function insertEmoji(emoji) {
@@ -4142,24 +4200,24 @@
             {
                 id: 'rotating-rectangle',
                 name: 'Rotating Rectangle',
-                description: 'A simple model of one rectangle that rotates.',
+                description: 'A simple model demonstrating basic equations and continuous rotation.',
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 400, 300, 100, 60, 100, 150, 255, {
                         rotation: 't * 3'
-                    }, 'A simple rotating rectangle.\\n\\nEquation: rotation = t × 3\\n\\nThis demonstrates basic rotation animation. The rectangle spins continuously at 3 degrees per frame.');
+                    }, 'A simple rotating rectangle.\\n\\nEquation: rotation = t × 3\\n\\nThis demonstrates MoPiX\'s core feature: controlling object properties with algebraic expressions. The rectangle spins continuously at 3 degrees per frame by multiplying the time variable (t) by 3.');
                 }
             },
             {
                 id: 'growing-rectangle',
                 name: 'Growing Rectangle',
-                description: 'A rectangle whose width and height increase.',
+                description: 'Demonstrates controlling multiple properties independently with different equations.',
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 340.7, 212.5, 10, 10, 255, 100, 100, {
                         width: 't * 2',
                         height: 't'
-                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThe width grows twice as fast as the height, creating a rectangle that expands non-uniformly.');
+                    }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThis showcases how MoPiX lets you control multiple properties simultaneously with independent equations. The width grows twice as fast as the height, creating non-uniform expansion.');
                 }
             },
             {
@@ -4177,27 +4235,27 @@
             {
                 id: 'three-rotating-rectangles',
                 name: 'Three Rotating Rectangles',
-                description: 'Three rectangles rotating at different speeds that are also changing colour.',
+                description: 'Demonstrates trigonometric functions (sin) for smooth color oscillation and multiple objects.',
                 create: () => {
                     clearAll();
                     createSampleObject('rect1', 'square', 250, 300, 80, 50, 255, 100, 100, {
                         rotation: 't * 5',
                         red: '128 + sin(t * 5) * 127'
-                    }, 'Fast rotating rectangle with color change.');
+                    }, 'Fast rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 5\\nred = 128 + sin(t × 5) × 127\\n\\nUses sin() function to smoothly oscillate the red color between 1 and 255.');
                     createSampleObject('rect2', 'square', 400, 300, 80, 50, 100, 255, 100, {
                         rotation: 't * 3',
                         green: '128 + sin(t * 3) * 127'
-                    }, 'Medium rotating rectangle with color change.');
+                    }, 'Medium rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 3\\ngreen = 128 + sin(t × 3) × 127\\n\\nDemonstrates how different frequencies create different animation speeds.');
                     createSampleObject('rect3', 'square', 550, 300, 80, 50, 100, 100, 255, {
                         rotation: 't * 1.5',
                         blue: '128 + sin(t * 1.5) * 127'
-                    }, 'Slow rotating rectangle with color change.');
+                    }, 'Slow rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 1.5\\nblue = 128 + sin(t × 1.5) × 127\\n\\nShows MoPiX\'s ability to manage multiple independent objects simultaneously.');
                 }
             },
             {
                 id: 'bouncing-balls-average',
                 name: 'Average of Bouncing Balls',
-                description: 'Two bouncing balls with physics and their average position trail.',
+                description: 'Showcases object references, physics simulation with prev values, and pen trails for graphing.',
                 create: () => {
                     clearAll();
 
@@ -4214,7 +4272,7 @@
                         // Position
                         x: 'prev.x + Vx',
                         y: 'prev.y + Vy'
-                    }, 'First bouncing ball with physics.');
+                    }, 'First bouncing ball with full physics simulation.\\n\\nEquations use:\\n- Custom properties (Vx, Vy, Ax, Ay)\\n- prev values for frame-to-frame continuity\\n- if() conditionals for collision detection\\n\\nThis demonstrates advanced MoPiX features for realistic physics.');
 
                     // Ball 2 (object_4) - left side with physics
                     createSampleObject('object_4', 'circle', 149.75, 300, 40, 40, 100, 0, 0, {
@@ -4235,7 +4293,7 @@
                     createSampleObject('object_6', 'circle', 413.75, 350, 15, 15, 0, 50, 50, {
                         x: '(object_4.x + object_9.x) / 2',
                         y: '(object_4.y + object_9.y) / 2'
-                    }, 'Shows the average position of both balls.');
+                    }, 'Tracks the average position of both balls.\\n\\nEquations:\\nx = (object_4.x + object_9.x) / 2\\ny = (object_4.y + object_9.y) / 2\\n\\nDemonstrates MoPiX\'s powerful OBJECT REFERENCE feature - objects can reference other objects\' properties! The pen trail feature visualizes the path.');
                     objects.get('object_6').penDown = true;
                     objects.get('object_6').thicknessPen = 4;
 
@@ -4248,14 +4306,14 @@
             {
                 id: 'rectangle-three-cycles',
                 name: 'Rectangle with Three Cycles',
-                description: 'A rectangle changing in three different ways with different cycles.',
+                description: 'Demonstrates controlling multiple properties with different periodic frequencies using trigonometry.',
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 227.75, 241.5, 100, 200, 128, 128, 128, {
                         width: '50 * sin(t) + 50',
                         green: '50 * sin(2 * t) + 50',
                         rotation: '50 * sin(3 * t) + 50'
-                    }, 'A rectangle with three independent cycles.\\n\\nEquations:\\nwidth = 50 × sin(t) + 50\\ngreen = 50 × sin(2t) + 50\\nrotation = 50 × sin(3t) + 50\\n\\nThree different periodic behaviors with sine waves at different frequencies.');
+                    }, 'A rectangle with three independent cycles.\\n\\nEquations:\\nwidth = 50 × sin(t) + 50\\ngreen = 50 × sin(2t) + 50\\nrotation = 50 × sin(3t) + 50\\n\\nShows how MoPiX handles multiple simultaneous periodic behaviors with sine waves at different frequencies (1x, 2x, 3x), creating complex emergent patterns.');
                 }
             },
             {
@@ -4272,7 +4330,7 @@
             {
                 id: 'two-animated-objects-graphs',
                 name: 'Two Animated Objects with Graphs',
-                description: 'Graphing aspects of two animated objects.',
+                description: 'Demonstrates pen trail graphing to visualize property changes over time for multiple objects.',
                 create: () => {
                     clearAll();
                     // First animated object (rectangle)
@@ -4343,7 +4401,7 @@
             {
                 id: 'four-graphs',
                 name: 'Four Graphs',
-                description: 'Four graphs showing different properties of a bouncing ball.',
+                description: 'Advanced demo: real-time graphing of X position, Y position, and velocities using object references and pen trails.',
                 create: () => {
                     clearAll();
                     // Bouncing ball with full physics simulation
@@ -4361,7 +4419,7 @@
                         // Position updates
                         x: 'prev.x + Vx',
                         y: 'prev.y + Vy'
-                    }, 'Bouncing ball with physics - initial Vx=3, Vy=0, gravity=-0.098');
+                    }, 'Bouncing ball with full physics simulation.\\n\\nEquations use:\\n- Ax=0, Ay=-0.098 (gravity)\\n- Vx/Vy with conditional wall/ground bounces\\n- prev values for continuity\\n- x = prev.x + Vx (position update)\\n\\nFour small objects with pens enabled graph this ball\'s X, Y, Vx, and Vy in real-time, demonstrating MoPiX\'s graphing capability through object references!');
 
                     // Graph 1: X position (blue)
                     createSampleObject('object_5', 'circle', 103.75, 280.45, 5, 5, 0, 0, 100, {
