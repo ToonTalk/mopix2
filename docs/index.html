@@ -3846,52 +3846,44 @@
                     clearAll();
 
                     // Ball 1 (object_9) - right side with physics
-                    createSampleObject('object_9', 'circle', 677.75, 103.55, 40, 40, 100, 0, 100, {
+                    createSampleObject('object_9', 'circle', 677.75, 400, 40, 40, 100, 0, 100, {
                         // Acceleration
                         Ay: '-0.098',
                         Ax: '0',
 
-                        // Velocity with bouncing
-                        Vy: 'if(t == 0, 0, if(prev.amIHittingGround, prev.Vy * -1, prev.Vy + Ay))',
-                        Vx: 'if(t == 0, 3, if(prev.amIHittingASide, prev.Vx * -1, prev.Vx + Ax))',
+                        // Velocity with predictive collision detection (like Four Graphs)
+                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))',
+                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
 
                         // Position
-                        x: 'if(t == 0, 677.75, prev.x + Vx)',
-                        y: 'if(t == 0, 103.55, prev.y + Vy)',
-
-                        // Collision detection
-                        amIHittingGround: 'y <= height / 2 && Vy < 0',
-                        amIHittingASide: '(x <= 0 || x >= 800) && Vx != 0'
+                        x: 'prev.x + Vx',
+                        y: 'prev.y + Vy'
                     }, 'First bouncing ball with physics.');
 
                     // Ball 2 (object_4) - left side with physics
-                    createSampleObject('object_4', 'circle', 149.75, 279.4, 40, 40, 100, 0, 0, {
+                    createSampleObject('object_4', 'circle', 149.75, 300, 40, 40, 100, 0, 0, {
                         // Acceleration
                         Ay: '-0.098',
                         Ax: '0',
 
-                        // Velocity with bouncing
-                        Vy: 'if(t == 0, 0, if(prev.amIHittingGround, prev.Vy * -1, prev.Vy + Ay))',
-                        Vx: 'if(t == 0, 3, if(prev.amIHittingASide, prev.Vx * -1, prev.Vx + Ax))',
+                        // Velocity with predictive collision detection (like Four Graphs)
+                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))',
+                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
 
                         // Position
-                        x: 'if(t == 0, 149.75, prev.x + Vx)',
-                        y: 'if(t == 0, 279.4, prev.y + Vy)',
-
-                        // Collision detection
-                        amIHittingGround: 'y <= height / 2 && Vy < 0',
-                        amIHittingASide: '(x <= 0 || x >= 800) && Vx != 0'
+                        x: 'prev.x + Vx',
+                        y: 'prev.y + Vy'
                     }, 'Second bouncing ball with physics.');
 
                     // Average position tracker (object_6)
-                    createSampleObject('object_6', 'circle', 531.75, 123.35, 15, 15, 0, 50, 50, {
+                    createSampleObject('object_6', 'circle', 413.75, 350, 15, 15, 0, 50, 50, {
                         x: '(object_4.x + object_9.x) / 2',
                         y: '(object_4.y + object_9.y) / 2'
                     }, 'Shows the average position of both balls.');
                     objects.get('object_6').penDown = true;
                     objects.get('object_6').thicknessPen = 4;
 
-                    // Set pen colors with cycling (from MathML delta calculations)
+                    // Set pen colors
                     objects.get('object_6').redColourPen = 50;
                     objects.get('object_6').greenColourPen = 50;
                     objects.get('object_6').blueColourPen = 50;
