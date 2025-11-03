@@ -869,7 +869,18 @@
                         return 0;
                     }
 
-                    const targetObj = context.allObjects.get(objectId);
+                    // Try to find object by ID first, then by name
+                    let targetObj = context.allObjects.get(objectId);
+
+                    // If not found by ID, try to find by name
+                    if (!targetObj) {
+                        for (const [id, obj] of context.allObjects.entries()) {
+                            if (obj.name === objectId) {
+                                targetObj = obj;
+                                break;
+                            }
+                        }
+                    }
 
                     if (targetObj) {
                         // Evaluate the target object at the same time
@@ -1839,7 +1850,8 @@
                 this.ctx.translate(0, this.ctx.canvas.height);
                 this.ctx.scale(1, -1);
 
-                this.drawGrid();
+                // Grid removed as per user request
+                // this.drawGrid();
                 this.renderTrails(trails);
                 objects.forEach(obj => this.renderObject(obj, obj.id === selectedId));
 
@@ -2112,6 +2124,7 @@
                 greenColourPen: 100,
                 blueColourPen: 100,
                 transparencyPen: 100,
+                info: 'Mover moves to the right at a constant speed by multiplying the time by 2 and adding a starting position of 100.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2125,39 +2138,6 @@
                 ])
             });
 
-            objects.set('bouncer', {
-                id: 'bouncer',
-                name: 'Bouncer',
-                x: 400, y: 300,
-                width: 60, height: 60,
-                rotation: 0,
-                red: 100, green: 200, blue: 255,
-                transparency: 100,
-                appearance: 'circle',
-                penDown: true,
-                text: '',
-                thicknessPen: 2,
-                redColourPen: 100,
-                greenColourPen: 200,
-                blueColourPen: 255,
-                transparencyPen: 100,
-                equations: new Map([
-                    ['y', {
-                        attribute: 'y',
-                        text: 'sin(t * 10) * 100 + 300',
-                        expression: new BinaryOperatorExpression('+',
-                            new BinaryOperatorExpression('*',
-                                new UnaryOperatorExpression('sin',
-                                    new BinaryOperatorExpression('*', new VariableExpression('t'), new ConstantExpression(10))
-                                ),
-                                new ConstantExpression(100)
-                            ),
-                            new ConstantExpression(300)
-                        ),
-                        cache: new Map()
-                    }]
-                ])
-            });
 
             objects.set('spinner', {
                 id: 'spinner',
@@ -2175,6 +2155,7 @@
                 greenColourPen: 255,
                 blueColourPen: 100,
                 transparencyPen: 100,
+                info: 'Spinner rotates continuously by setting rotation to time multiplied by 5, spinning at 5 degrees per frame.',
                 equations: new Map([
                     ['rotation', {
                         attribute: 'rotation',
@@ -2201,6 +2182,7 @@
                 greenColourPen: 128,
                 blueColourPen: 255,
                 transparencyPen: 100,
+                info: 'ColorChanger oscillates its red color channel using a sine wave, creating a smooth color pulse by centering at 128 and varying by 127.',
                 equations: new Map([
                     ['red', {
                         attribute: 'red',
@@ -2245,6 +2227,7 @@
                 greenColourPen: 200,
                 blueColourPen: 50,
                 transparencyPen: 100,
+                info: 'Follower demonstrates object references by following another object\'s position and rotating to point at a third object using the angle function.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2293,6 +2276,7 @@
                 greenColourPen: 50,
                 blueColourPen: 200,
                 transparencyPen: 100,
+                info: 'Smart Triangle uses conditional logic to change behavior over time and respond to other objects\' positions using if and dist functions.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2343,6 +2327,7 @@
                 greenColourPen: 255,
                 blueColourPen: 200,
                 transparencyPen: 100,
+                info: 'Collision Star moves in a circular orbit using user variables and changes color when overlapping with another object using the overlaps function.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2393,6 +2378,7 @@
                 greenColourPen: 200,
                 blueColourPen: 100,
                 transparencyPen: 100,
+                info: 'Jittery Pentagon demonstrates the random function by adding small random offsets to its position and color, creating a jittering effect.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2442,6 +2428,7 @@
                 greenColourPen: 100,
                 blueColourPen: 150,
                 transparencyPen: 100,
+                info: 'Looping Hexagon uses the modulo function to create a repeating horizontal motion and cycling blue color value.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2486,6 +2473,7 @@
                 greenColourPen: 200,
                 blueColourPen: 255,
                 transparencyPen: 100,
+                info: 'Growing Circle demonstrates exponential growth using the pow function and the mathematical constant pi for rotation.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2535,6 +2523,7 @@
                 greenColourPen: 255,
                 blueColourPen: 150,
                 transparencyPen: 100,
+                info: 'Smooth Easer demonstrates the smoothstep easing function for smooth, natural-looking motion with acceleration and deceleration.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2578,6 +2567,7 @@
                 greenColourPen: 180,
                 blueColourPen: 100,
                 transparencyPen: 100,
+                info: 'Bouncer demonstrates the bounce easing function to create realistic bouncing motion with squash and stretch effects.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2622,6 +2612,7 @@
                 greenColourPen: 100,
                 blueColourPen: 200,
                 transparencyPen: 50,
+                info: 'Mouse Follower tracks the mouse cursor position using mouse.x and mouse.y, creating an interactive drawing trail with pen.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2671,6 +2662,7 @@
                 greenColourPen: 150,
                 blueColourPen: 255,
                 transparencyPen: 100,
+                info: 'Keyboard Ctrl responds to keyboard input using the keyDown function, allowing WASD movement and space bar color change for interactive control.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
@@ -2719,6 +2711,7 @@
                 greenColourPen: 150,
                 blueColourPen: 100,
                 transparencyPen: 100,
+                info: 'Physics Ball simulates realistic physics with gravity and bouncing using prev values to track velocity, demonstrating frame-to-frame state persistence.',
                 vy: 0,  // Custom property for vertical velocity
                 equations: new Map([
                     ['x', {
