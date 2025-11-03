@@ -3841,19 +3841,60 @@
             {
                 id: 'bouncing-balls-average',
                 name: 'Average of Bouncing Balls',
-                description: 'Two bouncing balls and a trail of their average position.',
+                description: 'Two bouncing balls with physics and their average position trail.',
                 create: () => {
                     clearAll();
-                    createSampleObject('ball1', 'circle', 300, 300, 40, 40, 255, 100, 100, {
-                        y: 'abs(sin(t * 8)) * 150 + 150'
-                    }, 'First bouncing ball.');
-                    createSampleObject('ball2', 'circle', 500, 300, 40, 40, 100, 100, 255, {
-                        y: 'abs(sin((t + 5) * 8)) * 150 + 150'
-                    }, 'Second bouncing ball (phase shifted).');
-                    createSampleObject('average', 'circle', 400, 300, 20, 20, 100, 255, 100, {
-                        y: '(abs(sin(t * 8)) * 150 + 150 + abs(sin((t + 5) * 8)) * 150 + 150) / 2'
-                    }, 'Shows the average Y position of both balls.');
-                    objects.get('average').transparency = 60;
+
+                    // Ball 1 (object_9) - right side with physics
+                    createSampleObject('object_9', 'circle', 677.75, 103.55, 40, 40, 100, 0, 100, {
+                        // Acceleration
+                        Ay: '-0.098',
+                        Ax: '0',
+
+                        // Velocity with bouncing
+                        Vy: 'if(t == 0, 0, if(prev.amIHittingGround, prev.Vy * -1, prev.Vy + Ay))',
+                        Vx: 'if(t == 0, 3, if(prev.amIHittingASide, prev.Vx * -1, prev.Vx + Ax))',
+
+                        // Position
+                        x: 'if(t == 0, 677.75, prev.x + Vx)',
+                        y: 'if(t == 0, 103.55, prev.y + Vy)',
+
+                        // Collision detection
+                        amIHittingGround: 'y <= height / 2 && Vy < 0',
+                        amIHittingASide: '(x <= 0 || x >= 800) && Vx != 0'
+                    }, 'First bouncing ball with physics.');
+
+                    // Ball 2 (object_4) - left side with physics
+                    createSampleObject('object_4', 'circle', 149.75, 279.4, 40, 40, 100, 0, 0, {
+                        // Acceleration
+                        Ay: '-0.098',
+                        Ax: '0',
+
+                        // Velocity with bouncing
+                        Vy: 'if(t == 0, 0, if(prev.amIHittingGround, prev.Vy * -1, prev.Vy + Ay))',
+                        Vx: 'if(t == 0, 3, if(prev.amIHittingASide, prev.Vx * -1, prev.Vx + Ax))',
+
+                        // Position
+                        x: 'if(t == 0, 149.75, prev.x + Vx)',
+                        y: 'if(t == 0, 279.4, prev.y + Vy)',
+
+                        // Collision detection
+                        amIHittingGround: 'y <= height / 2 && Vy < 0',
+                        amIHittingASide: '(x <= 0 || x >= 800) && Vx != 0'
+                    }, 'Second bouncing ball with physics.');
+
+                    // Average position tracker (object_6)
+                    createSampleObject('object_6', 'circle', 531.75, 123.35, 15, 15, 0, 50, 50, {
+                        x: '(object_4.x + object_9.x) / 2',
+                        y: '(object_4.y + object_9.y) / 2'
+                    }, 'Shows the average position of both balls.');
+                    objects.get('object_6').penDown = true;
+                    objects.get('object_6').thicknessPen = 4;
+
+                    // Set pen colors with cycling (from MathML delta calculations)
+                    objects.get('object_6').redColourPen = 50;
+                    objects.get('object_6').greenColourPen = 50;
+                    objects.get('object_6').blueColourPen = 50;
                 }
             },
             {
@@ -3924,50 +3965,6 @@
                 }
             },
             {
-                id: 'path-around-pond',
-                name: 'Path Around a Pond',
-                description: 'Maintains a path around a rectangular pond.',
-                create: () => {
-                    clearAll();
-                    // The pond (growing rectangle)
-                    createSampleObject('object_2', 'square', 569, 192, 317, 100, 50, 50, 100, {
-                        width: 't'
-                    }, 'The pond that grows over time.');
-
-                    // Path objects around the pond
-                    createSampleObject('object_1', 'square', 569, 192, 317, 80, 150, 150, 150, {
-                        width: 't + 80'
-                    }, 'Top path around pond.');
-
-                    createSampleObject('object_3', 'square', 569, 192, 317, 100, 150, 150, 150, {}, 'Side path.');
-
-                    createSampleObject('object_4', 'square', 569, 192, 317, 100, 150, 150, 150, {}, 'Bottom path.');
-
-                    createSampleObject('object_5', 'square', 569, 192, 397, 100, 150, 150, 150, {
-                        width: 't + 80'
-                    }, 'Other side path.');
-                }
-            },
-            {
-                id: 'juggler-scenario',
-                name: 'Juggler Scenario',
-                description: 'A ball bouncing between two paddles.',
-                create: () => {
-                    clearAll();
-                    // Left paddle
-                    createSampleObject('object_1', 'square', 174.75, 86.5, 50, 10, 40, 20, 0, {}, 'Left paddle.');
-
-                    // Right paddle
-                    createSampleObject('object_2', 'square', 458.75, 90.5, 50, 10, 40, 20, 0, {}, 'Right paddle.');
-
-                    // Ball with simple bouncing motion
-                    createSampleObject('object_3', 'circle', 355.75, 337.5, 30, 30, 100, 0, 0, {
-                        y: 'abs(sin(t * 0.2)) * 200 + 150',
-                        x: '355.75 + sin(t * 0.15) * 150'
-                    }, 'Bouncing ball between paddles.');
-                }
-            },
-            {
                 id: 'toss-ball',
                 name: 'Toss Ball',
                 description: 'A ball released from a rotating rectangle.',
@@ -3977,13 +3974,27 @@
                     createSampleObject('object_5', 'square', 137.75, 152.5, 200, 80, 100, 50, 50, {
                         rotation: 't * 3'
                     }, 'Rotating rectangle that releases the ball.');
+                    objects.get('object_5').red = 100;
 
-                    // Ball that gets released
+                    // Ball that follows the rectangle then falls with physics
                     createSampleObject('object_6', 'circle', 206.4, 277.45, 30, 30, 0, 100, 0, {
-                        y: 't < 75 ? 277.45 : 277.45 - 0.098 * (t - 75) * (t - 75)',
-                        x: 't < 75 ? 206.4 : 206.4 + 3 * (t - 75)'
-                    }, 'Ball released at t=75.');
+                        // Position follows rectangle's 90-degree point until t=75, then uses prev + velocity
+                        x: 'if(t <= 75, object_5.x + cos((object_5.rotation + 90) * pi / 180) * (object_5.width / 2), prev.x + Vx)',
+                        y: 'if(t <= 75, object_5.y + sin((object_5.rotation + 90) * pi / 180) * (object_5.width / 2), prev.y + Vy)',
+
+                        // Velocity: at release time, calculate from position change; then accumulate with acceleration
+                        Vx: 'if(t == 75, x - prev.x, prev.Vx + Ax)',
+                        Vy: 'if(t == 75, y - prev.y, if(prev.amIHittingGround, 0, prev.Vy + Ay))',
+
+                        // Acceleration
+                        Ax: '0',
+                        Ay: '-0.098',
+
+                        // Ground collision detection
+                        amIHittingGround: 'y <= 15 && Vy < 0'
+                    }, 'Ball follows rectangle until t=75, then released with physics.');
                     objects.get('object_6').penDown = true;
+                    objects.get('object_6').greenColourPen = 100;
                 }
             },
             {
@@ -4081,21 +4092,40 @@
             {
                 id: 'impulsive-triangle',
                 name: 'An Impulsive Triangle',
-                description: 'A triangle that receives impulses at specific times.',
+                description: 'Triangles that receive acceleration impulses at t=20 and t=40.',
                 create: () => {
                     clearAll();
-                    // Triangle with impulses at t=20 and t=40
+
+                    // Triangle 1 (object_5) with impulse physics
                     createSampleObject('object_5', 'triangle', 253.75, 191.5, 40, 40, 255, 150, 50, {
-                        x: '253.75 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))',
-                        y: '191.5 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))'
-                    }, 'Triangle with velocity changes at t=20 (deceleration) and t=40 (stop).');
+                        // Acceleration impulses: 3 at t=20, -6 at t=40, then 0
+                        Ay: 'if(t == 20, 3, if(t == 40, -6, 0))',
+                        Ax: 'if(t == 20, -6, if(t == 40, 3, 0))',
+
+                        // Velocity: initial 3, then accumulate with impulses
+                        Vy: 'if(t == 0, 3, prev.Vy + Ay)',
+                        Vx: 'if(t == 0, 3, prev.Vx + Ax)',
+
+                        // Position: initial values, then prev + velocity
+                        y: 'if(t == 0, 191.5, prev.y + Vy)',
+                        x: 'if(t == 0, 253.75, prev.x + Vx)'
+                    }, 'Triangle with impulses at t=20 and t=40.');
                     objects.get('object_5').penDown = true;
 
-                    // Second triangle with same impulses
+                    // Triangle 2 (object_3) with same physics
                     createSampleObject('object_3', 'triangle', 253.75, 191.5, 40, 40, 50, 150, 255, {
-                        x: '253.75 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))',
-                        y: '191.5 + (t < 20 ? t * 3 : (t < 40 ? 60 + (t-20) * (3-6) : 60 - 40*6 + (t-40) * 0))'
-                    }, 'Second triangle following same path.');
+                        // Acceleration impulses: 3 at t=20, -6 at t=40, then 0
+                        Ay: 'if(t == 20, 3, if(t == 40, -6, 0))',
+                        Ax: 'if(t == 20, -6, if(t == 40, 3, 0))',
+
+                        // Velocity: initial 3, then accumulate with impulses
+                        Vy: 'if(t == 0, 3, prev.Vy + Ay)',
+                        Vx: 'if(t == 0, 3, prev.Vx + Ax)',
+
+                        // Position: initial values, then prev + velocity
+                        y: 'if(t == 0, 191.5, prev.y + Vy)',
+                        x: 'if(t == 0, 253.75, prev.x + Vx)'
+                    }, 'Second triangle with same impulses.');
                     objects.get('object_3').penDown = true;
                 }
             }
