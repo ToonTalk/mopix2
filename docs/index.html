@@ -2770,7 +2770,7 @@
 
             // ========== PONG GAME ==========
             // Left paddle controlled by W/S keys
-            const pongLeftY = parseEquation('clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)');
+            const pongLeftY = parseEquation('clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)');
 
             objects.set('pongLeft', {
                 id: 'pongLeft',
@@ -2788,12 +2788,13 @@
                 greenColourPen: 200,
                 blueColourPen: 255,
                 transparencyPen: 100,
-                info: 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.',
+                info: 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.',
+                PaddleSpeed: 5,
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)',
-                        description: 'Keyboard control with boundary clamping',
+                        text: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)',
+                        description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongLeftY.success ? pongLeftY.expression : null,
                         cache: new Map()
                     }]
@@ -2801,7 +2802,7 @@
             });
 
             // Right paddle controlled by Up/Down arrow keys
-            const pongRightY = parseEquation('clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)');
+            const pongRightY = parseEquation('clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)');
 
             objects.set('pongRight', {
                 id: 'pongRight',
@@ -2819,12 +2820,13 @@
                 greenColourPen: 100,
                 blueColourPen: 100,
                 transparencyPen: 100,
-                info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses clamp() to keep paddle within bounds.',
+                info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses prev.y and PaddleSpeed custom property.',
+                PaddleSpeed: 5,
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)',
-                        description: 'Keyboard control with boundary clamping',
+                        text: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)',
+                        description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongRightY.success ? pongRightY.expression : null,
                         cache: new Map()
                     }]
@@ -2843,7 +2845,7 @@
                 x: 400, y: 300,
                 width: 15, height: 15,
                 rotation: 0,
-                red: 255, green: 255, blue: 255,
+                red: 255, green: 255, blue: 100,
                 transparency: 100,
                 appearance: 'circle',
                 penDown: true,
@@ -4423,7 +4425,7 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 400, 300, 100, 60, 100, 150, 255, {
-                        rotation: 't * 3'
+                        rotation: { text: 't * 3', description: 'Rotates 3 degrees per frame' }
                     }, 'A simple rotating rectangle.\\n\\nEquation: rotation = t × 3\\n\\nThis demonstrates MoPiX\'s core feature: controlling object properties with algebraic expressions. The rectangle spins continuously at 3 degrees per frame by multiplying the time variable (t) by 3.');
                 }
             },
@@ -4434,8 +4436,8 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 340.7, 212.5, 10, 10, 255, 100, 100, {
-                        width: 't * 2',
-                        height: 't'
+                        width: { text: 't * 2', description: 'Grows 2 pixels per frame' },
+                        height: { text: 't', description: 'Grows 1 pixel per frame' }
                     }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThis showcases how MoPiX lets you control multiple properties simultaneously with independent equations. The width grows twice as fast as the height, creating non-uniform expansion.');
                 }
             },
@@ -4446,7 +4448,7 @@
                 create: () => {
                     clearAll();
                     createSampleObject('ellipse', 'ellipse', 379.75, 321.5, 200, 100, 100, 100, 100, {
-                        rotation: 't * 3'
+                        rotation: { text: 't * 3', description: 'Rotates 3 degrees per frame' }
                     }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 3\\n\\nThis ellipse rotates at 3 degrees per frame. The transparency allows you to see through it.');
                     objects.get('ellipse').transparency = 50;
                 }
@@ -4458,16 +4460,16 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect1', 'square', 250, 300, 80, 50, 255, 100, 100, {
-                        rotation: 't * 5',
-                        red: '128 + sin(t * 5) * 127'
+                        rotation: { text: 't * 5', description: 'Fast rotation at 5 degrees/frame' },
+                        red: { text: '128 + sin(t * 5) * 127', description: 'Oscillates red from 1-255 using sine wave' }
                     }, 'Fast rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 5\\nred = 128 + sin(t × 5) × 127\\n\\nUses sin() function to smoothly oscillate the red color between 1 and 255.');
                     createSampleObject('rect2', 'square', 400, 300, 80, 50, 100, 255, 100, {
-                        rotation: 't * 3',
-                        green: '128 + sin(t * 3) * 127'
+                        rotation: { text: 't * 3', description: 'Medium rotation at 3 degrees/frame' },
+                        green: { text: '128 + sin(t * 3) * 127', description: 'Oscillates green from 1-255 using sine wave' }
                     }, 'Medium rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 3\\ngreen = 128 + sin(t × 3) × 127\\n\\nDemonstrates how different frequencies create different animation speeds.');
                     createSampleObject('rect3', 'square', 550, 300, 80, 50, 100, 100, 255, {
-                        rotation: 't * 1.5',
-                        blue: '128 + sin(t * 1.5) * 127'
+                        rotation: { text: 't * 1.5', description: 'Slow rotation at 1.5 degrees/frame' },
+                        blue: { text: '128 + sin(t * 1.5) * 127', description: 'Oscillates blue from 1-255 using sine wave' }
                     }, 'Slow rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 1.5\\nblue = 128 + sin(t × 1.5) × 127\\n\\nShows MoPiX\'s ability to manage multiple independent objects simultaneously.');
                 }
             },
@@ -4687,16 +4689,18 @@
 
                     // Left paddle controlled by W/S keys
                     createSampleObject('pongLeft', 'roundrect', 50, 300, 15, 80, 100, 200, 255, {
-                        y: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)'
-                    }, 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.');
+                        y: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)'
+                    }, 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.');
+                    objects.get('pongLeft').PaddleSpeed = 5;
 
                     // Right paddle controlled by arrow keys
                     createSampleObject('pongRight', 'roundrect', 750, 300, 15, 80, 255, 100, 100, {
-                        y: 'clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)'
+                        y: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)'
                     }, 'Pong right paddle controlled by Up/Down arrow keys.');
+                    objects.get('pongRight').PaddleSpeed = 5;
 
                     // Ball with complex physics (using nested ifs instead of && and ||)
-                    createSampleObject('pongBall', 'circle', 400, 300, 15, 15, 255, 255, 255, {
+                    createSampleObject('pongBall', 'circle', 400, 300, 15, 15, 255, 255, 100, {
                         vx: 'if(t == 0, 3, if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx < 15, 3, if(prev.x + prev.vx > 785, 3, prev.vx)))))',
                         vy: 'if(t == 0, 2, if(prev.y + prev.vy < 20, prev.vy * -1, if(prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft), prev.vy + random(-1, 1), if(overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy)))))',
                         x: 'if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx < 15, 400, prev.x + prev.vx)), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx > 785, 400, prev.x + prev.vx)), prev.x + prev.vx))',
@@ -4750,13 +4754,18 @@
             };
 
             // Parse and add equations
-            for (const [prop, expr] of Object.entries(equations)) {
+            for (const [prop, exprData] of Object.entries(equations)) {
+                // Support both simple string and {text, description} format
+                const expr = typeof exprData === 'string' ? exprData : exprData.text;
+                const description = typeof exprData === 'object' ? (exprData.description || '') : '';
+
                 const result = parseEquation(expr);
                 if (result.success) {
                     obj.equations.set(prop, {
                         attribute: prop,
                         expression: result.expression,
                         text: expr,  // Store the original equation text
+                        description: description,
                         cache: new Map()
                     });
                 } else {
