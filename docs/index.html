@@ -395,6 +395,13 @@
                 <button onclick="document.getElementById('errorMessage').style.display='none'" style="float: right; background: none; border: none; color: #c62828; font-size: 18px; cursor: pointer; padding: 0 8px;">×</button>
             </div>
 
+            <!-- Sample Model Info Display -->
+            <div id="modelInfoMessage" style="display: none; background: #e3f2fd; border: 2px solid #2196f3; color: #0d47a1; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                <strong id="modelInfoTitle"></strong>
+                <p id="modelInfoText" style="margin: 5px 0 0 0;"></p>
+                <button onclick="document.getElementById('modelInfoMessage').style.display='none'" style="float: right; background: none; border: none; color: #0d47a1; font-size: 18px; cursor: pointer; padding: 0 8px; margin-top: -30px;">×</button>
+            </div>
+
             <canvas id="canvas" width="800" height="600"></canvas>
 
             <div class="controls">
@@ -655,17 +662,9 @@
     <!-- Emoji Picker Modal -->
     <div id="emojiPickerModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 500px; max-width: 600px;">
         <h3 style="margin-top: 0; color: #667eea;">😀 Emoji Picker</h3>
-
-        <!-- Search Input -->
-        <div style="margin-bottom: 15px;">
-            <input type="text" id="emojiSearch" placeholder="🔍 Search emojis (e.g., 'smile', 'heart', 'food')..."
-                   oninput="filterEmojis(this.value)"
-                   style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 6px; font-size: 14px;">
-        </div>
-
         <p style="color: #666; margin-bottom: 15px;">Click an emoji to insert it into your text:</p>
 
-        <div id="emojiContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
             <div style="margin-bottom: 15px;">
                 <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">😊 Smileys & Emotion</h4>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
@@ -875,7 +874,13 @@
                     if (targetObj) {
                         // Evaluate the target object at the same time
                         const updated = updateObjectAtTime(targetObj, context.time, context.allObjects);
+                        if (!(property in updated)) {
+                            showError(`Unknown property "${property}" in object "${objectId}". Available properties: x, y, width, height, rotation, red, green, blue, and any custom properties.`);
+                        }
                         return updated[property] || 0;
+                    } else {
+                        showError(`Unknown object "${objectId}" referenced in equation. Check that the object exists in the Objects list.`);
+                        return 0;
                     }
                 }
 
@@ -1797,26 +1802,27 @@
                         this.ctx.fill();
                         break;
                     case 'text':
-                        // Calculate font size based on both width and height
-                        let fontSize = obj.height;
-                        this.ctx.font = `${fontSize}px Arial`;
+                        // Render text stretched to fit both width and height independently
+                        const textToRender = obj.text || obj.name;
+
+                        // Measure text at a standard size
+                        const baseFontSize = 100;
+                        this.ctx.font = `${baseFontSize}px Arial`;
                         this.ctx.textAlign = 'center';
                         this.ctx.textBaseline = 'middle';
 
-                        // Measure text and scale down if it exceeds width
-                        const textToRender = obj.text || obj.name;
-                        let textMetrics = this.ctx.measureText(textToRender);
-                        let textWidth = textMetrics.width;
+                        const metrics = this.ctx.measureText(textToRender);
+                        const textWidth = metrics.width;
+                        // Approximate text height (ascent + descent)
+                        const textHeight = baseFontSize;
 
-                        // If text is wider than obj.width, scale down the font
-                        if (textWidth > obj.width) {
-                            fontSize = (obj.width / textWidth) * fontSize;
-                            this.ctx.font = `${fontSize}px Arial`;
-                        }
+                        // Calculate scale factors to fit the text into obj.width x obj.height
+                        const scaleX = obj.width / textWidth;
+                        const scaleY = obj.height / textHeight;
 
-                        // Counter the y-flip so text is readable
+                        // Counter the y-flip and apply independent scaling
                         this.ctx.save();
-                        this.ctx.scale(1, -1);
+                        this.ctx.scale(scaleX, -scaleY);  // negative scaleY to flip text right-side up
                         this.ctx.fillText(textToRender, 0, 0);
                         this.ctx.restore();
                         break;
@@ -1853,6 +1859,15 @@
             setTimeout(() => {
                 errorDiv.style.display = 'none';
             }, 10000);
+        }
+
+        function showModelInfo(title, description) {
+            const infoDiv = document.getElementById('modelInfoMessage');
+            const infoTitle = document.getElementById('modelInfoTitle');
+            const infoText = document.getElementById('modelInfoText');
+            infoTitle.textContent = `📚 ${title}`;
+            infoText.textContent = description;
+            infoDiv.style.display = 'block';
         }
 
         // ==================== Animation Controller ====================
@@ -3282,8 +3297,6 @@
                     }
                 });
 
-                console.log('renderCustomProperties called, found', customProps.length, 'custom properties:', customProps.map(p => p.name));
-
                 if (customProps.length === 0) {
                     return '';
                 }
@@ -3498,61 +3511,11 @@
         function openEmojiPicker(objectId) {
             currentEmojiPickerObjectId = objectId;
             document.getElementById('emojiPickerModal').style.display = 'block';
-            // Clear search and show all emojis
-            document.getElementById('emojiSearch').value = '';
-            filterEmojis('');
         }
 
         function closeEmojiPicker() {
             document.getElementById('emojiPickerModal').style.display = 'none';
             currentEmojiPickerObjectId = null;
-            // Clear search
-            document.getElementById('emojiSearch').value = '';
-        }
-
-        function filterEmojis(searchTerm) {
-            const container = document.getElementById('emojiContainer');
-            const sections = container.querySelectorAll('div[style*="margin-bottom: 15px"]');
-            const lowerSearch = searchTerm.toLowerCase().trim();
-
-            if (!lowerSearch) {
-                // Show all sections and buttons
-                sections.forEach(section => {
-                    section.style.display = 'block';
-                    const buttons = section.querySelectorAll('button');
-                    buttons.forEach(btn => btn.style.display = 'inline-block');
-                });
-                return;
-            }
-
-            let foundAny = false;
-
-            sections.forEach(section => {
-                const buttons = section.querySelectorAll('button');
-                let foundInSection = false;
-
-                buttons.forEach(btn => {
-                    const title = (btn.getAttribute('title') || '').toLowerCase();
-                    const emoji = btn.textContent;
-
-                    // Match against title or emoji character
-                    if (title.includes(lowerSearch) || emoji.includes(searchTerm)) {
-                        btn.style.display = 'inline-block';
-                        foundInSection = true;
-                        foundAny = true;
-                    } else {
-                        btn.style.display = 'none';
-                    }
-                });
-
-                // Show section if it has matching emojis
-                section.style.display = foundInSection ? 'block' : 'none';
-            });
-
-            // If no matches found, show a message (optional)
-            if (!foundAny) {
-                console.log('No emojis found matching:', searchTerm);
-            }
         }
 
         function insertEmoji(emoji) {
@@ -4586,6 +4549,9 @@
             updateVariablesList();
             updatePropertyPanel();
             renderFrame(0);
+
+            // Show model description
+            showModelInfo(model.name, model.description);
 
             closeSampleModels();
         }
