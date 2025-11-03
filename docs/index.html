@@ -869,13 +869,14 @@
                         return 0;
                     }
 
-                    // Try to find object by ID first, then by name
+                    // Try to find object by ID first, then by name (case-insensitive)
                     let targetObj = context.allObjects.get(objectId);
 
-                    // If not found by ID, try to find by name
+                    // If not found by ID, try to find by name (case-insensitive)
                     if (!targetObj) {
+                        const objectIdLower = objectId.toLowerCase();
                         for (const [id, obj] of context.allObjects.entries()) {
-                            if (obj.name === objectId) {
+                            if (obj.name.toLowerCase() === objectIdLower) {
                                 targetObj = obj;
                                 break;
                             }
@@ -886,11 +887,13 @@
                         // Evaluate the target object at the same time
                         const updated = updateObjectAtTime(targetObj, context.time, context.allObjects);
                         if (!(property in updated)) {
-                            showError(`Unknown property "${property}" in object "${objectId}". Available properties: x, y, width, height, rotation, red, green, blue, and any custom properties.`);
+                            const contextInfo = context.object ? ` in equation for property "${context.currentAttribute || 'unknown'}" in object "${context.object.name || context.object.id}"` : '';
+                            showError(`Unknown property "${property}" in object "${objectId}"${contextInfo}. Available properties: x, y, width, height, rotation, red, green, blue, and any custom properties.`);
                         }
                         return updated[property] || 0;
                     } else {
-                        showError(`Unknown object "${objectId}" referenced in equation. Check that the object exists in the Objects list.`);
+                        const contextInfo = context.object ? ` in equation for property "${context.currentAttribute || 'unknown'}" in object "${context.object.name || context.object.id}"` : '';
+                        showError(`Unknown object "${objectId}" referenced${contextInfo}. Check that the object exists in the Objects list.`);
                         return 0;
                     }
                 }
@@ -1541,6 +1544,8 @@
             }
 
             obj.equations.forEach((equation, attribute) => {
+                // Add current attribute to context for better error messages
+                context.currentAttribute = attribute;
                 const value = evaluateEquation(equation, context);
 
                 if (isObject3 && time <= 5) {
@@ -2551,8 +2556,8 @@
             const bounceY = parseEquation('100 + bounce(mod(t / 60, 1)) * 400');
             const bounceHeight = parseEquation('50 + bounce(mod(t / 60, 1)) * 20');
 
-            objects.set('bouncer2', {
-                id: 'bouncer2',
+            objects.set('bouncer', {
+                id: 'bouncer',
                 name: 'Bouncer',
                 x: 200, y: 500,
                 width: 60, height: 40,
@@ -3261,9 +3266,11 @@
             const propertyRow = (prop, label, min, max, unit = '') => {
                 const eqText = getEquationText(obj, prop);
                 const hasEq = eqText !== null;
+                // Display rotation mod 360 for better readability
+                const displayValue = prop === 'rotation' ? Math.round(((obj[prop] % 360) + 360) % 360) : Math.round(obj[prop]);
                 return `
                     <div class="property-row">
-                        <label>${label}: <span class="value-display">${Math.round(obj[prop])}${unit}</span></label>
+                        <label>${label}: <span class="value-display">${displayValue}${unit}</span></label>
                         ${hasEq ? `<div style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace;">📐 ${eqText}</div>` : ''}
                         <div style="display: flex; gap: 5px; align-items: center;">
                             <input type="range" min="${min}" max="${max}" value="${obj[prop]}" oninput="updateProperty('${prop}', this.value)" style="flex: 1;" ${hasEq ? 'disabled' : ''}>
@@ -3711,6 +3718,7 @@
                     appearance: obj.appearance,
                     penDown: obj.penDown,
                     text: obj.text || '',
+                    description: obj.description || obj.info || '',
                     equations: equations
                 };
             });
