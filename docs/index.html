@@ -645,6 +645,121 @@
         </div>
     </div>
 
+    <!-- Emoji Picker Modal -->
+    <div id="emojiPickerModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 500px; max-width: 600px;">
+        <h3 style="margin-top: 0; color: #667eea;">😀 Emoji Picker</h3>
+        <p style="color: #666; margin-bottom: 15px;">Click an emoji to insert it into your text:</p>
+
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; background: #f8f9fa;">
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">😊 Smileys & Emotion</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('😀')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Grinning">😀</button>
+                    <button onclick="insertEmoji('😃')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Grinning with big eyes">😃</button>
+                    <button onclick="insertEmoji('😄')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Grinning with smiling eyes">😄</button>
+                    <button onclick="insertEmoji('😁')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Beaming">😁</button>
+                    <button onclick="insertEmoji('😊')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Smiling">😊</button>
+                    <button onclick="insertEmoji('😍')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Heart eyes">😍</button>
+                    <button onclick="insertEmoji('🤩')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Star-struck">🤩</button>
+                    <button onclick="insertEmoji('😎')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Sunglasses">😎</button>
+                    <button onclick="insertEmoji('🤔')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Thinking">🤔</button>
+                    <button onclick="insertEmoji('😮')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Surprised">😮</button>
+                    <button onclick="insertEmoji('😢')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Crying">😢</button>
+                    <button onclick="insertEmoji('😭')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Loudly crying">😭</button>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">❤️ Hearts & Symbols</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('❤️')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Red heart">❤️</button>
+                    <button onclick="insertEmoji('💙')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Blue heart">💙</button>
+                    <button onclick="insertEmoji('💚')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Green heart">💚</button>
+                    <button onclick="insertEmoji('💛')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Yellow heart">💛</button>
+                    <button onclick="insertEmoji('🧡')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Orange heart">🧡</button>
+                    <button onclick="insertEmoji('💜')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Purple heart">💜</button>
+                    <button onclick="insertEmoji('⭐')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Star">⭐</button>
+                    <button onclick="insertEmoji('✨')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Sparkles">✨</button>
+                    <button onclick="insertEmoji('🔥')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Fire">🔥</button>
+                    <button onclick="insertEmoji('💯')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="100">💯</button>
+                    <button onclick="insertEmoji('✅')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Check">✅</button>
+                    <button onclick="insertEmoji('🎉')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Party">🎉</button>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">🐶 Animals & Nature</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('🐶')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Dog">🐶</button>
+                    <button onclick="insertEmoji('🐱')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Cat">🐱</button>
+                    <button onclick="insertEmoji('🐭')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Mouse">🐭</button>
+                    <button onclick="insertEmoji('🐰')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Rabbit">🐰</button>
+                    <button onclick="insertEmoji('🦊')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Fox">🦊</button>
+                    <button onclick="insertEmoji('🐻')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Bear">🐻</button>
+                    <button onclick="insertEmoji('🐼')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Panda">🐼</button>
+                    <button onclick="insertEmoji('🐨')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Koala">🐨</button>
+                    <button onclick="insertEmoji('🦁')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Lion">🦁</button>
+                    <button onclick="insertEmoji('🐯')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Tiger">🐯</button>
+                    <button onclick="insertEmoji('🦄')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Unicorn">🦄</button>
+                    <button onclick="insertEmoji('🌈')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Rainbow">🌈</button>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">🍕 Food & Drink</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('🍕')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Pizza">🍕</button>
+                    <button onclick="insertEmoji('🍔')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Burger">🍔</button>
+                    <button onclick="insertEmoji('🍟')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Fries">🍟</button>
+                    <button onclick="insertEmoji('🌮')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Taco">🌮</button>
+                    <button onclick="insertEmoji('🍰')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Cake">🍰</button>
+                    <button onclick="insertEmoji('🍎')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Apple">🍎</button>
+                    <button onclick="insertEmoji('🍌')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Banana">🍌</button>
+                    <button onclick="insertEmoji('🍓')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Strawberry">🍓</button>
+                    <button onclick="insertEmoji('☕')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Coffee">☕</button>
+                    <button onclick="insertEmoji('🍵')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Tea">🍵</button>
+                    <button onclick="insertEmoji('🥤')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Drink">🥤</button>
+                    <button onclick="insertEmoji('🍦')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Ice cream">🍦</button>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">⚽ Sports & Activities</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('⚽')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Soccer">⚽</button>
+                    <button onclick="insertEmoji('🏀')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Basketball">🏀</button>
+                    <button onclick="insertEmoji('🏈')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Football">🏈</button>
+                    <button onclick="insertEmoji('⚾')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Baseball">⚾</button>
+                    <button onclick="insertEmoji('🎮')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Video game">🎮</button>
+                    <button onclick="insertEmoji('🎯')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Dart">🎯</button>
+                    <button onclick="insertEmoji('🎲')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Dice">🎲</button>
+                    <button onclick="insertEmoji('🎸')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Guitar">🎸</button>
+                    <button onclick="insertEmoji('🎨')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Art">🎨</button>
+                    <button onclick="insertEmoji('📚')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Books">📚</button>
+                    <button onclick="insertEmoji('✈️')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Airplane">✈️</button>
+                    <button onclick="insertEmoji('🚀')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Rocket">🚀</button>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">🌍 Travel & Places</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="insertEmoji('🌍')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Earth">🌍</button>
+                    <button onclick="insertEmoji('🏠')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Home">🏠</button>
+                    <button onclick="insertEmoji('🏢')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Office">🏢</button>
+                    <button onclick="insertEmoji('🏫')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="School">🏫</button>
+                    <button onclick="insertEmoji('🏰')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Castle">🏰</button>
+                    <button onclick="insertEmoji('🗽')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Statue of Liberty">🗽</button>
+                    <button onclick="insertEmoji('🌳')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Tree">🌳</button>
+                    <button onclick="insertEmoji('🌺')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Flower">🌺</button>
+                    <button onclick="insertEmoji('☀️')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Sun">☀️</button>
+                    <button onclick="insertEmoji('🌙')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Moon">🌙</button>
+                    <button onclick="insertEmoji('⛅')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Cloud">⛅</button>
+                    <button onclick="insertEmoji('⛈️')" style="font-size: 24px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" title="Storm">⛈️</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="secondary" onclick="closeEmojiPicker()" style="width: 100%;">Close</button>
+        </div>
+    </div>
+
     <!-- Sample Models Dialog -->
     <div id="sampleModelsDialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 600px; max-width: 700px; max-height: 80vh; overflow-y: auto;">
         <h3 style="margin-top: 0; color: #667eea;">📚 Sample Models</h3>
@@ -1531,10 +1646,8 @@
                             this.ctx.stroke();
                             break;
                         case 'text':
-                            const metrics = this.ctx.measureText(obj.text || obj.name);
-                            const textWidth = metrics.width;
-                            const textHeight = obj.height;
-                            this.ctx.strokeRect(-textWidth/2 - 5, -textHeight/2 - 5, textWidth + 10, textHeight + 10);
+                            // Use obj.width and obj.height for consistent selection box
+                            this.ctx.strokeRect(-obj.width/2 - 5, -obj.height/2 - 5, obj.width + 10, obj.height + 10);
                             break;
                     }
                     this.ctx.setLineDash([]);
@@ -1664,13 +1777,27 @@
                         this.ctx.fill();
                         break;
                     case 'text':
-                        this.ctx.font = `${obj.height}px Arial`;
+                        // Calculate font size based on both width and height
+                        let fontSize = obj.height;
+                        this.ctx.font = `${fontSize}px Arial`;
                         this.ctx.textAlign = 'center';
                         this.ctx.textBaseline = 'middle';
+
+                        // Measure text and scale down if it exceeds width
+                        const textToRender = obj.text || obj.name;
+                        let textMetrics = this.ctx.measureText(textToRender);
+                        let textWidth = textMetrics.width;
+
+                        // If text is wider than obj.width, scale down the font
+                        if (textWidth > obj.width) {
+                            fontSize = (obj.width / textWidth) * fontSize;
+                            this.ctx.font = `${fontSize}px Arial`;
+                        }
+
                         // Counter the y-flip so text is readable
                         this.ctx.save();
                         this.ctx.scale(1, -1);
-                        this.ctx.fillText(obj.text || obj.name, 0, 0);
+                        this.ctx.fillText(textToRender, 0, 0);
                         this.ctx.restore();
                         break;
                 }
@@ -2843,7 +2970,8 @@
                 // Hit test for line - check if within width and height tolerance
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= 10;
             } else if (obj.appearance === 'text') {
-                return Math.abs(dx) <= 100 && Math.abs(dy) <= obj.height/2;
+                // Use obj.width and obj.height for consistent hit testing
+                return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
             }
             return false;
         }
@@ -3173,14 +3301,23 @@
                             <option value="text" ${obj.appearance === 'text' ? 'selected' : ''}>Text/Label</option>
                         </select>
                     </div>
+                    ${obj.appearance === 'text' ? `
+                    <div class="property-row" style="margin-top: 10px;">
+                        <label>Text Content:</label>
+                        <div style="display: flex; gap: 5px; margin-top: 5px;">
+                            <input type="text" value="${(obj.text || obj.name).replace(/"/g, '&quot;')}" onchange="updateObjectText('${obj.id}', this.value)" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" />
+                            <button onclick="openEmojiPicker('${obj.id}')" style="padding: 6px 12px; font-size: 18px; line-height: 1;" title="Insert emoji">😀</button>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <div class="property-group">
                     <h4>Position & Size</h4>
                     ${propertyRow('x', 'X Position', 0, 800)}
                     ${propertyRow('y', 'Y Position', 0, 600)}
-                    ${propertyRow('width', 'Width', 10, 200)}
-                    ${propertyRow('height', 'Height', 10, 200)}
+                    ${propertyRow('width', 'Width', 1, 200)}
+                    ${propertyRow('height', 'Height', 1, 200)}
                     ${propertyRow('rotation', 'Rotation', 0, 360, '°')}
                 </div>
 
@@ -3319,6 +3456,31 @@
         function closeEquationEditor() {
             document.getElementById('equationEditorModal').style.display = 'none';
             currentEquationProperty = null;
+        }
+
+        let currentEmojiPickerObjectId = null;
+
+        function openEmojiPicker(objectId) {
+            currentEmojiPickerObjectId = objectId;
+            document.getElementById('emojiPickerModal').style.display = 'block';
+        }
+
+        function closeEmojiPicker() {
+            document.getElementById('emojiPickerModal').style.display = 'none';
+            currentEmojiPickerObjectId = null;
+        }
+
+        function insertEmoji(emoji) {
+            if (!currentEmojiPickerObjectId) return;
+
+            const obj = objects.get(currentEmojiPickerObjectId);
+            if (obj) {
+                obj.text = (obj.text || obj.name) + emoji;
+                saveHistoryState();
+                updatePropertyPanel();
+                renderFrame(animationController.currentFrame);
+            }
+            closeEmojiPicker();
         }
 
         function openCustomEquationEditor(property) {
@@ -3568,6 +3730,15 @@
                 saveHistoryState();
                 updateObjectList();
                 updatePropertyPanel();
+                renderFrame(animationController.currentFrame);
+            }
+        }
+
+        function updateObjectText(objectId, text) {
+            const obj = objects.get(objectId);
+            if (obj) {
+                obj.text = text;
+                saveHistoryState();
                 renderFrame(animationController.currentFrame);
             }
         }
