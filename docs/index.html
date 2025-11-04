@@ -3472,6 +3472,7 @@
                         ${hasEq && eqDesc ? `<div style="font-size: 10px; color: #6c757d; margin: 2px 0 3px 0; font-style: italic;">${eqDesc}</div>` : ''}
                         <div style="display: flex; gap: 5px; align-items: center;">
                             <input type="range" min="${min}" max="${max}" value="${obj[prop]}" oninput="updateProperty('${prop}', this.value)" style="flex: 1;" ${hasEq ? 'disabled' : ''}>
+                            <input type="number" min="${min}" max="${max}" value="${Math.round(obj[prop])}" onchange="updateProperty('${prop}', this.value)" style="width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center;" ${hasEq ? 'disabled' : ''}>
                             <button onclick="openEquationEditor('${prop}')" style="padding: 4px 8px; font-size: 11px;" title="Edit equation">📐</button>
                             ${hasEq ? `<button onclick="clearEquation('${prop}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>` : ''}
                         </div>
