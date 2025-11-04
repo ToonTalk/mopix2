@@ -3994,24 +3994,16 @@
                     });
                 }
 
-                return {
-                    id: obj.id,
-                    name: obj.name,
-                    x: obj.x,
-                    y: obj.y,
-                    width: obj.width,
-                    height: obj.height,
-                    rotation: obj.rotation,
-                    red: obj.red,
-                    green: obj.green,
-                    blue: obj.blue,
-                    opacity: obj.opacity,
-                    appearance: obj.appearance,
-                    penDown: obj.penDown,
-                    text: obj.text || '',
-                    description: obj.description || obj.info || '',
-                    equations: equations
-                };
+                // Serialize all properties except equations (which is handled separately)
+                const serialized = {};
+                for (const key in obj) {
+                    if (key !== 'equations') {
+                        serialized[key] = obj[key];
+                    }
+                }
+                serialized.equations = equations;
+
+                return serialized;
             });
         }
 
@@ -4043,10 +4035,35 @@
                     });
                 }
 
-                objects.set(objData.id, {
-                    ...objData,
-                    equations: equationsMap
-                });
+                // Ensure all standard properties have default values
+                const obj = {
+                    // Standard properties
+                    id: objData.id,
+                    name: objData.name || objData.id,
+                    x: objData.x || 0,
+                    y: objData.y || 0,
+                    width: objData.width || 50,
+                    height: objData.height || 50,
+                    rotation: objData.rotation || 0,
+                    red: objData.red !== undefined ? objData.red : 100,
+                    green: objData.green !== undefined ? objData.green : 100,
+                    blue: objData.blue !== undefined ? objData.blue : 255,
+                    opacity: objData.opacity !== undefined ? objData.opacity : (objData.transparency !== undefined ? objData.transparency : 100),
+                    appearance: objData.appearance || 'square',
+                    penDown: objData.penDown || false,
+                    text: objData.text || '',
+                    thicknessPen: objData.thicknessPen !== undefined ? objData.thicknessPen : 2,
+                    redColourPen: objData.redColourPen !== undefined ? objData.redColourPen : 0,
+                    greenColourPen: objData.greenColourPen !== undefined ? objData.greenColourPen : 0,
+                    blueColourPen: objData.blueColourPen !== undefined ? objData.blueColourPen : 0,
+                    opacityPen: objData.opacityPen !== undefined ? objData.opacityPen : (objData.transparencyPen !== undefined ? objData.transparencyPen : 100),
+                    info: objData.info || objData.description || '',
+                    equations: equationsMap,
+                    // Copy any custom properties
+                    ...objData
+                };
+
+                objects.set(objData.id, obj);
             });
         }
 
