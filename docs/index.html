@@ -546,9 +546,9 @@
                 <option value="blue">Blue (0-255)</option>
                 <option value="opacity">Opacity (0-100)</option>
                 <option value="thicknessPen">Pen Thickness</option>
-                <option value="redColourPen">Pen Red (0-255)</option>
-                <option value="greenColourPen">Pen Green (0-255)</option>
-                <option value="blueColourPen">Pen Blue (0-255)</option>
+                <option value="redColorPen">Pen Red (0-255)</option>
+                <option value="greenColorPen">Pen Green (0-255)</option>
+                <option value="blueColorPen">Pen Blue (0-255)</option>
                 <option value="opacityPen">Pen Opacity (0-100)</option>
             </select>
         </div>
@@ -664,7 +664,7 @@
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em><span title="Reference another object's property by name, e.g., Ball.x or Paddle.y">object name.property</span></em><br>
                 <strong>Constants:</strong> <span title="3.14159265...">pi</span>, <span title="2.71828182... (Euler's number)">e</span><br>
-                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, opacityPen, <em>custom properties</em><br>
+                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColorPen, greenColorPen, blueColorPen, opacityPen, <em>custom properties</em><br>
                 <strong>Input:</strong> <span title="Current mouse X coordinate">mouse.x</span>, <span title="Current mouse Y coordinate">mouse.y</span>, <span title="Returns 1 if key is pressed, 0 otherwise. Example: keyDown(w)">keyDown(key)</span><br>
                 <strong>Previous Frame (t-1):</strong> <span title="Access this object's property from the previous frame">prev.x</span>, <span title="Access another object's property from the previous frame">prev.object name.property</span><br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
@@ -1595,9 +1595,9 @@
                     case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'opacity': updated.opacity = Math.max(0, Math.min(100, value)); break;
                     case 'thicknessPen': updated.thicknessPen = Math.max(0.5, value); break;
-                    case 'redColourPen': updated.redColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
-                    case 'greenColourPen': updated.greenColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
-                    case 'blueColourPen': updated.blueColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'redColorPen': updated.redColorPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'greenColorPen': updated.greenColorPen = Math.round(Math.max(0, Math.min(255, value))); break;
+                    case 'blueColorPen': updated.blueColorPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'opacityPen': updated.opacityPen = Math.max(0, Math.min(100, value)); break;
                     default:
                         // Support custom user-defined properties (e.g., vy, vx, ax, ay)
@@ -2023,9 +2023,9 @@
                     x: obj.x,
                     y: obj.y,
                     color: {
-                        r: obj.redColourPen !== undefined ? obj.redColourPen : obj.red,
-                        g: obj.greenColourPen !== undefined ? obj.greenColourPen : obj.green,
-                        b: obj.blueColourPen !== undefined ? obj.blueColourPen : obj.blue
+                        r: obj.redColorPen !== undefined ? obj.redColorPen : obj.red,
+                        g: obj.greenColorPen !== undefined ? obj.greenColorPen : obj.green,
+                        b: obj.blueColorPen !== undefined ? obj.blueColorPen : obj.blue
                     },
                     thickness: obj.thicknessPen !== undefined ? obj.thicknessPen : 2,
                     opacity: obj.opacityPen !== undefined ? obj.opacityPen : obj.opacity
@@ -2168,9 +2168,9 @@
                 penDown: true,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 100,
-                blueColourPen: 100,
+                redColorPen: 255,
+                greenColorPen: 100,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Mover moves to the right at a constant speed by multiplying the time by 2 and adding a starting position of 100.',
                 equations: new Map([
@@ -2199,9 +2199,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 100,
-                greenColourPen: 255,
-                blueColourPen: 100,
+                redColorPen: 100,
+                greenColorPen: 255,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Spinner rotates continuously by setting rotation to time multiplied by 5, spinning at 5 degrees per frame.',
                 equations: new Map([
@@ -2226,9 +2226,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 128,
-                greenColourPen: 128,
-                blueColourPen: 255,
+                redColorPen: 128,
+                greenColorPen: 128,
+                blueColorPen: 255,
                 opacityPen: 100,
                 info: 'ColorChanger oscillates its red color channel using a sine wave, creating a smooth color pulse by centering at 128 and varying by 127.',
                 equations: new Map([
@@ -2271,9 +2271,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 200,
-                blueColourPen: 50,
+                redColorPen: 255,
+                greenColorPen: 200,
+                blueColorPen: 50,
                 opacityPen: 100,
                 info: 'Follower demonstrates object references by following another object\'s position and rotating to point at a third object using the angle function.',
                 equations: new Map([
@@ -2320,9 +2320,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 150,
-                greenColourPen: 50,
-                blueColourPen: 200,
+                redColorPen: 150,
+                greenColorPen: 50,
+                blueColorPen: 200,
                 opacityPen: 100,
                 info: 'Smart Triangle uses conditional logic to change behavior over time and respond to other objects\' positions using if and dist functions.',
                 equations: new Map([
@@ -2371,9 +2371,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 50,
-                greenColourPen: 255,
-                blueColourPen: 200,
+                redColorPen: 50,
+                greenColorPen: 255,
+                blueColorPen: 200,
                 opacityPen: 100,
                 info: 'Collision Star moves in a circular orbit using user variables and changes color when overlapping with another object using the overlaps function.',
                 equations: new Map([
@@ -2422,9 +2422,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 200,
-                blueColourPen: 100,
+                redColorPen: 255,
+                greenColorPen: 200,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Jittery Pentagon demonstrates the random function by adding small random offsets to its position and color, creating a jittering effect.',
                 equations: new Map([
@@ -2472,9 +2472,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 100,
-                blueColourPen: 150,
+                redColorPen: 255,
+                greenColorPen: 100,
+                blueColorPen: 150,
                 opacityPen: 100,
                 info: 'Looping Hexagon uses the modulo function to create a repeating horizontal motion and cycling blue color value.',
                 equations: new Map([
@@ -2517,9 +2517,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 100,
-                greenColourPen: 200,
-                blueColourPen: 255,
+                redColorPen: 100,
+                greenColorPen: 200,
+                blueColorPen: 255,
                 opacityPen: 100,
                 info: 'Growing Circle demonstrates exponential growth using the pow function and the mathematical constant pi for rotation.',
                 equations: new Map([
@@ -2567,9 +2567,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 150,
-                greenColourPen: 255,
-                blueColourPen: 150,
+                redColorPen: 150,
+                greenColorPen: 255,
+                blueColorPen: 150,
                 opacityPen: 100,
                 info: 'Smooth Easer demonstrates the smoothstep easing function for smooth, natural-looking motion with acceleration and deceleration.',
                 equations: new Map([
@@ -2611,9 +2611,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 180,
-                blueColourPen: 100,
+                redColorPen: 255,
+                greenColorPen: 180,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Bouncer demonstrates the bounce easing function to create realistic bouncing motion with squash and stretch effects.',
                 equations: new Map([
@@ -2656,9 +2656,9 @@
                 penDown: true,
                 text: '',
                 thicknessPen: 1,
-                redColourPen: 255,
-                greenColourPen: 100,
-                blueColourPen: 200,
+                redColorPen: 255,
+                greenColorPen: 100,
+                blueColorPen: 200,
                 opacityPen: 50,
                 info: 'Mouse Follower tracks the mouse cursor position using mouse.x and mouse.y, creating an interactive drawing trail with pen.',
                 equations: new Map([
@@ -2705,9 +2705,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 3,
-                redColourPen: 100,
-                greenColourPen: 150,
-                blueColourPen: 255,
+                redColorPen: 100,
+                greenColorPen: 150,
+                blueColorPen: 255,
                 opacityPen: 100,
                 info: 'Keyboard Control responds to keyboard input using the keyDown() function, allowing WASD movement for 4-directional control.',
                 equations: new Map([
@@ -2750,9 +2750,9 @@
                 penDown: true,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 150,
-                blueColourPen: 100,
+                redColorPen: 255,
+                greenColorPen: 150,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Physics Ball simulates realistic physics with gravity and bouncing using prev values to track velocity, demonstrating frame-to-frame state persistence.',
                 vy: 0,  // Custom property for vertical velocity
@@ -2794,9 +2794,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 100,
-                greenColourPen: 200,
-                blueColourPen: 255,
+                redColorPen: 100,
+                greenColorPen: 200,
+                blueColorPen: 255,
                 opacityPen: 100,
                 info: 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.',
                 PaddleSpeed: 5,
@@ -2826,9 +2826,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 255,
-                greenColourPen: 100,
-                blueColourPen: 100,
+                redColorPen: 255,
+                greenColorPen: 100,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses prev.y and PaddleSpeed custom property.',
                 PaddleSpeed: 5,
@@ -2861,9 +2861,9 @@
                 penDown: true,
                 text: '',
                 thicknessPen: 1,
-                redColourPen: 200,
-                greenColourPen: 200,
-                blueColourPen: 200,
+                redColorPen: 200,
+                greenColorPen: 200,
+                blueColorPen: 200,
                 opacityPen: 30,
                 info: 'Pong ball with physics: bounces off paddles and walls, uses overlaps() for collision, prev.vx/vy for velocity. Resets if it goes past paddles.',
                 vx: 3,  // Initial velocity
@@ -2913,9 +2913,9 @@
                 penDown: false,
                 text: '',
                 thicknessPen: 2,
-                redColourPen: 100,
-                greenColourPen: 100,
-                blueColourPen: 100,
+                redColorPen: 100,
+                greenColorPen: 100,
+                blueColorPen: 100,
                 opacityPen: 100,
                 info: 'Pong center line for visual reference.',
                 equations: new Map()
@@ -3530,7 +3530,7 @@
                 const standardProps = new Set([
                     'x', 'y', 'width', 'height', 'rotation',
                     'red', 'green', 'blue', 'opacity',
-                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen',
+                    'thicknessPen', 'redColorPen', 'greenColorPen', 'blueColorPen', 'opacityPen',
                     'id', 'name', 'appearance', 'penDown', 'text', 'info', 'description', 'equations'
                 ]);
 
@@ -3642,13 +3642,13 @@
 
                     <div class="property-row">
                         <label>Pen Color Picker</label>
-                        <input type="color" value="${rgbToHex(obj.redColourPen, obj.greenColourPen, obj.blueColourPen)}" onchange="updatePropertyPenColor(this.value)">
+                        <input type="color" value="${rgbToHex(obj.redColorPen, obj.greenColorPen, obj.blueColorPen)}" onchange="updatePropertyPenColor(this.value)">
                     </div>
 
                     ${propertyRow('thicknessPen', 'Pen Thickness', 0.5, 20)}
-                    ${propertyRow('redColourPen', 'Pen Red', 0, 255)}
-                    ${propertyRow('greenColourPen', 'Pen Green', 0, 255)}
-                    ${propertyRow('blueColourPen', 'Pen Blue', 0, 255)}
+                    ${propertyRow('redColorPen', 'Pen Red', 0, 255)}
+                    ${propertyRow('greenColorPen', 'Pen Green', 0, 255)}
+                    ${propertyRow('blueColorPen', 'Pen Blue', 0, 255)}
                     ${propertyRow('opacityPen', 'Pen Opacity', 0, 100, '%')}
                 </div>
 
@@ -3715,9 +3715,9 @@
             const g = parseInt(hexColor.substr(3, 2), 16);
             const b = parseInt(hexColor.substr(5, 2), 16);
 
-            obj.redColourPen = r;
-            obj.greenColourPen = g;
-            obj.blueColourPen = b;
+            obj.redColorPen = r;
+            obj.greenColorPen = g;
+            obj.blueColorPen = b;
 
             updatePropertyPanel();
             renderFrame(animationController.currentFrame);
@@ -3743,7 +3743,7 @@
             const standardProps = new Set([
                 'x', 'y', 'width', 'height', 'rotation',
                 'red', 'green', 'blue', 'opacity',
-                'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen',
+                'thicknessPen', 'redColorPen', 'greenColorPen', 'blueColorPen', 'opacityPen',
                 'id', 'name', 'appearance', 'penDown', 'text', 'info', 'description', 'equations'
             ]);
 
@@ -3872,7 +3872,7 @@
             const standardProps = new Set([
                 'x', 'y', 'width', 'height', 'rotation',
                 'red', 'green', 'blue', 'opacity',
-                'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen'
+                'thicknessPen', 'redColorPen', 'greenColorPen', 'blueColorPen', 'opacityPen'
             ]);
 
             // Get the property dropdown
@@ -4201,9 +4201,9 @@
                     penDown: objData.penDown || false,
                     text: objData.text || '',
                     thicknessPen: objData.thicknessPen !== undefined ? objData.thicknessPen : 2,
-                    redColourPen: objData.redColourPen !== undefined ? objData.redColourPen : 0,
-                    greenColourPen: objData.greenColourPen !== undefined ? objData.greenColourPen : 0,
-                    blueColourPen: objData.blueColourPen !== undefined ? objData.blueColourPen : 0,
+                    redColorPen: objData.redColorPen !== undefined ? objData.redColorPen : 0,
+                    greenColorPen: objData.greenColorPen !== undefined ? objData.greenColorPen : 0,
+                    blueColorPen: objData.blueColorPen !== undefined ? objData.blueColorPen : 0,
                     opacityPen: objData.opacityPen !== undefined ? objData.opacityPen : (objData.transparencyPen !== undefined ? objData.transparencyPen : 100),
                     info: objData.info || objData.description || '',
                     equations: equationsMap,
@@ -4369,9 +4369,9 @@
                 penDown: false,
                 text: shape === 'text' ? text : '',
                 thicknessPen: 2,
-                redColourPen: Math.floor(Math.random() * 256),
-                greenColourPen: Math.floor(Math.random() * 256),
-                blueColourPen: Math.floor(Math.random() * 256),
+                redColorPen: Math.floor(Math.random() * 256),
+                greenColorPen: Math.floor(Math.random() * 256),
+                blueColorPen: Math.floor(Math.random() * 256),
                 opacityPen: 100,
                 equations: new Map(),
                 description: ''
@@ -4725,9 +4725,9 @@
                     objects.get('object_6').thicknessPen = 4;
 
                     // Set pen colors
-                    objects.get('object_6').redColourPen = 50;
-                    objects.get('object_6').greenColourPen = 50;
-                    objects.get('object_6').blueColourPen = 50;
+                    objects.get('object_6').redColorPen = 50;
+                    objects.get('object_6').greenColorPen = 50;
+                    objects.get('object_6').blueColorPen = 50;
                 }
             },
             {
@@ -4785,7 +4785,7 @@
                         y: { text: '(50 * sin(4 * t) + 50) / 4 + 400', description: 'Graphs object_1 rotation over time' }
                     }, 'Graph of object_1 rotation.');
                     objects.get('object_12').penDown = true;
-                    objects.get('object_12').greenColourPen = 100;
+                    objects.get('object_12').greenColorPen = 100;
                     objects.get('object_12').thicknessPen = 4;
 
                     createSampleObject('object_5', 'circle', 324, 386.55, 5, 5, 0, 0, 100, {
@@ -4793,12 +4793,12 @@
                         y: { text: '(50 * sin(2 * t) + 50) / 4 + 400', description: 'Graphs object_4 rotation over time' }
                     }, 'Graph of object_4 rotation.');
                     objects.get('object_5').penDown = true;
-                    objects.get('object_5').blueColourPen = 100;
+                    objects.get('object_5').blueColorPen = 100;
                     objects.get('object_5').thicknessPen = 4;
                 }
             },
             {
-                id: 'three-rotating-rectangles-colour',
+                id: 'three-rotating-rectangles-color',
                 name: 'Three Rotating Rectangles (Color Cycles)',
                 description: 'Three rectangles with different rotation speeds and color oscillations.',
                 create: () => {
@@ -4854,7 +4854,7 @@
                         y: { text: 'object_3.x / 10 + 400', description: 'Graphs X position scaled and offset' }
                     }, 'Graph of object_3 X position.');
                     objects.get('object_5').penDown = true;
-                    objects.get('object_5').blueColourPen = 100;
+                    objects.get('object_5').blueColorPen = 100;
                     objects.get('object_5').thicknessPen = 4;
 
                     // Graph 2: Y position (red)
@@ -4863,7 +4863,7 @@
                         y: { text: 'object_3.y / 10 + 400', description: 'Graphs Y position scaled and offset' }
                     }, 'Graph of object_3 Y position.');
                     objects.get('object_4').penDown = true;
-                    objects.get('object_4').redColourPen = 100;
+                    objects.get('object_4').redColorPen = 100;
                     objects.get('object_4').thicknessPen = 4;
 
                     // Graph 3: Vx (horizontal velocity - purple/mixed)
@@ -4872,8 +4872,8 @@
                         y: { text: 'object_3.Vx / 1 + 400', description: 'Graphs horizontal velocity with offset' }
                     }, 'Graph of object_3 X velocity (constant at 3, reverses at walls).');
                     objects.get('object_7').penDown = true;
-                    objects.get('object_7').redColourPen = 50;
-                    objects.get('object_7').blueColourPen = 50;
+                    objects.get('object_7').redColorPen = 50;
+                    objects.get('object_7').blueColorPen = 50;
                     objects.get('object_7').thicknessPen = 4;
 
                     // Graph 4: Vy (vertical velocity - green)
@@ -4882,7 +4882,7 @@
                         y: { text: 'object_3.Vy / 1 + 400', description: 'Graphs vertical velocity with offset' }
                     }, 'Graph of object_3 Y velocity (changes with gravity and bounces).');
                     objects.get('object_6').penDown = true;
-                    objects.get('object_6').greenColourPen = 100;
+                    objects.get('object_6').greenColorPen = 100;
                     objects.get('object_6').thicknessPen = 4;
                 }
             },
@@ -4918,9 +4918,9 @@
                     objects.get('pongBall').vy = 2;
                     objects.get('pongBall').penDown = true;
                     objects.get('pongBall').thicknessPen = 1;
-                    objects.get('pongBall').redColourPen = 200;
-                    objects.get('pongBall').greenColourPen = 200;
-                    objects.get('pongBall').blueColourPen = 200;
+                    objects.get('pongBall').redColorPen = 200;
+                    objects.get('pongBall').greenColorPen = 200;
+                    objects.get('pongBall').blueColorPen = 200;
                     objects.get('pongBall').opacityPen = 30;
 
                     // Center line (decorative)
@@ -4947,9 +4947,9 @@
                 equations: new Map(),
                 penDown: false,
                 thicknessPen: 2,
-                redColourPen: 0,
-                greenColourPen: 0,
-                blueColourPen: 0,
+                redColorPen: 0,
+                greenColorPen: 0,
+                blueColorPen: 0,
                 opacityPen: 100,
                 // Physics properties for velocity and acceleration
                 Vx: 0,
