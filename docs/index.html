@@ -1645,18 +1645,27 @@
             renderTrails(trails) {
                 trails.forEach(trail => {
                     if (trail.points.length < 2) return;
+
                     this.ctx.save();
-                    this.ctx.strokeStyle = `rgb(${trail.color.r}, ${trail.color.g}, ${trail.color.b})`;
-                    this.ctx.lineWidth = trail.thickness;
                     this.ctx.lineCap = 'round';
                     this.ctx.lineJoin = 'round';
 
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(trail.points[0].x, trail.points[0].y);
-                    for (let i = 1; i < trail.points.length; i++) {
-                        this.ctx.lineTo(trail.points[i].x, trail.points[i].y);
+                    // Draw each segment with its own properties
+                    for (let i = 0; i < trail.points.length - 1; i++) {
+                        const p1 = trail.points[i];
+                        const p2 = trail.points[i + 1];
+
+                        // Use p2's properties (the "to" point) for the segment
+                        const opacity = (p2.opacity !== undefined ? p2.opacity : 100) / 100;
+                        this.ctx.strokeStyle = `rgba(${p2.color.r}, ${p2.color.g}, ${p2.color.b}, ${opacity})`;
+                        this.ctx.lineWidth = p2.thickness;
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p1.x, p1.y);
+                        this.ctx.lineTo(p2.x, p2.y);
+                        this.ctx.stroke();
                     }
-                    this.ctx.stroke();
+
                     this.ctx.restore();
                 });
             }
@@ -1998,28 +2007,29 @@
 
                 if (!this.trails.has(obj.id)) {
                     this.trails.set(obj.id, {
-                        points: [],
-                        color: {
-                            r: obj.redColourPen !== undefined ? obj.redColourPen : obj.red,
-                            g: obj.greenColourPen !== undefined ? obj.greenColourPen : obj.green,
-                            b: obj.blueColourPen !== undefined ? obj.blueColourPen : obj.blue
-                        },
-                        thickness: obj.thicknessPen !== undefined ? obj.thicknessPen : 2
+                        points: []
                     });
                 }
 
                 const trail = this.trails.get(obj.id);
 
-                if (!last || last.frame + 1 === frame) {
-                    trail.points.push({ x: obj.x, y: obj.y });
-                    trail.color = {
+                // Store pen properties with each point
+                const pointData = {
+                    x: obj.x,
+                    y: obj.y,
+                    color: {
                         r: obj.redColourPen !== undefined ? obj.redColourPen : obj.red,
                         g: obj.greenColourPen !== undefined ? obj.greenColourPen : obj.green,
                         b: obj.blueColourPen !== undefined ? obj.blueColourPen : obj.blue
-                    };
-                    trail.thickness = obj.thicknessPen !== undefined ? obj.thicknessPen : 2;
+                    },
+                    thickness: obj.thicknessPen !== undefined ? obj.thicknessPen : 2,
+                    opacity: obj.opacityPen !== undefined ? obj.opacityPen : obj.opacity
+                };
+
+                if (!last || last.frame + 1 === frame) {
+                    trail.points.push(pointData);
                 } else if (last.frame !== frame) {
-                    trail.points = [{ x: obj.x, y: obj.y }];
+                    trail.points = [pointData];
                 }
 
                 this.lastPositions.set(obj.id, { x: obj.x, y: obj.y, frame });
@@ -2677,11 +2687,10 @@
             // Keyboard controlled object - demonstrates keyDown()
             const keyObjX = parseEquation('400 + keyDown(d) * 150 - keyDown(a) * 150');
             const keyObjY = parseEquation('300 + keyDown(s) * 100 - keyDown(w) * 100');
-            const keyObjRed = parseEquation('if(keyDown(space), 255, 100)');
 
             objects.set('keyboardObj', {
                 id: 'keyboardObj',
-                name: 'Keyboard Ctrl',
+                name: 'Keyboard Control',
                 x: 400, y: 300,
                 width: 50, height: 50,
                 rotation: 0,
@@ -2695,24 +2704,20 @@
                 greenColourPen: 150,
                 blueColourPen: 255,
                 opacityPen: 100,
-                info: 'Keyboard Ctrl responds to keyboard input using the keyDown function, allowing WASD movement and space bar color change for interactive control.',
+                info: 'Keyboard Control responds to keyboard input using the keyDown() function, allowing WASD movement for 4-directional control.',
                 equations: new Map([
                     ['x', {
                         attribute: 'x',
                         text: '400 + keyDown(d) * 150 - keyDown(a) * 150',
+                        description: 'Left/right movement with A/D keys',
                         expression: keyObjX.success ? keyObjX.expression : null,
                         cache: new Map()
                     }],
                     ['y', {
                         attribute: 'y',
                         text: '300 + keyDown(s) * 100 - keyDown(w) * 100',
+                        description: 'Up/down movement with W/S keys',
                         expression: keyObjY.success ? keyObjY.expression : null,
-                        cache: new Map()
-                    }],
-                    ['red', {
-                        attribute: 'red',
-                        text: 'if(keyDown(space), 255, 100)',
-                        expression: keyObjRed.success ? keyObjRed.expression : null,
                         cache: new Map()
                     }]
                 ])
@@ -2770,7 +2775,7 @@
 
             // ========== PONG GAME ==========
             // Left paddle controlled by W/S keys
-            const pongLeftY = parseEquation('clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)');
+            const pongLeftY = parseEquation('clamp(prev.y + keyDown(w) * PaddleSpeed - keyDown(s) * PaddleSpeed, 60, 540)');
 
             objects.set('pongLeft', {
                 id: 'pongLeft',
@@ -2793,7 +2798,7 @@
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)',
+                        text: 'clamp(prev.y + keyDown(w) * PaddleSpeed - keyDown(s) * PaddleSpeed, 60, 540)',
                         description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongLeftY.success ? pongLeftY.expression : null,
                         cache: new Map()
@@ -2802,7 +2807,7 @@
             });
 
             // Right paddle controlled by Up/Down arrow keys
-            const pongRightY = parseEquation('clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)');
+            const pongRightY = parseEquation('clamp(prev.y + keyDown(ArrowUp) * PaddleSpeed - keyDown(ArrowDown) * PaddleSpeed, 60, 540)');
 
             objects.set('pongRight', {
                 id: 'pongRight',
@@ -2825,7 +2830,7 @@
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)',
+                        text: 'clamp(prev.y + keyDown(ArrowUp) * PaddleSpeed - keyDown(ArrowDown) * PaddleSpeed, 60, 540)',
                         description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongRightY.success ? pongRightY.expression : null,
                         cache: new Map()
@@ -3047,6 +3052,11 @@
                 event.preventDefault();
             }
 
+            // Prevent arrow keys from scrolling the page
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                event.preventDefault();
+            }
+
             // Always track all key presses for keyDown() function in equations
             const key = event.key.toLowerCase();
             keysPressed.add(key);
@@ -3175,7 +3185,7 @@
             const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
             const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
 
-            if (obj.appearance === 'square') {
+            if (obj.appearance === 'square' || obj.appearance === 'roundrect') {
                 return Math.abs(rotatedX) <= obj.width/2 && Math.abs(rotatedY) <= obj.height/2;
             } else if (obj.appearance === 'circle' || obj.appearance === 'ellipse') {
                 const normalizedX = rotatedX / (obj.width/2);
@@ -3270,9 +3280,9 @@
                 const div = document.createElement('div');
                 div.style.cssText = 'display: flex; align-items: center; gap: 5px; margin: 5px 0; padding: 5px; background: white; border-radius: 4px; font-size: 12px;';
                 div.innerHTML = `
-                    <span style="flex: 1; font-weight: 600; font-family: monospace;">${name}</span>
-                    <span style="flex: 1; color: #667eea; font-family: monospace;">${value}</span>
-                    <button onclick="deleteVariable('${name}')" style="padding: 2px 6px; font-size: 11px; background: #dc3545;">×</button>
+                    <span style="font-weight: 600; font-family: monospace; white-space: nowrap;">${name}</span>
+                    <span style="flex: 1; color: #667eea; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value}</span>
+                    <button onclick="deleteVariable('${name}')" style="padding: 2px 6px; font-size: 11px; background: #dc3545; flex-shrink: 0;">×</button>
                 `;
                 listEl.appendChild(div);
             });
@@ -4690,13 +4700,13 @@
 
                     // Left paddle controlled by W/S keys
                     createSampleObject('pongLeft', 'roundrect', 50, 300, 15, 80, 100, 200, 255, {
-                        y: { text: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)', description: 'Y position controlled by W/S keys with clamping' }
+                        y: { text: 'clamp(prev.y + keyDown(w) * PaddleSpeed - keyDown(s) * PaddleSpeed, 60, 540)', description: 'Y position controlled by W/S keys with clamping' }
                     }, 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.');
                     objects.get('pongLeft').PaddleSpeed = 5;
 
                     // Right paddle controlled by arrow keys
                     createSampleObject('pongRight', 'roundrect', 750, 300, 15, 80, 255, 100, 100, {
-                        y: { text: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)', description: 'Y position controlled by arrow keys with clamping' }
+                        y: { text: 'clamp(prev.y + keyDown(ArrowUp) * PaddleSpeed - keyDown(ArrowDown) * PaddleSpeed, 60, 540)', description: 'Y position controlled by arrow keys with clamping' }
                     }, 'Pong right paddle controlled by Up/Down arrow keys.');
                     objects.get('pongRight').PaddleSpeed = 5;
 
