@@ -3525,31 +3525,40 @@
                 const standardProps = new Set([
                     'x', 'y', 'width', 'height', 'rotation',
                     'red', 'green', 'blue', 'opacity',
-                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen'
+                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen',
+                    'id', 'name', 'appearance', 'penDown', 'text', 'info', 'description', 'equations'
                 ]);
 
-                // Find custom properties (those with equations that aren't standard)
+                // Find custom properties (numeric properties that aren't standard)
                 const customProps = [];
-                obj.equations.forEach((eq, prop) => {
-                    if (!standardProps.has(prop)) {
-                        customProps.push({ name: prop, text: eq.text || 'Legacy equation' });
+                for (const prop in obj) {
+                    if (!standardProps.has(prop) && typeof obj[prop] === 'number') {
+                        const eqText = obj.equations.has(prop) ? obj.equations.get(prop).text : null;
+                        const eqDesc = obj.equations.has(prop) ? obj.equations.get(prop).description : '';
+                        customProps.push({ name: prop, value: obj[prop], hasEquation: !!eqText, text: eqText, description: eqDesc });
                     }
-                });
-
-                if (customProps.length === 0) {
-                    return '';
                 }
 
                 // Render custom properties section
-                const customPropsHtml = customProps.map(({ name, text }) => {
-                    const value = obj[name] !== undefined ? obj[name] : 0;
+                const customPropsHtml = customProps.map(({ name, value, hasEquation, text, description }) => {
+                    const displayValue = Math.round(value * 100) / 100;
+                    const dragHandleHtml = hasEquation ? `<span style="cursor: grab; margin-right: 3px; user-select: none;" title="Drag to copy equation">⋮⋮</span>` : '';
                     return `
                         <div class="property-row">
-                            <label>${name}: <span class="value-display">${typeof value === 'number' ? Math.round(value * 100) / 100 : value}</span></label>
-                            <div style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace;">📐 ${text}</div>
+                            <label>${name}: <span class="value-display">${displayValue}</span></label>
+                            ${hasEquation ? `<div
+                                draggable="true"
+                                ondragstart="handleEquationDragStart(event, '${obj.id}', '${name}')"
+                                style="font-size: 11px; color: #667eea; margin: 3px 0; font-family: 'Courier New', monospace; cursor: grab; padding: 2px; border-radius: 3px;"
+                                onmouseenter="this.style.background='#f0f0ff'"
+                                onmouseleave="this.style.background=''"
+                            >${dragHandleHtml}📐 ${text}</div>` : ''}
+                            ${hasEquation && description ? `<div style="font-size: 10px; color: #6c757d; margin: 2px 0 3px 0; font-style: italic;">${description}</div>` : ''}
                             <div style="display: flex; gap: 5px; align-items: center;">
-                                <button onclick="openCustomEquationEditor('${name}')" style="padding: 4px 8px; font-size: 11px; flex: 1;" title="Edit equation">✏️ Edit Equation</button>
-                                <button onclick="clearEquation('${name}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>
+                                ${!hasEquation ? `<input type="number" value="${displayValue}" onchange="updateCustomProperty('${name}', this.value)" style="flex: 1; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center;">` : '<span style="flex: 1;"></span>'}
+                                <button onclick="openEquationEditor('${name}')" style="padding: 4px 8px; font-size: 11px;" title="Edit equation">📐</button>
+                                ${hasEquation ? `<button onclick="clearEquation('${name}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>` : ''}
+                                <button onclick="deleteCustomProperty('${name}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Delete property">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -3558,7 +3567,8 @@
                 return `
                     <div class="property-group">
                         <h4>Custom Properties</h4>
-                        ${customPropsHtml}
+                        ${customPropsHtml || '<div style="font-size: 11px; color: #999; font-style: italic; margin-bottom: 10px;">No custom properties defined</div>'}
+                        <button onclick="addCustomProperty()" class="success" style="width: 100%; padding: 8px; font-size: 12px; margin-top: 5px;">➕ Add Custom Property</button>
                     </div>
                 `;
             };
@@ -3572,7 +3582,7 @@
                     </div>
                     <div class="property-row" style="margin-top: 10px;">
                         <label>Description:</label>
-                        <textarea onchange="updateObjectDescription('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; min-height: 60px; resize: vertical; font-family: inherit;">${obj.description || obj.info || ''}</textarea>
+                        <textarea onchange="updateObjectDescription('${obj.id}', this.value)" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-top: 5px; min-height: 60px; resize: vertical; font-family: inherit;">${(obj.description || obj.info || '').replace(/\\n/g, '\n')}</textarea>
                     </div>
                     <div class="property-row" style="margin-top: 10px;">
                         <label>Shape:</label>
@@ -3704,6 +3714,90 @@
             obj.greenColourPen = g;
             obj.blueColourPen = b;
 
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        // ==================== Custom Properties Management ====================
+
+        function addCustomProperty() {
+            if (!selectedObjectId) return;
+
+            const name = prompt('Enter custom property name (e.g., speed, velocity, acceleration):');
+            if (!name || !name.trim()) return;
+
+            const propertyName = name.trim();
+
+            // Validate property name (alphanumeric and underscores only)
+            if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(propertyName)) {
+                alert('Property name must start with a letter or underscore and contain only letters, numbers, and underscores.');
+                return;
+            }
+
+            // Check if property already exists
+            const standardProps = new Set([
+                'x', 'y', 'width', 'height', 'rotation',
+                'red', 'green', 'blue', 'opacity',
+                'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen',
+                'id', 'name', 'appearance', 'penDown', 'text', 'info', 'description', 'equations'
+            ]);
+
+            const obj = objects.get(selectedObjectId);
+            if (standardProps.has(propertyName) || obj[propertyName] !== undefined) {
+                alert('A property with that name already exists.');
+                return;
+            }
+
+            // Get initial value
+            const valueStr = prompt(`Enter initial value for "${propertyName}":`, '0');
+            if (valueStr === null) return;
+
+            const value = parseFloat(valueStr);
+            if (isNaN(value)) {
+                alert('Please enter a valid numeric value.');
+                return;
+            }
+
+            // Add the property
+            obj[propertyName] = value;
+
+            saveHistoryState();
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function updateCustomProperty(propertyName, value) {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return;
+
+            obj[propertyName] = numValue;
+
+            // Clear equation cache if it exists
+            if (obj.equations.has(propertyName)) {
+                obj.equations.get(propertyName).cache.clear();
+            }
+
+            updatePropertyPanel();
+            renderFrame(animationController.currentFrame);
+        }
+
+        function deleteCustomProperty(propertyName) {
+            if (!selectedObjectId) return;
+
+            const obj = objects.get(selectedObjectId);
+
+            if (!confirm(`Delete custom property "${propertyName}"?`)) return;
+
+            // Delete the property and its equation if it exists
+            delete obj[propertyName];
+            if (obj.equations.has(propertyName)) {
+                obj.equations.delete(propertyName);
+            }
+
+            saveHistoryState();
             updatePropertyPanel();
             renderFrame(animationController.currentFrame);
         }
@@ -3994,24 +4088,16 @@
                     });
                 }
 
-                return {
-                    id: obj.id,
-                    name: obj.name,
-                    x: obj.x,
-                    y: obj.y,
-                    width: obj.width,
-                    height: obj.height,
-                    rotation: obj.rotation,
-                    red: obj.red,
-                    green: obj.green,
-                    blue: obj.blue,
-                    opacity: obj.opacity,
-                    appearance: obj.appearance,
-                    penDown: obj.penDown,
-                    text: obj.text || '',
-                    description: obj.description || obj.info || '',
-                    equations: equations
-                };
+                // Serialize all properties except equations (which is handled separately)
+                const serialized = {};
+                for (const key in obj) {
+                    if (key !== 'equations') {
+                        serialized[key] = obj[key];
+                    }
+                }
+                serialized.equations = equations;
+
+                return serialized;
             });
         }
 
@@ -4043,10 +4129,35 @@
                     });
                 }
 
-                objects.set(objData.id, {
-                    ...objData,
-                    equations: equationsMap
-                });
+                // Ensure all standard properties have default values
+                const obj = {
+                    // Standard properties
+                    id: objData.id,
+                    name: objData.name || objData.id,
+                    x: objData.x || 0,
+                    y: objData.y || 0,
+                    width: objData.width || 50,
+                    height: objData.height || 50,
+                    rotation: objData.rotation || 0,
+                    red: objData.red !== undefined ? objData.red : 100,
+                    green: objData.green !== undefined ? objData.green : 100,
+                    blue: objData.blue !== undefined ? objData.blue : 255,
+                    opacity: objData.opacity !== undefined ? objData.opacity : (objData.transparency !== undefined ? objData.transparency : 100),
+                    appearance: objData.appearance || 'square',
+                    penDown: objData.penDown || false,
+                    text: objData.text || '',
+                    thicknessPen: objData.thicknessPen !== undefined ? objData.thicknessPen : 2,
+                    redColourPen: objData.redColourPen !== undefined ? objData.redColourPen : 0,
+                    greenColourPen: objData.greenColourPen !== undefined ? objData.greenColourPen : 0,
+                    blueColourPen: objData.blueColourPen !== undefined ? objData.blueColourPen : 0,
+                    opacityPen: objData.opacityPen !== undefined ? objData.opacityPen : (objData.transparencyPen !== undefined ? objData.transparencyPen : 100),
+                    info: objData.info || objData.description || '',
+                    equations: equationsMap,
+                    // Copy any custom properties
+                    ...objData
+                };
+
+                objects.set(objData.id, obj);
             });
         }
 
