@@ -371,9 +371,9 @@
             <h3>🔢 Variables</h3>
             <div id="variablesList" style="margin-bottom: 15px;"></div>
             <div style="display: flex; gap: 5px; margin-bottom: 20px;">
-                <input type="text" id="varName" placeholder="name" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
-                <input type="number" id="varValue" placeholder="value" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
-                <button onclick="addVariable()" style="padding: 6px 10px; font-size: 12px;">+</button>
+                <input type="text" id="varName" placeholder="name" style="width: 60px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <input type="number" id="varValue" placeholder="value" style="width: 70px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <button onclick="addVariable()" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0;">+</button>
             </div>
 
             <h3>📦 Objects</h3>
@@ -2999,6 +2999,11 @@
             // Always track mouse position for mouse.x and mouse.y in equations
             mouseX = x;
             mouseY = y;
+
+            // Force re-render if playing to update objects using mouse.x/mouse.y
+            if (isPlaying) {
+                renderFrame(animationController.currentFrame);
+            }
 
             if (!isDragging || !selectedObjectId) return;
 
