@@ -371,8 +371,8 @@
             <h3>🔢 Variables</h3>
             <div id="variablesList" style="margin-bottom: 15px;"></div>
             <div style="display: flex; gap: 5px; margin-bottom: 20px;">
-                <input type="text" id="varName" placeholder="name" style="width: 60px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
-                <input type="number" id="varValue" placeholder="value" style="width: 70px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <input type="text" id="varName" placeholder="name" style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
+                <input type="number" id="varValue" placeholder="value" style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;" />
                 <button onclick="addVariable()" style="padding: 6px 10px; font-size: 12px; flex-shrink: 0;">+</button>
             </div>
 
@@ -657,17 +657,17 @@
         <div style="background: #e7f3ff; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #b3d7ff;">
             <h4 style="margin: 0 0 8px 0; color: #004085; font-size: 13px;">💡 Available:</h4>
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
-                <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
-                <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
+                <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em><span title="Reference another object's property by name, e.g., Ball.x or Paddle.y">object name.property</span></em><br>
+                <strong>Constants:</strong> <span title="3.14159265...">pi</span>, <span title="2.71828182... (Euler's number)">e</span><br>
                 <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, opacityPen, <em>custom properties</em><br>
-                <strong>Input:</strong> mouse.x, mouse.y (mouse position), keyDown(key) - returns 1 if pressed<br>
-                <strong>Previous Frame (t-1):</strong> prev.x, prev.objectId.property - access values from previous frame<br>
+                <strong>Input:</strong> <span title="Current mouse X coordinate">mouse.x</span>, <span title="Current mouse Y coordinate">mouse.y</span>, <span title="Returns 1 if key is pressed, 0 otherwise. Example: keyDown(w)">keyDown(key)</span><br>
+                <strong>Previous Frame (t-1):</strong> <span title="Access this object's property from the previous frame">prev.x</span>, <span title="Access another object's property from the previous frame">prev.object name.property</span><br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
-                <strong>Math:</strong> sin, cos, tan, abs, sqrt, ln, log, exp, floor, ceil, round, sign, fract<br>
-                <strong>Logic:</strong> if(cond, true, false), and, or, not<br>
-                <strong>Collision:</strong> overlaps(obj1, obj2) - returns 1 if colliding<br>
-                <strong>Multi-arg:</strong> dist, angle, min, max, clamp, lerp, random, mod, pow, atan2, keyDown<br>
-                <strong>Easing:</strong> smoothstep(edge0, edge1, x), step(edge, x), ease(x, power), bounce(t), wrap(val, min, max)
+                <strong>Math:</strong> <span title="Sine function (input in radians)">sin</span>, <span title="Cosine function (input in radians)">cos</span>, <span title="Tangent function (input in radians)">tan</span>, <span title="Absolute value">abs</span>, <span title="Square root">sqrt</span>, <span title="Natural logarithm (base e)">ln</span>, <span title="Logarithm base 10">log</span>, <span title="e raised to the power (e^x)">exp</span>, <span title="Round down to nearest integer">floor</span>, <span title="Round up to nearest integer">ceil</span>, <span title="Round to nearest integer">round</span>, <span title="Returns -1, 0, or 1 based on sign">sign</span>, <span title="Fractional part (value - floor(value))">fract</span><br>
+                <strong>Logic:</strong> <span title="Conditional: if condition is true, return 2nd arg, else return 3rd arg">if(cond, true, false)</span>, <span title="Logical AND (returns 1 if both true)">and</span>, <span title="Logical OR (returns 1 if either true)">or</span>, <span title="Logical NOT (returns 1 if false, 0 if true)">not</span><br>
+                <strong>Collision:</strong> <span title="Returns 1 if two objects are overlapping, 0 otherwise">overlaps(obj1, obj2)</span><br>
+                <strong>Multi-arg:</strong> <span title="Distance between two points: dist(x1, y1, x2, y2)">dist</span>, <span title="Angle in radians: angle(x1, y1, x2, y2)">angle</span>, <span title="Minimum of values">min</span>, <span title="Maximum of values">max</span>, <span title="Constrain value between min and max">clamp</span>, <span title="Linear interpolation: lerp(a, b, t)">lerp</span>, <span title="Random value: random() [0-1], random(max), random(min, max)">random</span>, <span title="Modulo (remainder after division)">mod</span>, <span title="Power: pow(base, exponent)">pow</span>, <span title="Arctangent of y/x in radians: atan2(y, x)">atan2</span><br>
+                <strong>Easing:</strong> <span title="Smooth Hermite interpolation between edge0 and edge1">smoothstep(edge0, edge1, x)</span>, <span title="Returns 0 if x < edge, else 1">step(edge, x)</span>, <span title="Power-based easing (x clamped to 0-1)">ease(x, power)</span>, <span title="Bouncing easing function (input normalized to 0-1)">bounce(t)</span>, <span title="Wraps value to range [min, max)">wrap(val, min, max)</span>
             </div>
         </div>
     </div>
