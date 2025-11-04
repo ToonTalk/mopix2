@@ -539,12 +539,12 @@
                 <option value="red">Red (0-255)</option>
                 <option value="green">Green (0-255)</option>
                 <option value="blue">Blue (0-255)</option>
-                <option value="transparency">Transparency (0-100)</option>
+                <option value="opacity">Opacity (0-100)</option>
                 <option value="thicknessPen">Pen Thickness</option>
                 <option value="redColourPen">Pen Red (0-255)</option>
                 <option value="greenColourPen">Pen Green (0-255)</option>
                 <option value="blueColourPen">Pen Blue (0-255)</option>
-                <option value="transparencyPen">Pen Transparency (0-100)</option>
+                <option value="opacityPen">Pen Opacity (0-100)</option>
             </select>
         </div>
 
@@ -659,7 +659,7 @@
             <div style="font-size: 12px; color: #004085; line-height: 1.6;">
                 <strong>Variables:</strong> t (time), <em>user variables</em> (define in sidebar), <em>objectId.property</em><br>
                 <strong>Constants:</strong> pi (3.14159...), e (2.71828...)<br>
-                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, transparencyPen, <em>custom properties</em><br>
+                <strong>Properties:</strong> x, y, width, height, rotation, red, green, blue, thicknessPen, redColourPen, greenColourPen, blueColourPen, opacityPen, <em>custom properties</em><br>
                 <strong>Input:</strong> mouse.x, mouse.y (mouse position), keyDown(key) - returns 1 if pressed<br>
                 <strong>Previous Frame (t-1):</strong> prev.x, prev.objectId.property - access values from previous frame<br>
                 <strong>Operators:</strong> + - * / ^ (power), <, >, <=, >=, ==, !=<br>
@@ -1588,12 +1588,12 @@
                     case 'red': updated.red = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'green': updated.green = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'blue': updated.blue = Math.round(Math.max(0, Math.min(255, value))); break;
-                    case 'transparency': updated.transparency = Math.max(0, Math.min(100, value)); break;
+                    case 'opacity': updated.opacity = Math.max(0, Math.min(100, value)); break;
                     case 'thicknessPen': updated.thicknessPen = Math.max(0.5, value); break;
                     case 'redColourPen': updated.redColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'greenColourPen': updated.greenColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
                     case 'blueColourPen': updated.blueColourPen = Math.round(Math.max(0, Math.min(255, value))); break;
-                    case 'transparencyPen': updated.transparencyPen = Math.max(0, Math.min(100, value)); break;
+                    case 'opacityPen': updated.opacityPen = Math.max(0, Math.min(100, value)); break;
                     default:
                         // Support custom user-defined properties (e.g., vy, vx, ax, ay)
                         updated[attribute] = value;
@@ -1666,7 +1666,7 @@
                 this.ctx.translate(obj.x, obj.y);
                 this.ctx.rotate((obj.rotation * Math.PI) / 180);
 
-                const alpha = obj.transparency / 100;
+                const alpha = obj.opacity / 100;
                 this.ctx.fillStyle = `rgba(${obj.red}, ${obj.green}, ${obj.blue}, ${alpha})`;
 
                 if (isSelected) {
@@ -2148,7 +2148,7 @@
                 width: 50, height: 50,
                 rotation: 0,
                 red: 255, green: 100, blue: 100,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'square',
                 penDown: true,
                 text: '',
@@ -2156,7 +2156,7 @@
                 redColourPen: 255,
                 greenColourPen: 100,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Mover moves to the right at a constant speed by multiplying the time by 2 and adding a starting position of 100.',
                 equations: new Map([
                     ['x', {
@@ -2179,7 +2179,7 @@
                 width: 70, height: 40,
                 rotation: 0,
                 red: 100, green: 255, blue: 100,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'square',
                 penDown: false,
                 text: '',
@@ -2187,7 +2187,7 @@
                 redColourPen: 100,
                 greenColourPen: 255,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Spinner rotates continuously by setting rotation to time multiplied by 5, spinning at 5 degrees per frame.',
                 equations: new Map([
                     ['rotation', {
@@ -2206,7 +2206,7 @@
                 width: 80, height: 80,
                 rotation: 0,
                 red: 128, green: 128, blue: 255,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'circle',
                 penDown: false,
                 text: '',
@@ -2214,7 +2214,7 @@
                 redColourPen: 128,
                 greenColourPen: 128,
                 blueColourPen: 255,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'ColorChanger oscillates its red color channel using a sine wave, creating a smooth color pulse by centering at 128 and varying by 127.',
                 equations: new Map([
                     ['red', {
@@ -2251,7 +2251,7 @@
                 width: 40, height: 40,
                 rotation: 0,
                 red: 255, green: 200, blue: 50,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'square',
                 penDown: false,
                 text: '',
@@ -2259,7 +2259,7 @@
                 redColourPen: 255,
                 greenColourPen: 200,
                 blueColourPen: 50,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Follower demonstrates object references by following another object\'s position and rotating to point at a third object using the angle function.',
                 equations: new Map([
                     ['x', {
@@ -2300,7 +2300,7 @@
                 width: 50, height: 50,
                 rotation: 0,
                 red: 150, green: 50, blue: 200,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'triangle',
                 penDown: false,
                 text: '',
@@ -2308,7 +2308,7 @@
                 redColourPen: 150,
                 greenColourPen: 50,
                 blueColourPen: 200,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Smart Triangle uses conditional logic to change behavior over time and respond to other objects\' positions using if and dist functions.',
                 equations: new Map([
                     ['x', {
@@ -2351,7 +2351,7 @@
                 width: 60, height: 60,
                 rotation: 0,
                 red: 50, green: 255, blue: 200,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'star',
                 penDown: false,
                 text: '',
@@ -2359,7 +2359,7 @@
                 redColourPen: 50,
                 greenColourPen: 255,
                 blueColourPen: 200,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Collision Star moves in a circular orbit using user variables and changes color when overlapping with another object using the overlaps function.',
                 equations: new Map([
                     ['x', {
@@ -2402,7 +2402,7 @@
                 width: 55, height: 55,
                 rotation: 0,
                 red: 255, green: 200, blue: 100,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'pentagon',
                 penDown: false,
                 text: '',
@@ -2410,7 +2410,7 @@
                 redColourPen: 255,
                 greenColourPen: 200,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Jittery Pentagon demonstrates the random function by adding small random offsets to its position and color, creating a jittering effect.',
                 equations: new Map([
                     ['x', {
@@ -2452,7 +2452,7 @@
                 width: 50, height: 50,
                 rotation: 0,
                 red: 255, green: 100, blue: 150,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'hexagon',
                 penDown: false,
                 text: '',
@@ -2460,7 +2460,7 @@
                 redColourPen: 255,
                 greenColourPen: 100,
                 blueColourPen: 150,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Looping Hexagon uses the modulo function to create a repeating horizontal motion and cycling blue color value.',
                 equations: new Map([
                     ['x', {
@@ -2497,7 +2497,7 @@
                 width: 40, height: 40,
                 rotation: 0,
                 red: 100, green: 200, blue: 255,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'circle',
                 penDown: false,
                 text: '',
@@ -2505,7 +2505,7 @@
                 redColourPen: 100,
                 greenColourPen: 200,
                 blueColourPen: 255,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Growing Circle demonstrates exponential growth using the pow function and the mathematical constant pi for rotation.',
                 equations: new Map([
                     ['x', {
@@ -2547,7 +2547,7 @@
                 width: 45, height: 30,
                 rotation: 0,
                 red: 150, green: 255, blue: 150,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'ellipse',
                 penDown: false,
                 text: '',
@@ -2555,7 +2555,7 @@
                 redColourPen: 150,
                 greenColourPen: 255,
                 blueColourPen: 150,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Smooth Easer demonstrates the smoothstep easing function for smooth, natural-looking motion with acceleration and deceleration.',
                 equations: new Map([
                     ['x', {
@@ -2591,7 +2591,7 @@
                 width: 60, height: 40,
                 rotation: 0,
                 red: 255, green: 180, blue: 100,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'roundrect',
                 penDown: false,
                 text: '',
@@ -2599,7 +2599,7 @@
                 redColourPen: 255,
                 greenColourPen: 180,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Bouncer demonstrates the bounce easing function to create realistic bouncing motion with squash and stretch effects.',
                 equations: new Map([
                     ['x', {
@@ -2636,7 +2636,7 @@
                 width: 30, height: 30,
                 rotation: 0,
                 red: 255, green: 50, blue: 150,
-                transparency: 80,
+                opacity: 80,
                 appearance: 'star',
                 penDown: true,
                 text: '',
@@ -2644,7 +2644,7 @@
                 redColourPen: 255,
                 greenColourPen: 100,
                 blueColourPen: 200,
-                transparencyPen: 50,
+                opacityPen: 50,
                 info: 'Mouse Follower tracks the mouse cursor position using mouse.x and mouse.y, creating an interactive drawing trail with pen.',
                 equations: new Map([
                     ['x', {
@@ -2686,7 +2686,7 @@
                 width: 50, height: 50,
                 rotation: 0,
                 red: 100, green: 150, blue: 255,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'square',
                 penDown: false,
                 text: '',
@@ -2694,7 +2694,7 @@
                 redColourPen: 100,
                 greenColourPen: 150,
                 blueColourPen: 255,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Keyboard Ctrl responds to keyboard input using the keyDown function, allowing WASD movement and space bar color change for interactive control.',
                 equations: new Map([
                     ['x', {
@@ -2735,7 +2735,7 @@
                 width: 40, height: 40,
                 rotation: 0,
                 red: 255, green: 100, blue: 50,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'circle',
                 penDown: true,
                 text: '',
@@ -2743,7 +2743,7 @@
                 redColourPen: 255,
                 greenColourPen: 150,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Physics Ball simulates realistic physics with gravity and bouncing using prev values to track velocity, demonstrating frame-to-frame state persistence.',
                 vy: 0,  // Custom property for vertical velocity
                 equations: new Map([
@@ -2770,7 +2770,7 @@
 
             // ========== PONG GAME ==========
             // Left paddle controlled by W/S keys
-            const pongLeftY = parseEquation('clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)');
+            const pongLeftY = parseEquation('clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)');
 
             objects.set('pongLeft', {
                 id: 'pongLeft',
@@ -2779,7 +2779,7 @@
                 width: 15, height: 80,
                 rotation: 0,
                 red: 100, green: 200, blue: 255,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'roundrect',
                 penDown: false,
                 text: '',
@@ -2787,13 +2787,14 @@
                 redColourPen: 100,
                 greenColourPen: 200,
                 blueColourPen: 255,
-                transparencyPen: 100,
-                info: 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.',
+                opacityPen: 100,
+                info: 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.',
+                PaddleSpeed: 5,
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)',
-                        description: 'Keyboard control with boundary clamping',
+                        text: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)',
+                        description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongLeftY.success ? pongLeftY.expression : null,
                         cache: new Map()
                     }]
@@ -2801,7 +2802,7 @@
             });
 
             // Right paddle controlled by Up/Down arrow keys
-            const pongRightY = parseEquation('clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)');
+            const pongRightY = parseEquation('clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)');
 
             objects.set('pongRight', {
                 id: 'pongRight',
@@ -2810,7 +2811,7 @@
                 width: 15, height: 80,
                 rotation: 0,
                 red: 255, green: 100, blue: 100,
-                transparency: 100,
+                opacity: 100,
                 appearance: 'roundrect',
                 penDown: false,
                 text: '',
@@ -2818,13 +2819,14 @@
                 redColourPen: 255,
                 greenColourPen: 100,
                 blueColourPen: 100,
-                transparencyPen: 100,
-                info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses clamp() to keep paddle within bounds.',
+                opacityPen: 100,
+                info: 'Pong right paddle controlled by Arrow Up/Down keys. Uses prev.y and PaddleSpeed custom property.',
+                PaddleSpeed: 5,
                 equations: new Map([
                     ['y', {
                         attribute: 'y',
-                        text: 'clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)',
-                        description: 'Keyboard control with boundary clamping',
+                        text: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)',
+                        description: 'Keyboard control with boundary clamping using prev.y',
                         expression: pongRightY.success ? pongRightY.expression : null,
                         cache: new Map()
                     }]
@@ -2843,8 +2845,8 @@
                 x: 400, y: 300,
                 width: 15, height: 15,
                 rotation: 0,
-                red: 255, green: 255, blue: 255,
-                transparency: 100,
+                red: 255, green: 255, blue: 100,
+                opacity: 100,
                 appearance: 'circle',
                 penDown: true,
                 text: '',
@@ -2852,7 +2854,7 @@
                 redColourPen: 200,
                 greenColourPen: 200,
                 blueColourPen: 200,
-                transparencyPen: 30,
+                opacityPen: 30,
                 info: 'Pong ball with physics: bounces off paddles and walls, uses overlaps() for collision, prev.vx/vy for velocity. Resets if it goes past paddles.',
                 vx: 3,  // Initial velocity
                 vy: 2,
@@ -2896,7 +2898,7 @@
                 width: 4, height: 600,
                 rotation: 0,
                 red: 100, green: 100, blue: 100,
-                transparency: 30,
+                opacity: 30,
                 appearance: 'roundrect',
                 penDown: false,
                 text: '',
@@ -2904,7 +2906,7 @@
                 redColourPen: 100,
                 greenColourPen: 100,
                 blueColourPen: 100,
-                transparencyPen: 100,
+                opacityPen: 100,
                 info: 'Pong center line for visual reference.',
                 equations: new Map()
             });
@@ -3470,6 +3472,7 @@
                         ${hasEq && eqDesc ? `<div style="font-size: 10px; color: #6c757d; margin: 2px 0 3px 0; font-style: italic;">${eqDesc}</div>` : ''}
                         <div style="display: flex; gap: 5px; align-items: center;">
                             <input type="range" min="${min}" max="${max}" value="${obj[prop]}" oninput="updateProperty('${prop}', this.value)" style="flex: 1;" ${hasEq ? 'disabled' : ''}>
+                            <input type="number" min="${min}" max="${max}" value="${Math.round(obj[prop])}" onchange="updateProperty('${prop}', this.value)" style="width: 60px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center;" ${hasEq ? 'disabled' : ''}>
                             <button onclick="openEquationEditor('${prop}')" style="padding: 4px 8px; font-size: 11px;" title="Edit equation">📐</button>
                             ${hasEq ? `<button onclick="clearEquation('${prop}')" class="danger" style="padding: 4px 8px; font-size: 11px;" title="Clear equation">✕</button>` : ''}
                         </div>
@@ -3481,8 +3484,8 @@
                 // List of standard properties that are already displayed
                 const standardProps = new Set([
                     'x', 'y', 'width', 'height', 'rotation',
-                    'red', 'green', 'blue', 'transparency',
-                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'transparencyPen'
+                    'red', 'green', 'blue', 'opacity',
+                    'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen'
                 ]);
 
                 // Find custom properties (those with equations that aren't standard)
@@ -3560,8 +3563,8 @@
                     <h4>Position & Size</h4>
                     ${propertyRow('x', 'X Position', 0, 800)}
                     ${propertyRow('y', 'Y Position', 0, 600)}
-                    ${propertyRow('width', 'Width', 1, 200)}
-                    ${propertyRow('height', 'Height', 1, 200)}
+                    ${propertyRow('width', 'Width', 1, 800)}
+                    ${propertyRow('height', 'Height', 1, 600)}
                     ${propertyRow('rotation', 'Rotation', 0, 360, '°')}
                 </div>
 
@@ -3576,7 +3579,7 @@
                     ${propertyRow('red', 'Red', 0, 255)}
                     ${propertyRow('green', 'Green', 0, 255)}
                     ${propertyRow('blue', 'Blue', 0, 255)}
-                    ${propertyRow('transparency', 'Transparency', 0, 100, '%')}
+                    ${propertyRow('opacity', 'Opacity', 0, 100, '%')}
                 </div>
 
                 <div class="property-group">
@@ -3591,7 +3594,7 @@
                     ${propertyRow('redColourPen', 'Pen Red', 0, 255)}
                     ${propertyRow('greenColourPen', 'Pen Green', 0, 255)}
                     ${propertyRow('blueColourPen', 'Pen Blue', 0, 255)}
-                    ${propertyRow('transparencyPen', 'Pen Transparency', 0, 100, '%')}
+                    ${propertyRow('opacityPen', 'Pen Opacity', 0, 100, '%')}
                 </div>
 
                 <div class="property-buttons">
@@ -3962,7 +3965,7 @@
                     red: obj.red,
                     green: obj.green,
                     blue: obj.blue,
-                    transparency: obj.transparency,
+                    opacity: obj.opacity,
                     appearance: obj.appearance,
                     penDown: obj.penDown,
                     text: obj.text || '',
@@ -4156,7 +4159,7 @@
                 red: Math.floor(Math.random() * 256),
                 green: Math.floor(Math.random() * 256),
                 blue: Math.floor(Math.random() * 256),
-                transparency: 100,
+                opacity: 100,
                 appearance: shape,
                 penDown: false,
                 text: shape === 'text' ? text : '',
@@ -4164,7 +4167,7 @@
                 redColourPen: Math.floor(Math.random() * 256),
                 greenColourPen: Math.floor(Math.random() * 256),
                 blueColourPen: Math.floor(Math.random() * 256),
-                transparencyPen: 100,
+                opacityPen: 100,
                 equations: new Map(),
                 description: ''
             };
@@ -4423,7 +4426,7 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 400, 300, 100, 60, 100, 150, 255, {
-                        rotation: 't * 3'
+                        rotation: { text: 't * 3', description: 'Rotates 3 degrees per frame' }
                     }, 'A simple rotating rectangle.\\n\\nEquation: rotation = t × 3\\n\\nThis demonstrates MoPiX\'s core feature: controlling object properties with algebraic expressions. The rectangle spins continuously at 3 degrees per frame by multiplying the time variable (t) by 3.');
                 }
             },
@@ -4434,8 +4437,8 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 340.7, 212.5, 10, 10, 255, 100, 100, {
-                        width: 't * 2',
-                        height: 't'
+                        width: { text: 't * 2', description: 'Grows 2 pixels per frame' },
+                        height: { text: 't', description: 'Grows 1 pixel per frame' }
                     }, 'A rectangle that grows over time.\\n\\nEquations:\\nwidth = t × 2\\nheight = t\\n\\nThis showcases how MoPiX lets you control multiple properties simultaneously with independent equations. The width grows twice as fast as the height, creating non-uniform expansion.');
                 }
             },
@@ -4446,9 +4449,9 @@
                 create: () => {
                     clearAll();
                     createSampleObject('ellipse', 'ellipse', 379.75, 321.5, 200, 100, 100, 100, 100, {
-                        rotation: 't * 3'
-                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 3\\n\\nThis ellipse rotates at 3 degrees per frame. The transparency allows you to see through it.');
-                    objects.get('ellipse').transparency = 50;
+                        rotation: { text: 't * 3', description: 'Rotates 3 degrees per frame' }
+                    }, 'A semi-transparent rotating ellipse.\\n\\nEquation: rotation = t × 3\\n\\nThis ellipse rotates at 3 degrees per frame. The opacity allows you to see through it.');
+                    objects.get('ellipse').opacity = 50;
                 }
             },
             {
@@ -4458,16 +4461,16 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect1', 'square', 250, 300, 80, 50, 255, 100, 100, {
-                        rotation: 't * 5',
-                        red: '128 + sin(t * 5) * 127'
+                        rotation: { text: 't * 5', description: 'Fast rotation at 5 degrees/frame' },
+                        red: { text: '128 + sin(t * 5) * 127', description: 'Oscillates red from 1-255 using sine wave' }
                     }, 'Fast rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 5\\nred = 128 + sin(t × 5) × 127\\n\\nUses sin() function to smoothly oscillate the red color between 1 and 255.');
                     createSampleObject('rect2', 'square', 400, 300, 80, 50, 100, 255, 100, {
-                        rotation: 't * 3',
-                        green: '128 + sin(t * 3) * 127'
+                        rotation: { text: 't * 3', description: 'Medium rotation at 3 degrees/frame' },
+                        green: { text: '128 + sin(t * 3) * 127', description: 'Oscillates green from 1-255 using sine wave' }
                     }, 'Medium rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 3\\ngreen = 128 + sin(t × 3) × 127\\n\\nDemonstrates how different frequencies create different animation speeds.');
                     createSampleObject('rect3', 'square', 550, 300, 80, 50, 100, 100, 255, {
-                        rotation: 't * 1.5',
-                        blue: '128 + sin(t * 1.5) * 127'
+                        rotation: { text: 't * 1.5', description: 'Slow rotation at 1.5 degrees/frame' },
+                        blue: { text: '128 + sin(t * 1.5) * 127', description: 'Oscillates blue from 1-255 using sine wave' }
                     }, 'Slow rotating rectangle with color change.\\n\\nEquations:\\nrotation = t × 1.5\\nblue = 128 + sin(t × 1.5) × 127\\n\\nShows MoPiX\'s ability to manage multiple independent objects simultaneously.');
                 }
             },
@@ -4481,37 +4484,37 @@
                     // Ball 1 (object_9) - right side with physics
                     createSampleObject('object_9', 'circle', 677.75, 400, 40, 40, 100, 0, 100, {
                         // Acceleration
-                        Ay: '-0.098',
-                        Ax: '0',
+                        Ay: { text: '-0.098', description: 'Gravity acceleration (downward)' },
+                        Ax: { text: '0', description: 'No horizontal acceleration' },
 
                         // Velocity with predictive collision detection (like Four Graphs)
-                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))',
-                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
+                        Vx: { text: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))', description: 'Horizontal velocity with wall bounce detection' },
+                        Vy: { text: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))', description: 'Vertical velocity with ground bounce detection' },
 
                         // Position
-                        x: 'prev.x + Vx',
-                        y: 'prev.y + Vy'
+                        x: { text: 'prev.x + Vx', description: 'Update X position using horizontal velocity' },
+                        y: { text: 'prev.y + Vy', description: 'Update Y position using vertical velocity' }
                     }, 'First bouncing ball with full physics simulation.\\n\\nEquations use:\\n- Custom properties (Vx, Vy, Ax, Ay)\\n- prev values for frame-to-frame continuity\\n- if() conditionals for collision detection\\n\\nThis demonstrates advanced MoPiX features for realistic physics.');
 
                     // Ball 2 (object_4) - left side with physics
                     createSampleObject('object_4', 'circle', 149.75, 300, 40, 40, 100, 0, 0, {
                         // Acceleration
-                        Ay: '-0.098',
-                        Ax: '0',
+                        Ay: { text: '-0.098', description: 'Gravity acceleration (downward)' },
+                        Ax: { text: '0', description: 'No horizontal acceleration' },
 
                         // Velocity with predictive collision detection (like Four Graphs)
-                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))',
-                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
+                        Vx: { text: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))', description: 'Horizontal velocity with wall bounce detection' },
+                        Vy: { text: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))', description: 'Vertical velocity with ground bounce detection' },
 
                         // Position
-                        x: 'prev.x + Vx',
-                        y: 'prev.y + Vy'
+                        x: { text: 'prev.x + Vx', description: 'Update X position using horizontal velocity' },
+                        y: { text: 'prev.y + Vy', description: 'Update Y position using vertical velocity' }
                     }, 'Second bouncing ball with physics.');
 
                     // Average position tracker (object_6)
                     createSampleObject('object_6', 'circle', 413.75, 350, 15, 15, 0, 50, 50, {
-                        x: '(object_4.x + object_9.x) / 2',
-                        y: '(object_4.y + object_9.y) / 2'
+                        x: { text: '(object_4.x + object_9.x) / 2', description: 'Average X position of both balls' },
+                        y: { text: '(object_4.y + object_9.y) / 2', description: 'Average Y position of both balls' }
                     }, 'Tracks the average position of both balls.\\n\\nEquations:\\nx = (object_4.x + object_9.x) / 2\\ny = (object_4.y + object_9.y) / 2\\n\\nDemonstrates MoPiX\'s powerful OBJECT REFERENCE feature - objects can reference other objects\' properties! The pen trail feature visualizes the path.');
                     objects.get('object_6').penDown = true;
                     objects.get('object_6').thicknessPen = 4;
@@ -4529,9 +4532,9 @@
                 create: () => {
                     clearAll();
                     createSampleObject('rect', 'square', 227.75, 241.5, 100, 200, 128, 128, 128, {
-                        width: '50 * sin(t) + 50',
-                        green: '50 * sin(2 * t) + 50',
-                        rotation: '50 * sin(3 * t) + 50'
+                        width: { text: '50 * sin(t) + 50', description: 'Oscillates width (1x frequency)' },
+                        green: { text: '50 * sin(2 * t) + 50', description: 'Oscillates green channel (2x frequency)' },
+                        rotation: { text: '50 * sin(3 * t) + 50', description: 'Oscillates rotation (3x frequency)' }
                     }, 'A rectangle with three independent cycles.\\n\\nEquations:\\nwidth = 50 × sin(t) + 50\\ngreen = 50 × sin(2t) + 50\\nrotation = 50 × sin(3t) + 50\\n\\nShows how MoPiX handles multiple simultaneous periodic behaviors with sine waves at different frequencies (1x, 2x, 3x), creating complex emergent patterns.');
                 }
             },
@@ -4542,7 +4545,7 @@
                 create: () => {
                     clearAll();
                     createSampleObject('ball', 'circle', 305.75, 100, 40, 40, 255, 200, 100, {
-                        y: '100 + 0.049 * t * t'
+                        y: { text: '100 + 0.049 * t * t', description: 'Quadratic motion with upward acceleration' }
                     }, 'A ball that falls upward!\\n\\nEquation: y = 100 + 0.049 × t²\\n\\nThis uses the physics equation for motion under constant acceleration. With positive upward acceleration (Ay = 0.098), the ball accelerates upward, moving faster as time goes on.');
                 }
             },
@@ -4554,35 +4557,35 @@
                     clearAll();
                     // First animated object (rectangle)
                     createSampleObject('object_1', 'square', 247.75, 244.5, 100, 100, 128, 128, 128, {
-                        width: '50 * sin(t) + 50',
-                        green: '50 * sin(2 * t) + 50',
-                        rotation: '50 * sin(4 * t) + 50',
-                        height: '50 * sin(0.5 * t) + 50',
-                        red: '50 * sin(t) + 50'
+                        width: { text: '50 * sin(t) + 50', description: 'Oscillates width (1x frequency)' },
+                        green: { text: '50 * sin(2 * t) + 50', description: 'Oscillates green channel (2x frequency)' },
+                        rotation: { text: '50 * sin(4 * t) + 50', description: 'Oscillates rotation (4x frequency)' },
+                        height: { text: '50 * sin(0.5 * t) + 50', description: 'Oscillates height (0.5x frequency)' },
+                        red: { text: '50 * sin(t) + 50', description: 'Oscillates red channel (1x frequency)' }
                     }, 'First animated object with multiple cycles.');
 
                     // Second animated object (circle)
                     createSampleObject('object_4', 'circle', 420.75, 243.5, 100, 100, 128, 128, 128, {
-                        width: '50 * sin(t) + 50',
-                        green: '50 * sin(2 * t) + 50',
-                        rotation: '50 * sin(2 * t) + 50',
-                        height: '50 * sin(3 * t) + 50',
-                        red: '50 * sin(t) + 50',
-                        blue: '50 * sin(3 * t) + 50'
+                        width: { text: '50 * sin(t) + 50', description: 'Oscillates width (1x frequency)' },
+                        green: { text: '50 * sin(2 * t) + 50', description: 'Oscillates green channel (2x frequency)' },
+                        rotation: { text: '50 * sin(2 * t) + 50', description: 'Oscillates rotation (2x frequency)' },
+                        height: { text: '50 * sin(3 * t) + 50', description: 'Oscillates height (3x frequency)' },
+                        red: { text: '50 * sin(t) + 50', description: 'Oscillates red channel (1x frequency)' },
+                        blue: { text: '50 * sin(3 * t) + 50', description: 'Oscillates blue channel (3x frequency)' }
                     }, 'Second animated object with different cycles.');
 
                     // Graph objects with pens
                     createSampleObject('object_12', 'circle', 141, 392, 5, 5, 0, 100, 0, {
-                        x: 't',
-                        y: '(50 * sin(4 * t) + 50) / 4 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: '(50 * sin(4 * t) + 50) / 4 + 400', description: 'Graphs object_1 rotation over time' }
                     }, 'Graph of object_1 rotation.');
                     objects.get('object_12').penDown = true;
                     objects.get('object_12').greenColourPen = 100;
                     objects.get('object_12').thicknessPen = 4;
 
                     createSampleObject('object_5', 'circle', 324, 386.55, 5, 5, 0, 0, 100, {
-                        x: 't',
-                        y: '(50 * sin(2 * t) + 50) / 4 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: '(50 * sin(2 * t) + 50) / 4 + 400', description: 'Graphs object_4 rotation over time' }
                     }, 'Graph of object_4 rotation.');
                     objects.get('object_5').penDown = true;
                     objects.get('object_5').blueColourPen = 100;
@@ -4597,24 +4600,24 @@
                     clearAll();
                     // Rectangle 1 - fastest (5x)
                     createSampleObject('object_107', 'square', 338.75, 340.45, 200, 100, 50, 50, 50, {
-                        rotation: 't * 5',
-                        blue: '50 + 50 * sin(t * 0.3)'
+                        rotation: { text: 't * 5', description: 'Fast rotation at 5 degrees per frame' },
+                        blue: { text: '50 + 50 * sin(t * 0.3)', description: 'Oscillates blue channel slowly' }
                     }, 'Fast rotating rectangle with blue oscillation.');
-                    objects.get('object_107').transparency = 50;
+                    objects.get('object_107').opacity = 50;
 
                     // Rectangle 2 - medium (3x)
                     createSampleObject('object_105', 'square', 180.75, 340.45, 200, 100, 50, 50, 50, {
-                        rotation: 't * 3',
-                        red: '50 + 50 * sin(t * 0.3)'
+                        rotation: { text: 't * 3', description: 'Medium rotation at 3 degrees per frame' },
+                        red: { text: '50 + 50 * sin(t * 0.3)', description: 'Oscillates red channel slowly' }
                     }, 'Medium rotating rectangle with red oscillation.');
-                    objects.get('object_105').transparency = 50;
+                    objects.get('object_105').opacity = 50;
 
                     // Rectangle 3 - fastest (7x)
                     createSampleObject('object_118', 'square', 494.75, 340.45, 200, 100, 50, 50, 50, {
-                        rotation: 't * 7',
-                        green: '50 + 50 * sin(t * 0.3)'
+                        rotation: { text: 't * 7', description: 'Very fast rotation at 7 degrees per frame' },
+                        green: { text: '50 + 50 * sin(t * 0.3)', description: 'Oscillates green channel slowly' }
                     }, 'Very fast rotating rectangle with green oscillation.');
-                    objects.get('object_118').transparency = 50;
+                    objects.get('object_118').opacity = 50;
                 }
             },
             {
@@ -4626,24 +4629,24 @@
                     // Bouncing ball with full physics simulation
                     createSampleObject('object_3', 'circle', 20.75, 337.7, 40, 40, 100, 100, 255, {
                         // Acceleration (constant)
-                        Ay: '-0.098',
-                        Ax: '0',
+                        Ay: { text: '-0.098', description: 'Gravity acceleration (downward)' },
+                        Ax: { text: '0', description: 'No horizontal acceleration' },
 
                         // Velocity updates: initial values at t=0, then formulas
                         // Vx: initial=3, then bounce off walls at x=0 or x=799
-                        Vx: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax)))',
+                        Vx: { text: 'if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 799, prev.Vx * -1, prev.Vx + Ax)))', description: 'Horizontal velocity with wall bounce' },
                         // Vy: initial=0, then bounce off ground at y=20 when moving downward
-                        Vy: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))',
+                        Vy: { text: 'if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))', description: 'Vertical velocity with ground bounce' },
 
                         // Position updates
-                        x: 'prev.x + Vx',
-                        y: 'prev.y + Vy'
+                        x: { text: 'prev.x + Vx', description: 'Update X position using velocity' },
+                        y: { text: 'prev.y + Vy', description: 'Update Y position using velocity' }
                     }, 'Bouncing ball with full physics simulation.\\n\\nEquations use:\\n- Ax=0, Ay=-0.098 (gravity)\\n- Vx/Vy with conditional wall/ground bounces\\n- prev values for continuity\\n- x = prev.x + Vx (position update)\\n\\nFour small objects with pens enabled graph this ball\'s X, Y, Vx, and Vy in real-time, demonstrating MoPiX\'s graphing capability through object references!');
 
                     // Graph 1: X position (blue)
                     createSampleObject('object_5', 'circle', 103.75, 280.45, 5, 5, 0, 0, 100, {
-                        x: 't',
-                        y: 'object_3.x / 10 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: 'object_3.x / 10 + 400', description: 'Graphs X position scaled and offset' }
                     }, 'Graph of object_3 X position.');
                     objects.get('object_5').penDown = true;
                     objects.get('object_5').blueColourPen = 100;
@@ -4651,8 +4654,8 @@
 
                     // Graph 2: Y position (red)
                     createSampleObject('object_4', 'circle', 189.75, 413.45, 5, 5, 100, 0, 0, {
-                        x: 't',
-                        y: 'object_3.y / 10 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: 'object_3.y / 10 + 400', description: 'Graphs Y position scaled and offset' }
                     }, 'Graph of object_3 Y position.');
                     objects.get('object_4').penDown = true;
                     objects.get('object_4').redColourPen = 100;
@@ -4660,8 +4663,8 @@
 
                     // Graph 3: Vx (horizontal velocity - purple/mixed)
                     createSampleObject('object_7', 'circle', 242, 314.3, 5, 5, 50, 50, 0, {
-                        x: 't',
-                        y: 'object_3.Vx / 1 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: 'object_3.Vx / 1 + 400', description: 'Graphs horizontal velocity with offset' }
                     }, 'Graph of object_3 X velocity (constant at 3, reverses at walls).');
                     objects.get('object_7').penDown = true;
                     objects.get('object_7').redColourPen = 50;
@@ -4670,8 +4673,8 @@
 
                     // Graph 4: Vy (vertical velocity - green)
                     createSampleObject('object_6', 'circle', 387, 314.2, 5, 5, 0, 100, 0, {
-                        x: 't',
-                        y: 'object_3.Vy / 1 + 400'
+                        x: { text: 't', description: 'Time as X coordinate' },
+                        y: { text: 'object_3.Vy / 1 + 400', description: 'Graphs vertical velocity with offset' }
                     }, 'Graph of object_3 Y velocity (changes with gravity and bounces).');
                     objects.get('object_6').penDown = true;
                     objects.get('object_6').greenColourPen = 100;
@@ -4687,20 +4690,22 @@
 
                     // Left paddle controlled by W/S keys
                     createSampleObject('pongLeft', 'roundrect', 50, 300, 15, 80, 100, 200, 255, {
-                        y: 'clamp(400 + keyDown(s) * 200 - keyDown(w) * 200, 60, 540)'
-                    }, 'Pong left paddle controlled by W/S keys. Uses clamp() to keep paddle within bounds.');
+                        y: { text: 'clamp(prev.y - keyDown(w) * PaddleSpeed + keyDown(s) * PaddleSpeed, 60, 540)', description: 'Y position controlled by W/S keys with clamping' }
+                    }, 'Pong left paddle controlled by W/S keys. Uses prev.y and PaddleSpeed custom property.');
+                    objects.get('pongLeft').PaddleSpeed = 5;
 
                     // Right paddle controlled by arrow keys
                     createSampleObject('pongRight', 'roundrect', 750, 300, 15, 80, 255, 100, 100, {
-                        y: 'clamp(400 + keyDown(ArrowDown) * 200 - keyDown(ArrowUp) * 200, 60, 540)'
+                        y: { text: 'clamp(prev.y - keyDown(ArrowUp) * PaddleSpeed + keyDown(ArrowDown) * PaddleSpeed, 60, 540)', description: 'Y position controlled by arrow keys with clamping' }
                     }, 'Pong right paddle controlled by Up/Down arrow keys.');
+                    objects.get('pongRight').PaddleSpeed = 5;
 
                     // Ball with complex physics (using nested ifs instead of && and ||)
-                    createSampleObject('pongBall', 'circle', 400, 300, 15, 15, 255, 255, 255, {
-                        vx: 'if(t == 0, 3, if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx < 15, 3, if(prev.x + prev.vx > 785, 3, prev.vx)))))',
-                        vy: 'if(t == 0, 2, if(prev.y + prev.vy < 20, prev.vy * -1, if(prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft), prev.vy + random(-1, 1), if(overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy)))))',
-                        x: 'if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx < 15, 400, prev.x + prev.vx)), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx > 785, 400, prev.x + prev.vx)), prev.x + prev.vx))',
-                        y: 'if(prev.y + prev.vy < 20, clamp(prev.y, 20, 580), if(prev.y + prev.vy > 580, clamp(prev.y, 20, 580), if(prev.x + prev.vx < 15, 300, if(prev.x + prev.vx > 785, 300, prev.y + prev.vy))))'
+                    createSampleObject('pongBall', 'circle', 400, 300, 15, 15, 255, 255, 100, {
+                        vx: { text: 'if(t == 0, 3, if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), -abs(prev.vx) * 1.05, prev.vx), if(prev.x + prev.vx < 15, 3, if(prev.x + prev.vx > 785, 3, prev.vx)))))', description: 'Horizontal velocity with paddle collision and reset' },
+                        vy: { text: 'if(t == 0, 2, if(prev.y + prev.vy < 20, prev.vy * -1, if(prev.y + prev.vy > 580, prev.vy * -1, if(overlaps(pongBall, pongLeft), prev.vy + random(-1, 1), if(overlaps(pongBall, pongRight), prev.vy + random(-1, 1), prev.vy)))))', description: 'Vertical velocity with wall bounce and spin' },
+                        x: { text: 'if(prev.x + prev.vx < 35, if(overlaps(pongBall, pongLeft), 35, if(prev.x + prev.vx < 15, 400, prev.x + prev.vx)), if(prev.x + prev.vx > 765, if(overlaps(pongBall, pongRight), 765, if(prev.x + prev.vx > 785, 400, prev.x + prev.vx)), prev.x + prev.vx))', description: 'X position with collision detection and reset' },
+                        y: { text: 'if(prev.y + prev.vy < 20, clamp(prev.y, 20, 580), if(prev.y + prev.vy > 580, clamp(prev.y, 20, 580), if(prev.x + prev.vx < 15, 300, if(prev.x + prev.vx > 785, 300, prev.y + prev.vy))))', description: 'Y position with boundary clamping and reset' }
                     }, 'Pong ball with collision detection, paddle bouncing, and reset on score.\\n\\nEquations use:\\n- overlaps() function to detect paddle collisions\\n- prev values for velocity and position\\n- Nested if() conditionals for bouncing and scoring\\n- abs() for velocity direction\\n- random() for paddle spin effect\\n\\nThis demonstrates MoPiX\'s ability to create interactive games with keyboard control and physics!');
 
                     // Set ball initial velocity and enable pen trail
@@ -4711,11 +4716,11 @@
                     objects.get('pongBall').redColourPen = 200;
                     objects.get('pongBall').greenColourPen = 200;
                     objects.get('pongBall').blueColourPen = 200;
-                    objects.get('pongBall').transparencyPen = 30;
+                    objects.get('pongBall').opacityPen = 30;
 
                     // Center line (decorative)
                     createSampleObject('pongCenter', 'roundrect', 400, 300, 4, 600, 100, 100, 100, {}, 'Pong center line for visual reference.');
-                    objects.get('pongCenter').transparency = 30;
+                    objects.get('pongCenter').opacity = 30;
                 }
             }
         ];
@@ -4732,7 +4737,7 @@
                 red: red,
                 green: green,
                 blue: blue,
-                transparency: 100,
+                opacity: 100,
                 appearance: shape,
                 equations: new Map(),
                 penDown: false,
@@ -4740,7 +4745,7 @@
                 redColourPen: 0,
                 greenColourPen: 0,
                 blueColourPen: 0,
-                transparencyPen: 100,
+                opacityPen: 100,
                 // Physics properties for velocity and acceleration
                 Vx: 0,
                 Vy: 0,
@@ -4750,13 +4755,18 @@
             };
 
             // Parse and add equations
-            for (const [prop, expr] of Object.entries(equations)) {
+            for (const [prop, exprData] of Object.entries(equations)) {
+                // Support both simple string and {text, description} format
+                const expr = typeof exprData === 'string' ? exprData : exprData.text;
+                const description = typeof exprData === 'object' ? (exprData.description || '') : '';
+
                 const result = parseEquation(expr);
                 if (result.success) {
                     obj.equations.set(prop, {
                         attribute: prop,
                         expression: result.expression,
                         text: expr,  // Store the original equation text
+                        description: description,
                         cache: new Map()
                     });
                 } else {
