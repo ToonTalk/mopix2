@@ -4183,6 +4183,24 @@
                     });
                 }
 
+                // List of standard properties that should not be copied from custom properties
+                const standardProps = new Set([
+                    'id', 'name', 'x', 'y', 'width', 'height', 'rotation',
+                    'red', 'green', 'blue', 'opacity', 'transparency',
+                    'appearance', 'penDown', 'text', 'thicknessPen',
+                    'redColorPen', 'greenColorPen', 'blueColorPen',
+                    'redColourPen', 'greenColourPen', 'blueColourPen', // Old British spelling
+                    'opacityPen', 'transparencyPen', 'info', 'description', 'equations'
+                ]);
+
+                // Copy custom properties (anything not in standardProps)
+                const customProps = {};
+                for (const key in objData) {
+                    if (!standardProps.has(key) && typeof objData[key] === 'number') {
+                        customProps[key] = objData[key];
+                    }
+                }
+
                 // Ensure all standard properties have default values
                 const obj = {
                     // Standard properties
@@ -4201,14 +4219,15 @@
                     penDown: objData.penDown || false,
                     text: objData.text || '',
                     thicknessPen: objData.thicknessPen !== undefined ? objData.thicknessPen : 2,
-                    redColorPen: objData.redColorPen !== undefined ? objData.redColorPen : 0,
-                    greenColorPen: objData.greenColorPen !== undefined ? objData.greenColorPen : 0,
-                    blueColorPen: objData.blueColorPen !== undefined ? objData.blueColorPen : 0,
+                    // Support both old British spelling (Colour) and new American spelling (Color)
+                    redColorPen: objData.redColorPen !== undefined ? objData.redColorPen : (objData.redColourPen !== undefined ? objData.redColourPen : 0),
+                    greenColorPen: objData.greenColorPen !== undefined ? objData.greenColorPen : (objData.greenColourPen !== undefined ? objData.greenColourPen : 0),
+                    blueColorPen: objData.blueColorPen !== undefined ? objData.blueColorPen : (objData.blueColourPen !== undefined ? objData.blueColourPen : 0),
                     opacityPen: objData.opacityPen !== undefined ? objData.opacityPen : (objData.transparencyPen !== undefined ? objData.transparencyPen : 100),
                     info: objData.info || objData.description || '',
                     equations: equationsMap,
                     // Copy any custom properties
-                    ...objData
+                    ...customProps
                 };
 
                 objects.set(objData.id, obj);
