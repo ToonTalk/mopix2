@@ -528,6 +528,11 @@
     <div id="equationEditorModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 2000; min-width: 500px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
         <h3 style="margin-top: 0; color: #667eea;">📐 Equation Editor</h3>
 
+        <!-- Current Property Display -->
+        <div id="currentPropertyDisplay" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: 600; font-size: 16px; text-align: center;">
+            Editing: <span id="currentPropertyName" style="font-family: 'Courier New', monospace; font-size: 18px;"></span>
+        </div>
+
         <div style="margin: 15px 0;">
             <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Property:</label>
             <select id="equationProperty" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
@@ -3863,7 +3868,56 @@
             currentEquationProperty = property;
             const obj = objects.get(selectedObjectId);
 
-            document.getElementById('equationProperty').value = property;
+            // Define standard properties
+            const standardProps = new Set([
+                'x', 'y', 'width', 'height', 'rotation',
+                'red', 'green', 'blue', 'opacity',
+                'thicknessPen', 'redColourPen', 'greenColourPen', 'blueColourPen', 'opacityPen'
+            ]);
+
+            // Get the property dropdown
+            const dropdown = document.getElementById('equationProperty');
+
+            // Find all custom properties (numeric properties that aren't standard)
+            const customProps = [];
+            for (const prop in obj) {
+                if (!standardProps.has(prop) && typeof obj[prop] === 'number' &&
+                    prop !== 'id' && prop !== 'penDown') {
+                    customProps.push(prop);
+                }
+            }
+
+            // Remove any previously added custom property options
+            const existingOptions = Array.from(dropdown.options);
+            existingOptions.forEach(opt => {
+                if (!standardProps.has(opt.value)) {
+                    dropdown.remove(opt.index);
+                }
+            });
+
+            // Add custom properties to dropdown
+            if (customProps.length > 0) {
+                // Add separator if not already present
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '--- Custom Properties ---';
+                dropdown.appendChild(separator);
+
+                customProps.forEach(prop => {
+                    const option = document.createElement('option');
+                    option.value = prop;
+                    option.textContent = prop;
+                    dropdown.appendChild(option);
+                });
+            }
+
+            // Set the dropdown value
+            dropdown.value = property;
+
+            // Update the property name display at the top
+            document.getElementById('currentPropertyName').textContent = property;
+
+            // Show the modal
             document.getElementById('equationEditorModal').style.display = 'block';
 
             // Load existing equation if any
