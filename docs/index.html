@@ -3025,14 +3025,10 @@
             obj.x = newX;
             obj.y = newY;
 
-            // Clear x and y equations when manually dragging
-            // Dragging is an explicit override of position
-            if (obj.equations.has('x')) {
-                obj.equations.delete('x');
-            }
-            if (obj.equations.has('y')) {
-                obj.equations.delete('y');
-            }
+            // NOTE: We no longer delete x/y equations when dragging
+            // The render below uses renderScene (not renderFrame) which doesn't evaluate equations
+            // This allows temporary repositioning without losing equations
+            // If you want to permanently override position, delete the equations via the UI
 
             obj.equations.forEach(eq => eq.cache.clear());
 
@@ -4231,12 +4227,15 @@
                 }
 
                 // Ensure all standard properties have default values
+                // DEBUG: Log import values
+                console.log(`[IMPORT] Object ${objData.id}: x=${objData.x}, y=${objData.y}, Vx=${objData.Vx}, Vy=${objData.Vy}`);
+
                 const obj = {
                     // Standard properties
                     id: objData.id,
                     name: objData.name || objData.id,
-                    x: objData.x || 0,
-                    y: objData.y || 0,
+                    x: objData.x !== undefined ? objData.x : 0,
+                    y: objData.y !== undefined ? objData.y : 0,
                     width: objData.width || 50,
                     height: objData.height || 50,
                     rotation: objData.rotation || 0,
@@ -4676,7 +4675,9 @@
 
             // Render without evaluating equations - imported values are already correct
             const trails = trailManager.getAllTrails();
-            renderer.renderScene(Array.from(objects.values()), trails, selectedObjectId);
+            const objectsArray = Array.from(objects.values());
+            console.log('[IMPORT RENDER] Objects at render time:', objectsArray.map(o => `${o.id}: x=${o.x}, y=${o.y}`));
+            renderer.renderScene(objectsArray, trails, selectedObjectId);
         }
 
         // ==================== Sample Models ====================
@@ -5069,6 +5070,9 @@
                 delete prevValues.text;
                 delete prevValues.equations;
                 previousFrameValues.set(obj.id, prevValues);
+
+                // DEBUG: Log what we're storing
+                console.log(`[INIT PREV] ${obj.id}: x=${prevValues.x}, y=${prevValues.y}, Vx=${prevValues.Vx}, Vy=${prevValues.Vy}`);
             });
         }
 
