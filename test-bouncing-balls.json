@@ -1,0 +1,144 @@
+{
+  "version": "3.0",
+  "currentFrame": 0,
+  "variables": {},
+  "objects": [
+    {
+      "id": "object_9",
+      "name": "object_9",
+      "x": 680.75,
+      "y": 400,
+      "width": 40,
+      "height": 40,
+      "rotation": 0,
+      "red": 100,
+      "green": 0,
+      "blue": 100,
+      "opacity": 100,
+      "appearance": "circle",
+      "penDown": false,
+      "thicknessPen": 2,
+      "redColorPen": 0,
+      "greenColorPen": 0,
+      "blueColorPen": 0,
+      "opacityPen": 100,
+      "Vx": 3,
+      "Vy": 0,
+      "Ax": 0,
+      "Ay": -0.098,
+      "info": "First bouncing ball with full physics simulation.\\n\\nEquations use:\\n- Custom properties (Vx, Vy, Ax, Ay)\\n- prev values for frame-to-frame continuity\\n- if() conditionals for collision detection\\n\\nThis demonstrates advanced MoPiX features for realistic physics.",
+      "equations": {
+        "Ay": {
+          "text": "-0.098",
+          "description": "Gravity acceleration (downward)"
+        },
+        "Ax": {
+          "text": "0",
+          "description": "No horizontal acceleration"
+        },
+        "Vx": {
+          "text": "if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))",
+          "description": "Horizontal velocity with wall bounce detection"
+        },
+        "Vy": {
+          "text": "if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))",
+          "description": "Vertical velocity with ground bounce detection"
+        },
+        "x": {
+          "text": "prev.x + Vx",
+          "description": "Update X position using horizontal velocity"
+        },
+        "y": {
+          "text": "prev.y + Vy",
+          "description": "Update Y position using vertical velocity"
+        }
+      }
+    },
+    {
+      "id": "object_4",
+      "name": "object_4",
+      "x": 152.75,
+      "y": 300,
+      "width": 40,
+      "height": 40,
+      "rotation": 0,
+      "red": 100,
+      "green": 0,
+      "blue": 0,
+      "opacity": 100,
+      "appearance": "circle",
+      "penDown": false,
+      "thicknessPen": 2,
+      "redColorPen": 0,
+      "greenColorPen": 0,
+      "blueColorPen": 0,
+      "opacityPen": 100,
+      "Vx": 3,
+      "Vy": 0,
+      "Ax": 0,
+      "Ay": -0.098,
+      "info": "Second bouncing ball with physics.",
+      "equations": {
+        "Ay": {
+          "text": "-0.098",
+          "description": "Gravity acceleration (downward)"
+        },
+        "Ax": {
+          "text": "0",
+          "description": "No horizontal acceleration"
+        },
+        "Vx": {
+          "text": "if(t == 0, 3, if(prev.x + prev.Vx <= 0, prev.Vx * -1, if(prev.x + prev.Vx >= 800, prev.Vx * -1, prev.Vx + Ax)))",
+          "description": "Horizontal velocity with wall bounce detection"
+        },
+        "Vy": {
+          "text": "if(t == 0, 0, if(prev.y + prev.Vy <= 20, if(prev.Vy < 0, prev.Vy * -1, prev.Vy + Ay), prev.Vy + Ay))",
+          "description": "Vertical velocity with ground bounce detection"
+        },
+        "x": {
+          "text": "prev.x + Vx",
+          "description": "Update X position using horizontal velocity"
+        },
+        "y": {
+          "text": "prev.y + Vy",
+          "description": "Update Y position using vertical velocity"
+        }
+      }
+    },
+    {
+      "id": "object_6",
+      "name": "object_6",
+      "x": 416.75,
+      "y": 350,
+      "width": 15,
+      "height": 15,
+      "rotation": 0,
+      "red": 0,
+      "green": 50,
+      "blue": 50,
+      "opacity": 100,
+      "appearance": "circle",
+      "penDown": true,
+      "thicknessPen": 4,
+      "redColorPen": 50,
+      "greenColorPen": 50,
+      "blueColorPen": 50,
+      "opacityPen": 100,
+      "Vx": 0,
+      "Vy": 0,
+      "Ax": 0,
+      "Ay": 0,
+      "info": "Tracks the average position of both balls.\\n\\nEquations:\\nx = (object_4.x + object_9.x) / 2\\ny = (object_4.y + object_9.y) / 2\\n\\nDemonstrates MoPiX's powerful OBJECT REFERENCE feature - objects can reference other objects' properties! The pen trail feature visualizes the path.",
+      "equations": {
+        "x": {
+          "text": "(object_4.x + object_9.x) / 2",
+          "description": "Average X position of both balls"
+        },
+        "y": {
+          "text": "(object_4.y + object_9.y) / 2",
+          "description": "Average Y position of both balls"
+        }
+      }
+    }
+  ]
+}
