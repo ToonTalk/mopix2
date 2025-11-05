@@ -4656,6 +4656,10 @@
             trailManager.clearAll();
             selectedObjectId = null;
             historyManager.clear();
+
+            // Initialize previous frame values so prev.x, prev.y etc. work correctly
+            initializePreviousFrameValues();
+
             saveHistoryState();
 
             updateVariablesList();
