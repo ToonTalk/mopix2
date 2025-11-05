@@ -4202,6 +4202,10 @@
                                         description: eqDesc || '',
                                         cache: new Map()
                                     });
+                                } else {
+                                    // Log parsing failures during import for debugging
+                                    console.error(`Failed to parse equation for ${objData.id}.${attr}: ${result.error}`);
+                                    console.error(`  Equation text: ${eqText}`);
                                 }
                             }
                         }
