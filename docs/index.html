@@ -4622,6 +4622,8 @@
                 } catch (err) {
                     alert('Error importing: ' + err.message);
                 }
+                // Reset file input so the same file can be imported again
+                event.target.value = '';
             };
             reader.readAsText(file);
         }
