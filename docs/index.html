@@ -4646,6 +4646,11 @@
             const data = JSON.parse(jsonString);
             deserializeObjects(data.objects);
 
+            // CRITICAL: Initialize previous frame values IMMEDIATELY after deserializing
+            // This must happen BEFORE any code that might evaluate equations (like setFrame)
+            // Otherwise equations with prev.x, prev.y will use 0 instead of imported values
+            initializePreviousFrameValues();
+
             // Load variables
             userVariables.clear();
             if (data.variables) {
@@ -4661,10 +4666,6 @@
             trailManager.clearAll();
             selectedObjectId = null;
             historyManager.clear();
-
-            // Initialize previous frame values with current values
-            // The imported values are already the result of equations at the current frame
-            initializePreviousFrameValues();
 
             saveHistoryState();
 
