@@ -4017,6 +4017,31 @@
                 return true;
             }
 
+            // Check for self-referencing without prev.
+            if (currentEquationProperty) {
+                // Create regex to match the property name as a standalone identifier
+                // Match property name that's NOT preceded by a dot (to allow objectName.property)
+                // and NOT preceded by "prev." (to allow prev.property)
+                const propertyPattern = new RegExp(`(?<!\\.)\\b${currentEquationProperty}\\b(?!\\s*:)`, 'g');
+                const matches = input.match(propertyPattern);
+
+                if (matches) {
+                    // Check if any match is not preceded by "prev."
+                    const prevPattern = new RegExp(`\\bprev\\.${currentEquationProperty}\\b`, 'g');
+                    const prevMatches = input.match(prevPattern);
+                    const prevCount = prevMatches ? prevMatches.length : 0;
+                    const totalCount = matches.length;
+
+                    if (totalCount > prevCount) {
+                        errorDiv.textContent = `✗ Error: Cannot reference "${currentEquationProperty}" directly in its own equation. Did you mean "prev.${currentEquationProperty}"?`;
+                        errorDiv.style.display = 'block';
+                        successDiv.style.display = 'none';
+                        saveBtn.disabled = true;
+                        return false;
+                    }
+                }
+            }
+
             const result = parseEquation(input);
 
             if (result.success) {
