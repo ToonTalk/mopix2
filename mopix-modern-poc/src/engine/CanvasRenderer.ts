@@ -34,8 +34,8 @@ export class CanvasRenderer {
     // Translate to object position
     this.ctx.translate(obj.x, obj.y);
 
-    // Rotate around center
-    this.ctx.rotate((obj.rotation * Math.PI) / 180);
+    // Rotate around center (clockwise)
+    this.ctx.rotate(-(obj.rotation * Math.PI) / 180);
 
     // Set fill color with transparency
     const alpha = obj.transparency / 100;
